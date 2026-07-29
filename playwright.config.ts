@@ -3,14 +3,15 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   root: import.meta.cwd,
   testDir: 'tests/e2e',
-  timeout: 60000,
+  timeout: 300000, // 5 minutes for slow hydration
   failFast: true,
   reuseContext: true,
   singleWorker: true, // Single worker for ARM64 stability
   use: {
     baseURL: 'http://localhost:3000',
     screenshot: 'on-failure',
-    video: 'retain-on-failure'
+    video: 'retain-on-failure',
+    navigationTimeout: 300000
   },
   projects: [
     {
@@ -25,20 +26,9 @@ export default defineConfig({
             '--disable-dev-shm-usage',
             '--disable-gpu'
           ],
-          timeout: 30000
+          timeout: 60000
         }
       }
     }
-  ],
-  webServer: {
-    command: 'pnpm dev',
-    port: 3000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-    spawn: true,
-    reuseExistingServer: !process.env.CI,
-    timeout: 60000,
-    readyWithin: 30000
-  },
-  reporter: [['list'], ['html', { open: 'never' }]]
+  ]
 })

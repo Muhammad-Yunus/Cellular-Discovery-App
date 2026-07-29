@@ -12,6 +12,8 @@ export interface MapActions {
   setView: (center: [number, number], zoom?: number) => void
   setDarkMode: (enabled: boolean) => void
   invalidateSize: () => void
+  openPopupFor: (id: string) => void
+  closeAllPopups: () => void
   destroy: () => void
   getMap: () => LeafletMap | null
 }
@@ -158,8 +160,9 @@ export function useMap(): MapActions {
         className: 'leaflet-signal-popup'
       })
 
-    // Open the popup immediately so the info window is visible by default
-    marker.openPopup()
+    // Popups are no longer auto-opened here. The selected marker is
+    // controlled centrally by `openPopupFor(id)` so clicking an item in
+    // the sidebar (or marker on the map) updates exactly one popup.
 
     markers.set(scan.id, marker)
     return marker
@@ -190,6 +193,31 @@ export function useMap(): MapActions {
     setTimeout(() => map?.invalidateSize(), 100)
   }
 
+  /**
+   * Open the popup for the given scan id and close all other popups.
+   * No-op if the map is not initialised or the marker is not present.
+   */
+  function openPopupFor(id: string) {
+    if (!map) return
+    markers.forEach((m, key) => {
+      if (key === id) {
+        m.openPopup()
+      } else if (m.isPopupOpen()) {
+        m.closePopup()
+      }
+    })
+  }
+
+  /**
+   * Close every open popup (e.g. when the selection is cleared).
+   */
+  function closeAllPopups() {
+    if (!map) return
+    markers.forEach((m) => {
+      if (m.isPopupOpen()) m.closePopup()
+    })
+  }
+
   function destroy() {
     clearMarkers()
     map?.remove()
@@ -205,6 +233,8 @@ export function useMap(): MapActions {
     setView,
     setDarkMode,
     invalidateSize,
+    openPopupFor,
+    closeAllPopups,
     destroy,
     getMap: () => map
   }

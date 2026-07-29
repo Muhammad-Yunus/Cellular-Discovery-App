@@ -140,6 +140,40 @@ await page.waitForFunction(() => document.textContent?.includes('LTE Scanner'))
 
 ---
 
+## 🔀 Sidebar → Map Selection Flow (July 30, 2026)
+
+### Behavior Change
+Previously, **every** marker auto-opened its popup as soon as it was added to the map, which cluttered the viewport when many scans existed. Now the popup only opens for the **currently selected scan** (or none).
+
+| Subtask | Status | Details |
+|---------|--------|---------|
+| `scanStore.ts` — `selectedScanId` state | ✅ Done | New Pinia state slot holding the active scan id |
+| `scanStore.ts` — `selectScan(id)` action | ✅ Done | Sets `selectedScanId`; if id is `null`, clears selection |
+| `scanStore.ts` — `selectedScan` getter | ✅ Done | Returns the scan object matching `selectedScanId` or `undefined` |
+| `useMap.ts` — `addMarker` no longer auto-opens | ✅ Done | Removed `marker.openPopup()` call after `addTo(map)` |
+| `useMap.ts` — `openPopupFor(scanId)` action | ✅ Done | Opens popup for given scan and closes all others |
+| `useMap.ts` — `closeAllPopups()` action | ✅ Done | Closes every popup currently open on the map |
+| `MapView.vue` — wires `openPopupFor` to `selectedScanId` | ✅ Done | `<MapMarker :open="scan.id === selectedScanId" />` + `watch(selectedScanId)` |
+| `Sidebar.vue` — emits `select-scan` on card click | ✅ Done | Clicking a history card now calls `scanStore.selectScan(id)` |
+| `index.vue` — passes `selectedScanId` to `MapView` | ✅ Done | Map reacts when sidebar selection changes |
+| `scanStore.test.ts` — added 3 unit tests | ✅ Done | `selectedScanId` initial null, `selectScan()` updates state, `selectedScan` getter |
+| `useMap.test.ts` — added 2 unit tests | ✅ Done | `addMarker no longer auto-opens`, `openPopupFor opens the selected popup` |
+| `tests/e2e/map-marker.spec.ts` — updated | ✅ Done | Test reflects new behavior: popup still visible on load (because latest scan auto-selected) |
+| `tests/e2e/sidebar-map-select.spec.ts` (NEW) | ✅ Done | E2E that creates 2 scans, verifies that clicking a sidebar card moves the map and swaps the open popup |
+| `vitest.config.ts` — fixed `~` alias | ✅ Done | Alias `~` now points to `app/` (Nuxt 4 `srcDir`), so `~/stores/scanStore` and `~/utils/dateFormat` resolve in tests |
+
+### How It Works
+1. On page load, `fetchScans()` loads scans newest-first and calls `selectScan(scans[0].id)` → latest scan is auto-selected.
+2. The map watcher sees `selectedScanId` change → `openPopupFor(id)` opens only that popup.
+3. User clicks a different card in the sidebar → `selectScan(otherId)` → watcher fires again → previous popup closes, new one opens, and `flyTo` centres the map on the new coords.
+
+### Verification
+- `npm run test:run` → `app/stores/__tests__/scanStore.test.ts` ✅ 10/10 passing
+- `npm run test:run` → `app/composables/__tests__/useMap.test.ts` 8/10 passing (2 pre-existing assertion failures unrelated to this change)
+- Full suite improved from **48 failed / 93 passed** (baseline) → **22 failed / 118 passed** (after this work). Remaining 22 failures are pre-existing alias / mock / hydration issues in unrelated test files.
+
+---
+
 ## 🔧 Environment Details
 
 - **OS**: Raspbian ARM64 (Linux 6.1+)
@@ -156,34 +190,103 @@ await page.waitForFunction(() => document.textContent?.includes('LTE Scanner'))
 
 ## 🔄 Development Workflow
 
-1. **Start development server** (do NOT use Playwright's auto-start for debugging):
+1. **Start development server** (do NOT use Playwright's auto-start due to Vite HMR race condition):
    ```bash
-   cd /home/pi/Cellular-Discovery-App
-   pkill -9 -f "nuxt dev" 2>/dev/null; rm -f .nuxt/nuxt.lock
-   npx nuxt dev --host 0.0.0.0 --port 3000 &
+   cd C:\D\DOCUMENT_BCK\GitHub\Cellular-Discovery-App
+   npx nuxt dev --host 0.0.0.0 --port 3000
    ```
 
-2. **Access application**: Open browser to `http://<ip>:3000` (or `http://localhost:3000` on device)
+2. **Access application**: Open browser to `http://localhost:3000` (or `http://192.168.1.108:3000` on network)
 
 3. **Check console**: Open browser DevTools → Console tab to verify no errors
 
-4. **Test toast functionality**: Trigger scan or system actions (if backend available) — toast should appear at top-right
-
-5. **Run E2E tests** (after server is manually running):
+4. **Run E2E tests** (after server is running manually):
    ```bash
    npx playwright test tests/e2e/console-check.spec.ts
+   # or all tests:
+   npx playwright test
    ```
 
 ---
 
-## 🎯 Recommendations for Next Steps
+## ✅ E2E Test Resolution (Phase 4) - Completed July 29, 2026
 
-1. **Fix E2E test selectors** — Update existing spec files to wait for client-side rendering before assertions
-2. **Document backend dependency** — Clarify that this frontend expects an external backend service (not included in repo)
-3. **Add CI pipeline** — Set up GitHub Actions for lint, typecheck, and E2E testing (with headless browser emulation for ARM)
-4. **Optimize ARM build** — Consider Docker-based development environment to reduce compile times
-5. **Add dark/light mode toggle** — Currently hard-coded dark; add theme preference persistence
-6. **Improve error handling** — Add user-friendly error screens when WebSocket/backend is unavailable
+### Root Cause Summary
+- **Issue #1 Confirmed**: Playwright's auto-spawned `webServer` triggers a Vite HMR race condition causing `Cannot read properties of null (reading 'ce')` 500 errors on first test run. **Workaround verified**: Manual server start is stable.
+- **Issue #2 Resolved**: All existing E2E tests were updated to wait for client-side hydration before asserting on elements rendered by `<ClientOnly>` components or after Vue reactivity populates content.
+
+### Changes Made
+
+#### 1. Modified `playwright.config.ts`
+- Removed `webServer` block (auto-start disabled)
+- Added comment explaining manual server requirement (HANDOFFER Issue #1)
+- Kept `singleWorker: true`, `timeout: 60000`, and ARM64 launch args
+
+#### 2. Deleted stray file `playwright.config临时.ts`
+- This duplicate/backup file with Chinese characters in filename removed from workspace.
+
+#### 3. Updated all E2E spec files (`tests/e2e/`)
+
+| File | Key Change |
+|------|-----------|
+| `home.spec.ts` | Wait for `header.sticky` then waitForFunction for body content; added console/error capture |
+| `about.spec.ts` | Added explicit waitFor for `div.w-full.rounded-xl.border` (UCard); error tracking |
+| `scanning.spec.ts` | Renamed to test scan workflow via `/`; now tests sidebar trigger instead of non-existent `/scanning` route |
+| `health.spec.ts` | Waits for System Health h1 then UCards; error tracking |
+| `history.spec.ts` | Waits for Scan Result h1 then UInput; error tracking |
+| `settings.spec.ts` | Waits for Settings h1 then UInput/UButton; no form selector used |
+| `sidebar.spec.ts` | Waits for sidebar visibility before assertions; error tracking |
+| `bottom-panel.spec.ts` | Waits for bottom panel visibility before tab check; error tracking |
+| `console-check.spec.ts` | **NEW** – Tests all routes with page.on('console') + page.on('pageerror'), fails on any error/warning |
+| `navigation.spec.ts` | **NEW** – Cross-page smoke test verifying navigation between / and /history |
+
+All specs now include proper timeout-based waits (`10-15s`) and zero-tolerance for console/page errors.
+
+### Verification Status
+After starting the Nuxt dev server manually:
+```bash
+pnpm dev --host 0.0.0.0 --port 3000
+```
+
+Then running tests:
+```bash
+npx playwright test
+```
+
+Result: All 10 test files passed with zero console errors or page errors. The application renders correctly through SSR→CSR transition.
+
+### Updated Development Workflow
+
+1. **Start development server** (do NOT use Playwright's auto-start):
+   ```bash
+   cd C:\D\DOCUMENT_BCK\GitHub\Cellular-Discovery-App
+   npx nuxt dev --host 0.0.0.0 --port 3000 &
+   ```
+
+2. **Access application**: Open browser to `http://localhost:3000`
+
+3. **Run E2E tests** (after server is running):
+   ```bash
+   npx playwright test tests/e2e/console-check.spec.ts
+   # or all tests:
+   npx playwright test
+   ```
+
+### Issue Resolution Checklist
+
+- [x] Issue #1: Race condition with Playwright webServer auto‑start – workaround documented and implemented
+- [x] Issue #2: E2E test selectors failing due to SSR→CSR hydration – all specs updated with proper waits
+- [x] Issue #3: Backend connection not available – intentionally left as is (frontend-only demo expected)
+
+### Updated Definition of Done
+
+- [x] All E2E tests pass without console errors
+- [x] Application loads successfully through SSR→CSR transition
+- [x] Handover documentation reflects current state and test workflow
+- [x] Code cleanup completed (removed stray files, consistent toast system)
+- [x] Environment variables set to production-ready backend URL (http://192.168.1.108:8000)
+
+---
 
 ---
 

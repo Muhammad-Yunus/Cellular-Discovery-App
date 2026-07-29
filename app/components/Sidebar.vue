@@ -9,18 +9,12 @@ const uiStore = useUiStore()
 
 const searchTerm = ref('')
 const selectedRat = ref('ALL')
-const operatorFilter = ref('')
 
 const filteredScans = computed(() => {
   let list = scanStore.scans
 
   if (selectedRat.value !== 'ALL') {
     list = list.filter(s => s.rat === selectedRat.value)
-  }
-
-  if (operatorFilter.value) {
-    const q = operatorFilter.value.toLowerCase()
-    list = list.filter(s => s.operator?.toLowerCase().includes(q))
   }
 
   return list
@@ -37,7 +31,6 @@ function handleSelectScan(id: string) {
 
 function resetFilters() {
   selectedRat.value = 'ALL'
-  operatorFilter.value = ''
 }
 
 const isLoading = computed(() => scanStore.loading)
@@ -72,9 +65,7 @@ const isOpen = computed(() => uiStore.sidebarOpen)
 
       <FilterPanel
         :selected-rat="selectedRat"
-        :operator-filter="operatorFilter"
         @update:selected-rat="selectedRat = $event"
-        @update:operator-filter="operatorFilter = $event"
         @reset="resetFilters"
       />
     </div>

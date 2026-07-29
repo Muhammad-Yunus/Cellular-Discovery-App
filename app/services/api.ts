@@ -1,18 +1,39 @@
-let _baseURL = 'http://localhost:8000/api/v1'
+// Module-level override (set via setApiBaseURL). Falls back to runtime config apiBase,
+// which resolves from NUXT_PUBLIC_API_BASE at build/dev time. NEVER hardcode localhost
+// here — that breaks remote backends configured via env vars.
+let _baseURLOverride: string | null = null
 
 export function setApiBaseURL(url: string) {
-  _baseURL = url
+  _baseURLOverride = url
 }
 
 export function getBaseURL(): string {
-  return _baseURL
+  if (_baseURLOverride) return _baseURLOverride
+  try {
+    const config = useRuntimeConfig()
+    return config.public.apiBase as string
+  } catch {
+    // Outside Nuxt context (e.g. unit tests)
+    return 'http://localhost:8000/api/v1'
+  }
+}
+
+function resolveBaseURL(): string {
+  if (_baseURLOverride) return _baseURLOverride
+  try {
+    const config = useRuntimeConfig()
+    return config.public.apiBase as string
+  } catch {
+    return 'http://localhost:8000/api/v1'
+  }
 }
 
 export async function apiRequest<T>(
   endpoint: string,
   options?: RequestInit & { params?: Record<string, string | number | undefined> }
 ): Promise<T> {
-  const url = new URL(`${_baseURL}${endpoint}`)
+  const baseURL = resolveBaseURL()
+  const url = new URL(`${baseURL}${endpoint}`)
 
   if (options?.params) {
     Object.entries(options.params).forEach(([key, value]) => {

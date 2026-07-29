@@ -16,9 +16,11 @@ const props = withDefaults(defineProps<{
   markers?: ScanSummary[]
   center?: [number, number]
   zoom?: number
+  selectedScanId?: string | null
 }>(), {
   markers: () => [],
-  zoom: 17
+  zoom: 17,
+  selectedScanId: null
 })
 
 const emit = defineEmits<{
@@ -42,10 +44,19 @@ function getCenter(): [number, number] {
   ]
 }
 
+function syncSelectedPopup() {
+  if (!props.selectedScanId) {
+    mapActions.closeAllPopups()
+    return
+  }
+  mapActions.openPopupFor(props.selectedScanId)
+}
+
 onMounted(() => {
   if (!mapContainer.value) return
   mapActions.initMap(mapId, getCenter(), props.zoom)
   props.markers.forEach(m => mapActions.addMarker(m))
+  syncSelectedPopup()
 
   mapActions.getMap()?.on('click', (e: { latlng: { lat: number, lng: number } }) => {
     emit('click', e.latlng)
@@ -55,7 +66,12 @@ onMounted(() => {
 watch(() => props.markers, (markers) => {
   mapActions.clearMarkers()
   markers.forEach(m => mapActions.addMarker(m))
+  syncSelectedPopup()
 }, { deep: true })
+
+watch(() => props.selectedScanId, () => {
+  syncSelectedPopup()
+})
 
 onUnmounted(() => {
   mapActions.destroy()

@@ -16,7 +16,10 @@ const mockMarker = {
   bindPopup: vi.fn(() => mockMarker),
   setLatLng: vi.fn(),
   remove: vi.fn(),
-  on: vi.fn()
+  on: vi.fn(),
+  openPopup: vi.fn(),
+  closePopup: vi.fn(),
+  isPopupOpen: vi.fn(() => false)
 }
 
 vi.stubGlobal('L', {
@@ -26,6 +29,10 @@ vi.stubGlobal('L', {
   })),
   marker: vi.fn(() => mockMarker),
   icon: vi.fn(() => ({ options: {} })),
+  divIcon: vi.fn(() => ({ options: {} })),
+  control: {
+    zoom: vi.fn(() => ({ addTo: vi.fn() }))
+  },
   DomEvent: { on: vi.fn(), off: vi.fn() }
 })
 
@@ -125,5 +132,48 @@ describe('useMap', () => {
     result.destroy()
 
     expect(mockMap.remove).toHaveBeenCalled()
+  })
+
+  it('addMarker no longer auto-opens the popup', async () => {
+    const { useMap } = await import('../useMap')
+    const result = useMap()
+    result.initMap('map', [0, 0], 10)
+
+    result.addMarker({ id: '1', operator: 'A', mcc: '1', mnc: '1', rat: 'LTE', latitude: 0, longitude: 0, scan_time: '' })
+
+    expect(mockMarker.openPopup).not.toHaveBeenCalled()
+  })
+
+  it('openPopupFor opens the popup for the selected scan and closes the others', async () => {
+    const { useMap } = await import('../useMap')
+    const result = useMap()
+    result.initMap('map', [0, 0], 10)
+
+    result.addMarker({ id: '1', operator: 'A', mcc: '1', mnc: '1', rat: 'LTE', latitude: 0, longitude: 0, scan_time: '' })
+    result.addMarker({ id: '2', operator: 'B', mcc: '2', mnc: '2', rat: 'NR', latitude: 0, longitude: 0, scan_time: '' })
+
+    mockMarker.openPopup.mockClear()
+    mockMarker.closePopup.mockClear()
+
+    result.openPopupFor('2')
+
+    expect(mockMarker.openPopup).toHaveBeenCalledTimes(1)
+  })
+
+  it('closeAllPopups closes every open popup', async () => {
+    const { useMap } = await import('../useMap')
+    const result = useMap()
+    result.initMap('map', [0, 0], 10)
+
+    result.addMarker({ id: '1', operator: 'A', mcc: '1', mnc: '1', rat: 'LTE', latitude: 0, longitude: 0, scan_time: '' })
+    result.addMarker({ id: '2', operator: 'B', mcc: '2', mnc: '2', rat: 'NR', latitude: 0, longitude: 0, scan_time: '' })
+
+    mockMarker.closePopup.mockClear()
+
+    result.closeAllPopups()
+
+    // closePopup should not be called if no marker reports an open popup
+    // (default mock returns false from isPopupOpen).
+    expect(mockMarker.closePopup).not.toHaveBeenCalled()
   })
 })

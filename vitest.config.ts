@@ -1,6 +1,8 @@
 import { defineVitestConfig } from '@nuxt/test-utils/config'
 import { resolve } from 'path'
 
+const APP_DIR = resolve(__dirname, 'app')
+
 export default defineVitestConfig({
   test: {
     environment: 'jsdom',
@@ -17,8 +19,16 @@ export default defineVitestConfig({
   },
   resolve: {
     alias: {
-      '~': resolve(__dirname),
-      '@': resolve(__dirname)
+      '~': APP_DIR,
+      '@': APP_DIR,
+      '~/stores': resolve(APP_DIR, 'stores'),
+      '~/utils': resolve(APP_DIR, 'utils'),
+      '~/composables': resolve(APP_DIR, 'composables'),
+      '~/components': resolve(APP_DIR, 'components'),
+      '~/pages': resolve(APP_DIR, 'pages'),
+      '~/layouts': resolve(APP_DIR, 'layouts'),
+      '~/types': resolve(APP_DIR, 'types'),
+      '~/services': resolve(APP_DIR, 'services')
     }
   }
 })

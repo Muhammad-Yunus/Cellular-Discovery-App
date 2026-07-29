@@ -50,6 +50,16 @@ export const useScanStore = defineStore('scan', {
         this.scans = result.items
         this.pagination.totalItems = result.total
         this.pagination.totalPages = Math.ceil(result.total / this.pagination.limit)
+        // Default selection: pick the latest scan by id timestamp (scans
+        // are returned newest-first by the backend). If the previously
+        // selected scan is still in the list, keep it; otherwise pick the
+        // first one (latest scan history).
+        const stillExists = this.selectedScanId
+          ? this.scans.some(s => s.id === this.selectedScanId)
+          : false
+        if (!stillExists) {
+          this.selectedScanId = this.scans[0]?.id ?? null
+        }
       } catch (e) {
         const { parseApiError } = await import('~/types/api')
         const appError = parseApiError(e)

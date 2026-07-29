@@ -1,17 +1,14 @@
 <script setup lang="ts">
-const RAT_OPTIONS = ['ALL', 'LTE', 'NR', 'GSM', 'UMTS', 'CDMA'] as const
+const RAT_OPTIONS = ['ALL', 'LTE', 'UMTS', 'GSM'] as const
 
 withDefaults(defineProps<{
   selectedRat?: string
-  operatorFilter?: string
 }>(), {
-  selectedRat: 'ALL',
-  operatorFilter: ''
+  selectedRat: 'ALL'
 })
 
 const emit = defineEmits<{
   'update:selectedRat': [value: string]
-  'update:operatorFilter': [value: string]
   'reset': []
 }>()
 
@@ -26,7 +23,7 @@ function clearFilters() {
 
 <template>
   <div class="space-y-2">
-    <div class="flex flex-wrap gap-1">
+    <div class="flex flex-wrap gap-1.5">
       <UButton
         v-for="rat in RAT_OPTIONS"
         :key="rat"
@@ -34,21 +31,14 @@ function clearFilters() {
         size="2xs"
         :color="selectedRat === rat ? 'primary' : 'neutral'"
         :variant="selectedRat === rat ? 'solid' : 'ghost'"
+        class="px-3"
         @click="selectRat(rat)"
       />
     </div>
 
     <div class="flex items-center gap-1">
-      <UInput
-        :model-value="operatorFilter"
-        placeholder="Filter operator..."
-        leading-icon="i-lucide-filter"
-        size="xs"
-        class="flex-1"
-        @update:model-value="$emit('update:operatorFilter', $event)"
-      />
       <UButton
-        v-if="selectedRat !== 'ALL' || operatorFilter"
+        v-if="selectedRat !== 'ALL'"
         color="neutral"
         variant="ghost"
         size="2xs"

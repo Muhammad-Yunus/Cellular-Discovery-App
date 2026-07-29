@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 type ToastColor = 'success' | 'error' | 'info' | 'warning'
 

@@ -9,9 +9,9 @@ const isOpen = computed(() => uiStore.bottomPanelOpen)
 const activeTab = computed(() => uiStore.activeInfoTab)
 
 const tabItems = [
-  { label: 'Signal', icon: 'i-lucide-radio', slot: 'signal' as const },
-  { label: 'GPS', icon: 'i-lucide-satellite', slot: 'gps' as const },
-  { label: 'System', icon: 'i-lucide-monitor', slot: 'system' as const }
+  { label: 'Signal', icon: 'lucide:radio', value: 'signal', slot: 'signal' as const },
+  { label: 'GPS', icon: 'lucide:satellite', value: 'gps', slot: 'gps' as const },
+  { label: 'System', icon: 'lucide:monitor', value: 'system', slot: 'system' as const }
 ]
 
 function onTabChange(tab: string) {
@@ -23,12 +23,13 @@ function onTabChange(tab: string) {
   <Transition name="panel">
     <div
       v-if="isOpen"
-      class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-[800px] rounded-xl border border-muted bg-black/70 backdrop-blur-md overflow-hidden"
+      class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[1100] w-[90%] max-w-[800px] rounded-xl border border-muted bg-black/70 backdrop-blur-md overflow-hidden shadow-lg"
     >
       <div class="flex items-center justify-between border-b border-muted px-3">
         <UTabs
           :items="tabItems"
           :model-value="activeTab"
+          :unmount-on-hide="false"
           size="sm"
           class="-mb-px"
           @update:model-value="onTabChange"
