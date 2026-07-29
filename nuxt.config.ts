@@ -22,6 +22,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1',
+      healthBase: process.env.NUXT_PUBLIC_HEALTH_BASE || 'http://localhost:8000',
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'Cellular Discovery',
       defaultLat: process.env.NUXT_PUBLIC_DEFAULT_LAT || '-6.150676643667096',
       defaultLon: process.env.NUXT_PUBLIC_DEFAULT_LON || '106.89665223346297'

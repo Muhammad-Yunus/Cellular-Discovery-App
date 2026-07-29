@@ -28,6 +28,55 @@ function resolveBaseURL(): string {
   }
 }
 
+/**
+ * Resolve the base URL for the health endpoint. Health is intentionally
+ * separate from the main apiBase: the main API lives under a versioned
+ * prefix (e.g. /api/v1) configured via NUXT_PUBLIC_API_BASE, while the
+ * health probe may live at the root path (e.g. /health) configured via
+ * NUXT_PUBLIC_HEALTH_BASE. Falls back to apiBase when healthBase is
+ * not set, so existing deployments keep working.
+ */
+export function resolveHealthBaseURL(): string {
+  try {
+    const config = useRuntimeConfig()
+    const healthBase = config.public.healthBase as string | undefined
+    if (healthBase) return healthBase
+    return resolveBaseURL()
+  } catch {
+    return 'http://localhost:8000'
+  }
+}
+
+export async function healthRequest<T>(
+  endpoint: string,
+  options?: RequestInit & { params?: Record<string, string | number | undefined> }
+): Promise<T> {
+  const baseURL = resolveHealthBaseURL()
+  const url = new URL(`${baseURL}${endpoint}`)
+
+  if (options?.params) {
+    Object.entries(options.params).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') {
+        url.searchParams.set(key, String(value))
+      }
+    })
+  }
+
+  const headers: Record<string, string> = {
+    ...(options?.headers as Record<string, string>),
+    'Content-Type': 'application/json'
+  }
+
+  const { params: _, ...fetchOptions } = options ?? {}
+  const response = await $fetch(url.toString(), {
+    ...fetchOptions,
+    headers,
+    retry: false
+  })
+
+  return response as T
+}
+
 export async function apiRequest<T>(
   endpoint: string,
   options?: RequestInit & { params?: Record<string, string | number | undefined> }
