@@ -35,16 +35,11 @@ function handleSelectScan(id: string) {
   scanStore.selectScan(id)
 }
 
-async function handleNewScan() {
-  await scanStore.createScan()
-}
-
 function resetFilters() {
   selectedRat.value = 'ALL'
   operatorFilter.value = ''
 }
 
-const isCreating = computed(() => scanStore.creating)
 const isLoading = computed(() => scanStore.loading)
 const isOpen = computed(() => uiStore.sidebarOpen)
 </script>
@@ -52,7 +47,7 @@ const isOpen = computed(() => uiStore.sidebarOpen)
 <template>
   <aside
     v-if="isOpen"
-    class="fixed left-4 top-20 z-40 w-[300px] max-h-[calc(100vh-5rem)] flex flex-col overflow-hidden rounded-xl border border-muted bg-black/70 backdrop-blur-md"
+    class="fixed left-4 top-20 bottom-4 z-[1100] w-[300px] flex flex-col overflow-hidden rounded-xl border border-muted bg-black/70 backdrop-blur-md shadow-lg"
   >
     <div class="flex items-center justify-between border-b border-muted px-3 py-2">
       <h2 class="text-sm font-semibold text-default">
@@ -81,17 +76,6 @@ const isOpen = computed(() => uiStore.sidebarOpen)
         @update:selected-rat="selectedRat = $event"
         @update:operator-filter="operatorFilter = $event"
         @reset="resetFilters"
-      />
-
-      <UButton
-        label="Get LTE Signal"
-        icon="i-lucide-antenna"
-        color="primary"
-        size="sm"
-        :loading="isCreating"
-        :disabled="isCreating"
-        class="w-full"
-        @click="handleNewScan"
       />
     </div>
 

@@ -21,20 +21,19 @@ function formatTime(iso: string): string {
 </script>
 
 <template>
-  <UCard
+  <div
     :class="[
-      'cursor-pointer transition-colors',
+      'cursor-pointer transition-colors rounded-md border px-2.5 py-1.5',
       selected ? 'border-primary bg-primary/10' : 'border-muted hover:bg-elevated'
     ]"
-    size="xs"
     @click="emit('select', scan.id)"
   >
     <div class="flex items-center justify-between gap-2">
       <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium text-default truncate">
+        <p class="text-sm font-medium text-default truncate leading-tight">
           {{ scan.operator || 'Unknown Operator' }}
         </p>
-        <p class="text-xs text-muted">
+        <p class="text-xs text-muted leading-tight">
           MCC: {{ scan.mcc }} / MNC: {{ scan.mnc }}
         </p>
       </div>
@@ -45,8 +44,8 @@ function formatTime(iso: string): string {
         variant="subtle"
       />
     </div>
-    <p class="mt-1 text-xs text-muted">
+    <p class="mt-0.5 text-xs text-muted leading-tight">
       {{ formatTime(scan.scan_time) }}
     </p>
-  </UCard>
+  </div>
 </template>

@@ -2,9 +2,10 @@
   <div
     :id="mapId"
     ref="mapContainer"
-    class="w-full h-full"
+    class="w-full h-full bg-neutral-900"
   >
     <slot />
+    <FloatingScanButton />
   </div>
 </template>
 
