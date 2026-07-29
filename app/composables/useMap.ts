@@ -3,6 +3,16 @@ import type { InjectionKey } from 'vue'
 import type { ScanSummary } from '~/types'
 import { formatDateTime, formatRelativeTime } from '~/utils/dateFormat'
 
+/**
+ * Format a value for display in the marker popup. Returns a non-breaking
+ * hyphen ('-') when the value is null, undefined, or an empty string so
+ * the popup never renders the literal string "undefined" or "null".
+ */
+function fmt(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '\u2011' // non-breaking hyphen
+  return String(value)
+}
+
 export interface MapActions {
   initMap: (containerId: string, center: [number, number], zoom: number) => void
   addMarker: (scan: ScanSummary) => Marker | null
@@ -136,16 +146,16 @@ export function useMap(): MapActions {
             <circle cx="12" cy="9" r="2"></circle>
             <path d="M16.2 4.8c2 2 2.26 5.11.8 7.47M19.1 1.9a9.96 9.96 0 0 1 0 14.1m-9.6 2h5M8 22l4-11l4 11"></path>
           </svg>
-          <strong>${scan.operator || 'Unknown'}</strong>
+          <strong>${fmt(scan.operator) === '\u2011' ? 'Unknown' : fmt(scan.operator)}</strong>
         </div>
-        <div class="signal-popup-row"><span>MCC</span><span>${scan.mcc}</span></div>
-        <div class="signal-popup-row"><span>MNC</span><span>${scan.mnc}</span></div>
-        <div class="signal-popup-row"><span>RAT</span><span>${scan.rat}</span></div>
+        <div class="signal-popup-row"><span>MCC</span><span>${fmt(scan.mcc)}</span></div>
+        <div class="signal-popup-row"><span>MNC</span><span>${fmt(scan.mnc)}</span></div>
+        <div class="signal-popup-row"><span>RAT</span><span>${fmt(scan.rat)}</span></div>
         <div class="signal-popup-row signal-popup-time">
           <span>Time</span>
           <span class="signal-popup-time-block">
-            <span class="signal-popup-time-absolute">${formattedDate}</span>
-            <span class="signal-popup-time-relative" data-iso="${scan.scan_time}">${relativeDate}</span>
+            <span class="signal-popup-time-absolute">${fmt(formattedDate)}</span>
+            <span class="signal-popup-time-relative" data-iso="${scan.scan_time}">${fmt(relativeDate)}</span>
           </span>
         </div>
       </div>
