@@ -12,7 +12,10 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: {
         class: 'dark'
-      }
+      },
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
+      ]
     }
   },
   css: ['~/assets/css/main.css', 'leaflet/dist/leaflet.css'],
