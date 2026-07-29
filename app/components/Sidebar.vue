@@ -46,14 +46,6 @@ const isOpen = computed(() => uiStore.sidebarOpen)
       <h2 class="text-sm font-semibold text-default">
         Scan History
       </h2>
-      <UButton
-        color="neutral"
-        variant="ghost"
-        size="2xs"
-        icon="i-lucide-panel-left-close"
-        title="Toggle sidebar"
-        @click="uiStore.toggleSidebar()"
-      />
     </div>
 
     <div class="flex flex-col gap-2 overflow-hidden p-3">

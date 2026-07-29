@@ -44,15 +44,6 @@ function onTabChange(tab: string) {
             <SystemPanel />
           </template>
         </UTabs>
-
-        <UButton
-          color="neutral"
-          variant="ghost"
-          size="2xs"
-          icon="i-lucide-chevron-down"
-          title="Close panel"
-          @click="uiStore.toggleBottomPanel()"
-        />
       </div>
     </div>
   </Transition>

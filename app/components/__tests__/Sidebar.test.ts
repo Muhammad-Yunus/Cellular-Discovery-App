@@ -142,15 +142,6 @@ describe('Sidebar', () => {
     expect(wrapper.find('aside').exists()).toBe(false)
   })
 
-  it('toggles sidebar on close button click', async () => {
-    currentUiStore.toggleSidebar = vi.fn()
-    const Sidebar = await import('../Sidebar.vue')
-    const wrapper = mountWithStubs(Sidebar.default)
-    const closeBtn = wrapper.find('[title="Toggle sidebar"]')
-    await closeBtn.trigger('click')
-    expect(currentUiStore.toggleSidebar).toHaveBeenCalled()
-  })
-
   it('renders Scan History title', async () => {
     const Sidebar = await import('../Sidebar.vue')
     const wrapper = mountWithStubs(Sidebar.default)

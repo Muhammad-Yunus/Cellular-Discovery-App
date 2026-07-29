@@ -134,14 +134,6 @@ describe('BottomPanel', () => {
     expect(wrapper.find('[data-testid="system-panel"]').exists()).toBe(true)
   })
 
-  it('toggles panel on close button click', async () => {
-    const BottomPanel = await import('../BottomPanel.vue')
-    const wrapper = mountWithStubs(BottomPanel.default)
-    const closeBtn = wrapper.find('[title="Close panel"]')
-    await closeBtn.trigger('click')
-    expect(mockUiStore.toggleBottomPanel).toHaveBeenCalled()
-  })
-
   it('sets active tab on tab change', async () => {
     const BottomPanel = await import('../BottomPanel.vue')
     mountWithStubs(BottomPanel.default)
