@@ -96,14 +96,14 @@ withDefaults(defineProps<{
   max-width: 360px;
   padding: 1.6rem 1.8rem 1.4rem;
 
-  background: linear-gradient(135deg, rgba(30, 27, 75, 0.96), rgba(49, 46, 129, 0.94));
+  background: linear-gradient(135deg, rgba(8, 47, 73, 0.96), rgba(12, 74, 110, 0.94));
   color: #fafafa;
 
-  border: 1px solid rgba(165, 180, 252, 0.35);
+  border: 1px solid rgba(125, 211, 252, 0.35);
   border-radius: 16px;
   box-shadow:
     0 22px 50px -10px rgba(0, 0, 0, 0.55),
-    0 6px 16px -2px rgba(30, 27, 75, 0.4),
+    0 6px 16px -2px rgba(8, 47, 73, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 
   animation: loading-overlay-card-in 0.3s ease-out;
@@ -136,23 +136,23 @@ withDefaults(defineProps<{
   width: 52px;
   height: 52px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, rgb(99, 102, 241), rgb(139, 92, 246));
+  background: linear-gradient(135deg, rgb(14, 165, 233), rgb(56, 189, 248));
   color: #fafafa;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 22px rgba(129, 140, 248, 0.75);
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.75);
   animation: loading-overlay-core-pulse 1.6s ease-in-out infinite;
 }
 
 @keyframes loading-overlay-core-pulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 16px rgba(129, 140, 248, 0.6);
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.6);
   }
   50% {
     transform: scale(1.08);
-    box-shadow: 0 0 28px rgba(129, 140, 248, 0.95);
+    box-shadow: 0 0 28px rgba(56, 189, 248, 0.95);
   }
 }
 
@@ -160,7 +160,7 @@ withDefaults(defineProps<{
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  border: 2px solid rgba(165, 180, 252, 0.55);
+  border: 2px solid rgba(125, 211, 252, 0.55);
   pointer-events: none;
   animation: loading-overlay-ring 2s ease-out infinite;
   opacity: 0;
@@ -227,7 +227,7 @@ withDefaults(defineProps<{
   margin: 0;
   font-size: 0.825rem;
   font-weight: 400;
-  color: rgba(199, 210, 254, 0.85);
+  color: rgba(186, 230, 253, 0.85);
   line-height: 1.4;
   text-align: center;
 }
@@ -244,7 +244,7 @@ withDefaults(defineProps<{
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background: rgba(165, 180, 252, 0.4);
+  background: rgba(125, 211, 252, 0.4);
   animation: loading-overlay-dot 1.2s ease-in-out infinite;
 }
 
@@ -255,12 +255,12 @@ withDefaults(defineProps<{
   0%, 100% {
     opacity: 0.35;
     transform: scale(0.85);
-    background: rgba(165, 180, 252, 0.4);
+    background: rgba(125, 211, 252, 0.4);
   }
   50% {
     opacity: 1;
     transform: scale(1.15);
-    background: rgb(165, 180, 252);
+    background: rgb(125, 211, 252);
   }
 }
 </style>

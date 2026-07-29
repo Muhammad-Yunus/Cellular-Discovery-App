@@ -9,18 +9,12 @@ const uiStore = useUiStore()
 
 const searchTerm = ref('')
 const selectedRat = ref('ALL')
-const operatorFilter = ref('')
 
 const filteredScans = computed(() => {
   let list = scanStore.scans
 
   if (selectedRat.value !== 'ALL') {
     list = list.filter(s => s.rat === selectedRat.value)
-  }
-
-  if (operatorFilter.value) {
-    const q = operatorFilter.value.toLowerCase()
-    list = list.filter(s => s.operator?.toLowerCase().includes(q))
   }
 
   return list
@@ -33,11 +27,6 @@ function handleSearch(val: string) {
 
 function handleSelectScan(id: string) {
   scanStore.selectScan(id)
-}
-
-function resetFilters() {
-  selectedRat.value = 'ALL'
-  operatorFilter.value = ''
 }
 
 const isLoading = computed(() => scanStore.loading)
@@ -53,14 +42,6 @@ const isOpen = computed(() => uiStore.sidebarOpen)
       <h2 class="text-sm font-semibold text-default">
         Scan History
       </h2>
-      <UButton
-        color="neutral"
-        variant="ghost"
-        size="2xs"
-        icon="i-lucide-panel-left-close"
-        title="Toggle sidebar"
-        @click="uiStore.toggleSidebar()"
-      />
     </div>
 
     <div class="flex flex-col gap-2 overflow-hidden p-3">
@@ -72,10 +53,7 @@ const isOpen = computed(() => uiStore.sidebarOpen)
 
       <FilterPanel
         :selected-rat="selectedRat"
-        :operator-filter="operatorFilter"
         @update:selected-rat="selectedRat = $event"
-        @update:operator-filter="operatorFilter = $event"
-        @reset="resetFilters"
       />
     </div>
 

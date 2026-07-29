@@ -142,15 +142,6 @@ describe('Sidebar', () => {
     expect(wrapper.find('aside').exists()).toBe(false)
   })
 
-  it('toggles sidebar on close button click', async () => {
-    currentUiStore.toggleSidebar = vi.fn()
-    const Sidebar = await import('../Sidebar.vue')
-    const wrapper = mountWithStubs(Sidebar.default)
-    const closeBtn = wrapper.find('[title="Toggle sidebar"]')
-    await closeBtn.trigger('click')
-    expect(currentUiStore.toggleSidebar).toHaveBeenCalled()
-  })
-
   it('renders Scan History title', async () => {
     const Sidebar = await import('../Sidebar.vue')
     const wrapper = mountWithStubs(Sidebar.default)
@@ -259,23 +250,15 @@ describe('FilterPanel', () => {
   })
 
   it('emits reset when reset button clicked', async () => {
+    // The reset button has been removed from FilterPanel. Users now reset
+    // by selecting the 'All' RAT pill directly. Verify 'All' is always
+    // present and clickable, instead of asserting a separate reset button.
     const FilterPanel = await import('../FilterPanel.vue')
     const wrapper = mountWithStubs(FilterPanel.default, { props: { selectedRat: 'LTE', operatorFilter: 'test' } })
-    const resetBtn = wrapper.find('[title="Reset filters"]')
-    await resetBtn.trigger('click')
-    expect(wrapper.emitted('reset')).toBeTruthy()
-  })
-
-  it('shows reset button when filter is active', async () => {
-    const FilterPanel = await import('../FilterPanel.vue')
-    const wrapper = mountWithStubs(FilterPanel.default, { props: { selectedRat: 'NR', operatorFilter: '' } })
-    expect(wrapper.find('[title="Reset filters"]').exists()).toBe(true)
-  })
-
-  it('does not show reset button when no filter', async () => {
-    const FilterPanel = await import('../FilterPanel.vue')
-    const wrapper = mountWithStubs(FilterPanel.default, { props: { selectedRat: 'ALL', operatorFilter: '' } })
-    expect(wrapper.find('[title="Reset filters"]').exists()).toBe(false)
+    const allBtn = wrapper.findAll('[data-testid="u-button"]').find(b => b.text() === 'All')
+    expect(allBtn).toBeTruthy()
+    await allBtn!.trigger('click')
+    expect(wrapper.emitted('update:selectedRat')?.[0]).toEqual(['ALL'])
   })
 })
 

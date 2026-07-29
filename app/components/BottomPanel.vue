@@ -3,19 +3,27 @@ import { useUiStore } from '~/stores/uiStore'
 
 defineOptions({ name: 'AppBottomPanel' })
 
+type InfoTab = 'signal' | 'gps' | 'system'
+
 const uiStore = useUiStore()
 
 const isOpen = computed(() => uiStore.bottomPanelOpen)
 const activeTab = computed(() => uiStore.activeInfoTab)
 
-const tabItems = [
-  { label: 'Signal', icon: 'i-lucide-radio', slot: 'signal' as const },
-  { label: 'GPS', icon: 'i-lucide-satellite', slot: 'gps' as const },
-  { label: 'System', icon: 'i-lucide-monitor', slot: 'system' as const }
+interface TabDef {
+  label: string
+  icon: string
+  value: InfoTab
+}
+
+const tabItems: TabDef[] = [
+  { label: 'Signal', icon: 'lucide:radio', value: 'signal' },
+  { label: 'GPS', icon: 'lucide:satellite', value: 'gps' },
+  { label: 'System', icon: 'lucide:monitor', value: 'system' }
 ]
 
-function onTabChange(tab: string) {
-  uiStore.setActiveTab(tab as 'signal' | 'gps' | 'system')
+function onTabChange(tab: InfoTab) {
+  uiStore.setActiveTab(tab)
 }
 </script>
 
@@ -23,35 +31,46 @@ function onTabChange(tab: string) {
   <Transition name="panel">
     <div
       v-if="isOpen"
-      class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-[800px] rounded-xl border border-muted bg-black/70 backdrop-blur-md overflow-hidden"
+      class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[1100] w-[90%] max-w-[800px] rounded-xl border border-muted bg-black/70 backdrop-blur-md overflow-hidden shadow-lg flex flex-col"
+      style="height: 220px;"
     >
-      <div class="flex items-center justify-between border-b border-muted px-3">
-        <UTabs
-          :items="tabItems"
-          :model-value="activeTab"
-          size="sm"
-          class="-mb-px"
-          @update:model-value="onTabChange"
+      <!-- Tab header: 40% of the bottom bar width, left-aligned, full-width horizontal divider below -->
+      <div
+        class="border-b border-muted bg-black/40 shrink-0 rounded-t-md"
+      >
+        <div
+          role="tablist"
+          class="flex items-stretch w-[40%]"
         >
-          <template #signal>
-            <SignalPanel />
-          </template>
-          <template #gps>
-            <GPSPanel />
-          </template>
-          <template #system>
-            <SystemPanel />
-          </template>
-        </UTabs>
+          <button
+            v-for="tab in tabItems"
+            :key="tab.value"
+            type="button"
+            role="tab"
+            :aria-selected="activeTab === tab.value"
+            :class="[
+              'flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors',
+              'border-b-2 -mb-px',
+              activeTab === tab.value
+                ? 'text-default border-primary'
+                : 'text-muted border-transparent hover:text-default hover:bg-white/5'
+            ]"
+            @click="onTabChange(tab.value)"
+          >
+            <UIcon
+              :name="tab.icon"
+              class="size-4"
+            />
+            <span>{{ tab.label }}</span>
+          </button>
+        </div>
+      </div>
 
-        <UButton
-          color="neutral"
-          variant="ghost"
-          size="2xs"
-          icon="i-lucide-chevron-down"
-          title="Close panel"
-          @click="uiStore.toggleBottomPanel()"
-        />
+      <!-- Tab content: same fixed height for all tabs -->
+      <div class="flex-1 overflow-y-auto">
+        <SignalPanel v-if="activeTab === 'signal'" />
+        <GPSPanel v-else-if="activeTab === 'gps'" />
+        <SystemPanel v-else-if="activeTab === 'system'" />
       </div>
     </div>
   </Transition>

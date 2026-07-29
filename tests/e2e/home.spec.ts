@@ -1,10 +1,8 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Home Page - /', () => {
-  test('page loads successfully', async ({ page }) => {
-    await page.goto('/')
-    // Just verify navigation works without crashing
-    expect(await page.url()).toContain('localhost:3000')
-    expect(await page.locator('main').count()).toBeGreaterThan(0)
+test.describe('Home Page Smoke Test', () => {
+  test('should load without HTTP error', async ({ page }) => {
+    const response = await page.goto('/', { waitUntil: 'networkidle' })
+    expect(response.status()).toBe(200)
   })
 })

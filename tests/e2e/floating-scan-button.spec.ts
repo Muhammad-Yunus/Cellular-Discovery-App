@@ -1,25 +1,17 @@
 import { expect, test } from '@playwright/test'
 
 /**
- * Verifies the floating "Get LTE Signal" button:
+ * Verifies the floating "Scan Signal" button:
  *  - Positioned bottom-right of the map (above zoom controls)
  *  - Uses the Lucide radio-tower icon
  *  - Pill-shaped with primary gradient background
  *  - Hovering scales slightly; pressing enters loading state with spinner
  *  - Located outside the sidebar (proves the button was moved out)
  */
-test('floating scan button is bottom-right with radio-tower icon', async ({ page }) => {
-  // Generate a scan first so the map has markers and the button is meaningful
+test('floating scan button is bottom-right with radio-tower icon and Scan Signal label', async ({ page }) => {
   await page.goto('/')
-  const newScanBtn = page.getByRole('button', { name: /start lte signal scan/i })
-  if (await newScanBtn.count()) {
-    // ensure not creating before clicking
-    await newScanBtn.click()
-  }
-
-  // Wait for the map to be ready
-  await page.waitForSelector('#map-container, [id^="map-"]', { timeout: 15_000 })
-  await page.waitForTimeout(800)
+  await page.waitForSelector('.floating-scan-btn', { timeout: 15_000 })
+  await page.waitForTimeout(500)
 
   const info = await page.evaluate(() => {
     const btn = document.querySelector('.floating-scan-btn') as HTMLElement | null
@@ -37,14 +29,16 @@ test('floating scan button is bottom-right with radio-tower icon', async ({ page
     const radius = parseFloat(cs.borderTopLeftRadius) || 0
     const bgImage = cs.backgroundImage
 
-    // locate the sidebar aside element (if any)
     const aside = document.querySelector('aside') as HTMLElement | null
     const asideContainsBtn = aside?.contains(btn) || false
 
     return {
       found: true,
       viewport,
-      rect: { top: rect.top, right: rect.right, bottom: rect.bottom, left: rect.left, width: rect.width, height: rect.height },
+      rect: {
+        top: rect.top, right: rect.right, bottom: rect.bottom,
+        left: rect.left, width: rect.width, height: rect.height
+      },
       isBottomRight: rect.right > viewport.w / 2 && rect.bottom > viewport.h / 2,
       hasSvg: !!svg,
       svgViewBox,
@@ -75,8 +69,8 @@ test('floating scan button is bottom-right with radio-tower icon', async ({ page
   expect(info.isPill).toBe(true)
   // Gradient background
   expect(info.hasGradient).toBe(true)
-  // Has visible label
-  expect(info.labelText).toMatch(/LTE|scanning/i)
+  // Has visible label "Scan Signal"
+  expect(info.labelText).toBe('Scan Signal')
   // NOT inside the sidebar anymore
   expect(info.asideContainsBtn).toBe(false)
 })
@@ -107,8 +101,8 @@ test('floating scan button enters loading state on click', async ({ page }) => {
   console.log('Loading state captured:', { isLoading, finalState })
 
   // After click, the button should NOT be in its idle state (label might be
-  // "Scanning…" or it may have already returned to "Get LTE Signal").
-  expect(['Get LTE Signal', 'Scanning…']).toContain(finalState.label)
+  // "Scanning…" or it may have already returned to "Scan Signal").
+  expect(['Scan Signal', 'Scanning…']).toContain(finalState.label)
   expect(typeof finalState.disabled).toBe('boolean')
 
   // After the request settles, button returns to enabled idle state
@@ -127,7 +121,7 @@ test('floating scan button enters loading state on click', async ({ page }) => {
   })
 
   console.log('Settled state:', settled)
-  expect(settled.label).toBe('Get LTE Signal')
+  expect(settled.label).toBe('Scan Signal')
   expect(settled.disabled).toBe(false)
   expect(settled.hasLoadingClass).toBe(false)
 })

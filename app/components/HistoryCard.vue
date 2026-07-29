@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ScanSummary } from '~/types'
+import { formatDateTime } from '~/utils/dateFormat'
 
 defineProps<{
   scan: ScanSummary
@@ -10,13 +11,14 @@ const emit = defineEmits<{
   select: [id: string]
 }>()
 
-function formatTime(iso: string): string {
-  try {
-    const d = new Date(iso)
-    return d.toLocaleString()
-  } catch {
-    return iso
-  }
+/**
+ * Display-safe value for sidebar cards. Returns a non-breaking hyphen
+ * ('-') when the value is null, undefined, or an empty string so the
+ * card never renders the literal string 'undefined' or 'null'.
+ */
+function fmt(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '\u2011'
+  return String(value)
 }
 </script>
 
@@ -34,18 +36,18 @@ function formatTime(iso: string): string {
           {{ scan.operator || 'Unknown Operator' }}
         </p>
         <p class="text-xs text-muted leading-tight">
-          MCC: {{ scan.mcc }} / MNC: {{ scan.mnc }}
+          MCC: {{ fmt(scan.mcc) }} / MNC: {{ fmt(scan.mnc) }}
         </p>
       </div>
       <UBadge
-        :label="scan.rat || 'N/A'"
+        :label="fmt(scan.rat) === '\u2011' ? 'N/A' : fmt(scan.rat)"
         size="xs"
         color="neutral"
         variant="subtle"
       />
     </div>
     <p class="mt-0.5 text-xs text-muted leading-tight">
-      {{ formatTime(scan.scan_time) }}
+      {{ formatDateTime(scan.scan_time) }}
     </p>
   </div>
 </template>

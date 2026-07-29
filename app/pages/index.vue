@@ -30,6 +30,7 @@ watch(() => selectedScanId, flyToScan)
       <MapView
         ref="mapViewRef"
         :markers="scans"
+        :selected-scan-id="selectedScanId"
       />
     </ClientOnly>
 

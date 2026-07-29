@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test('signal marker uses lucide svg and popup open by default', async ({ page }) => {
+test('signal marker uses lucide svg and popup opens for the selected (latest) scan by default', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
   await page.waitForTimeout(5000)
 
@@ -55,6 +55,8 @@ test('signal marker uses lucide svg and popup open by default', async ({ page })
   // lucide radio-tower has 2 <path> elements + 1 <circle>
   // Both marker SVG & navbar SVG must contain the same Lucide path data
   expect(info.svgPathCount).toBe(2)
+  // The popup should exist in the DOM and be visible because the latest
+  // scan is auto-selected on load (`fetchScans()` selects scans[0]).
   expect(info.popupExists).toBe(true)
   expect(info.popupVisible).toBe(true)
   expect(info.popupOpacity).toBeGreaterThan(0)
