@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ScanSummary } from '~/types'
+import { formatDateTime } from '~/utils/dateFormat'
 
 defineProps<{
   scan: ScanSummary
@@ -18,15 +19,6 @@ const emit = defineEmits<{
 function fmt(value: unknown): string {
   if (value === null || value === undefined || value === '') return '\u2011'
   return String(value)
-}
-
-function formatTime(iso: string): string {
-  try {
-    const d = new Date(iso)
-    return d.toLocaleString()
-  } catch {
-    return iso
-  }
 }
 </script>
 
@@ -55,7 +47,7 @@ function formatTime(iso: string): string {
       />
     </div>
     <p class="mt-0.5 text-xs text-muted leading-tight">
-      {{ formatTime(scan.scan_time) }}
+      {{ formatDateTime(scan.scan_time) }}
     </p>
   </div>
 </template>

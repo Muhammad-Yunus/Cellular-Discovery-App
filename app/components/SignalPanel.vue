@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useScanStore } from '~/stores/scanStore'
+import { formatDateTime } from '~/utils/dateFormat'
 
 const scanStore = useScanStore()
 const selectedScan = computed(() => scanStore.selectedScan)
@@ -12,15 +13,6 @@ const selectedScan = computed(() => scanStore.selectedScan)
 function fmt(value: unknown): string {
   if (value === null || value === undefined || value === '') return '\u2011'
   return String(value)
-}
-
-function formatTime(iso: string | undefined): string {
-  if (!iso) return '-'
-  try {
-    return new Date(iso).toLocaleString()
-  } catch {
-    return iso
-  }
 }
 </script>
 
@@ -57,7 +49,7 @@ function formatTime(iso: string | undefined): string {
       <div class="col-span-2">
         <span class="text-muted">Scan Time</span>
         <p class="text-default font-medium">
-          {{ formatTime(selectedScan.scan_time) }}
+          {{ formatDateTime(selectedScan.scan_time) }}
         </p>
       </div>
     </div>
