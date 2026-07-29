@@ -10,6 +10,16 @@ const emit = defineEmits<{
   select: [id: string]
 }>()
 
+/**
+ * Display-safe value for sidebar cards. Returns a non-breaking hyphen
+ * ('-') when the value is null, undefined, or an empty string so the
+ * card never renders the literal string 'undefined' or 'null'.
+ */
+function fmt(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '\u2011'
+  return String(value)
+}
+
 function formatTime(iso: string): string {
   try {
     const d = new Date(iso)
@@ -34,11 +44,11 @@ function formatTime(iso: string): string {
           {{ scan.operator || 'Unknown Operator' }}
         </p>
         <p class="text-xs text-muted leading-tight">
-          MCC: {{ scan.mcc }} / MNC: {{ scan.mnc }}
+          MCC: {{ fmt(scan.mcc) }} / MNC: {{ fmt(scan.mnc) }}
         </p>
       </div>
       <UBadge
-        :label="scan.rat || 'N/A'"
+        :label="fmt(scan.rat) === '\u2011' ? 'N/A' : fmt(scan.rat)"
         size="xs"
         color="neutral"
         variant="subtle"

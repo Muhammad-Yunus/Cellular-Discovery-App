@@ -4,6 +4,16 @@ import { useScanStore } from '~/stores/scanStore'
 const scanStore = useScanStore()
 const selectedScan = computed(() => scanStore.selectedScan)
 
+/**
+ * Display-safe value. Returns a non-breaking hyphen ('-') when the
+ * value is null, undefined, or an empty string so the panel never
+ * renders the literal string 'undefined' or 'null'.
+ */
+function fmt(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '\u2011'
+  return String(value)
+}
+
 function formatTime(iso: string | undefined): string {
   if (!iso) return '-'
   try {
@@ -23,25 +33,25 @@ function formatTime(iso: string | undefined): string {
       <div>
         <span class="text-muted">Operator</span>
         <p class="text-default font-medium">
-          {{ selectedScan.operator || '-' }}
+          {{ fmt(selectedScan.operator) }}
         </p>
       </div>
       <div>
         <span class="text-muted">RAT</span>
         <p class="text-default font-medium">
-          {{ selectedScan.rat || '-' }}
+          {{ fmt(selectedScan.rat) }}
         </p>
       </div>
       <div>
         <span class="text-muted">MCC</span>
         <p class="text-default font-medium">
-          {{ selectedScan.mcc || '-' }}
+          {{ fmt(selectedScan.mcc) }}
         </p>
       </div>
       <div>
         <span class="text-muted">MNC</span>
         <p class="text-default font-medium">
-          {{ selectedScan.mnc || '-' }}
+          {{ fmt(selectedScan.mnc) }}
         </p>
       </div>
       <div class="col-span-2">
