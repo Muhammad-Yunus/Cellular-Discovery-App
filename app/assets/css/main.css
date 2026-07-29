@@ -228,7 +228,7 @@ body {
 
 @keyframes floating-scan-btn-rotate {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
 }
 
 /* Pulsing rings to indicate active scanning / signal */
@@ -259,7 +259,4 @@ body {
     opacity: 0;
   }
 }
-
-/* Bottom panel still occupies bottom-center area — keep floating button
-   above it but at right side so they don't overlap visually. */
 

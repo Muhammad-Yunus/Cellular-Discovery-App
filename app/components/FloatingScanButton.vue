@@ -21,8 +21,8 @@ async function handleScan() {
         isCreating && 'floating-scan-btn--loading'
       ]"
       :disabled="isCreating"
-      :title="isCreating ? 'Scanning…' : 'Get LTE Signal'"
-      :aria-label="isCreating ? 'Scanning in progress' : 'Start LTE signal scan'"
+      :title="isCreating ? 'Scanning…' : 'Scan Signal'"
+      :aria-label="isCreating ? 'Scanning in progress' : 'Start signal scan'"
       @click="handleScan"
     >
       <span class="floating-scan-btn__pulse" aria-hidden="true" />
@@ -59,7 +59,7 @@ async function handleScan() {
           <path d="M21 12a9 9 0 1 1-6.219-8.56" />
         </svg>
       </span>
-      <span v-if="!isCreating" class="floating-scan-btn__label">Get LTE Signal</span>
+      <span v-if="!isCreating" class="floating-scan-btn__label">Scan Signal</span>
       <span v-else class="floating-scan-btn__label">Scanning…</span>
     </button>
   </ClientOnly>
