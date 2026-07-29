@@ -29,10 +29,6 @@ function handleSelectScan(id: string) {
   scanStore.selectScan(id)
 }
 
-function resetFilters() {
-  selectedRat.value = 'ALL'
-}
-
 const isLoading = computed(() => scanStore.loading)
 const isOpen = computed(() => uiStore.sidebarOpen)
 </script>
@@ -58,7 +54,6 @@ const isOpen = computed(() => uiStore.sidebarOpen)
       <FilterPanel
         :selected-rat="selectedRat"
         @update:selected-rat="selectedRat = $event"
-        @reset="resetFilters"
       />
     </div>
 
