@@ -34,32 +34,36 @@ function onTabChange(tab: InfoTab) {
       class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[1100] w-[90%] max-w-[800px] rounded-xl border border-muted bg-black/70 backdrop-blur-md overflow-hidden shadow-lg flex flex-col"
       style="height: 220px;"
     >
-      <!-- Tab header: 40% of the bottom bar width, centered, horizontal divider below -->
+      <!-- Tab header: 40% of the bottom bar width, left-aligned, full-width horizontal divider below -->
       <div
-        role="tablist"
-        class="flex items-stretch w-[40%] mx-auto border-b border-muted bg-black/40 shrink-0 rounded-t-md"
+        class="border-b border-muted bg-black/40 shrink-0 rounded-t-md"
       >
-        <button
-          v-for="tab in tabItems"
-          :key="tab.value"
-          type="button"
-          role="tab"
-          :aria-selected="activeTab === tab.value"
-          :class="[
-            'flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors',
-            'border-b-2 -mb-px',
-            activeTab === tab.value
-              ? 'text-default border-primary'
-              : 'text-muted border-transparent hover:text-default hover:bg-white/5'
-          ]"
-          @click="onTabChange(tab.value)"
+        <div
+          role="tablist"
+          class="flex items-stretch w-[40%]"
         >
-          <UIcon
-            :name="tab.icon"
-            class="size-4"
-          />
-          <span>{{ tab.label }}</span>
-        </button>
+          <button
+            v-for="tab in tabItems"
+            :key="tab.value"
+            type="button"
+            role="tab"
+            :aria-selected="activeTab === tab.value"
+            :class="[
+              'flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors',
+              'border-b-2 -mb-px',
+              activeTab === tab.value
+                ? 'text-default border-primary'
+                : 'text-muted border-transparent hover:text-default hover:bg-white/5'
+            ]"
+            @click="onTabChange(tab.value)"
+          >
+            <UIcon
+              :name="tab.icon"
+              class="size-4"
+            />
+            <span>{{ tab.label }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Tab content: same fixed height for all tabs -->
