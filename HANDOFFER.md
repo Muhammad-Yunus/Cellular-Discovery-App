@@ -9,6 +9,43 @@
 
 ---
 
+## 🔧 API Parameter Changes Summary
+
+### GET `/scans` - List Scans Endpoint
+
+| Parameter | Type | Required | Description | Change | Notes |
+|-----------|------|----------|-------------|--------|-------|
+| `limit` | `number` | No | Number of scans per page (default: 20) | ✅ Preserved | Added default value of 20 if not provided in service layer |
+| `offset` | `number` | No | Pagination offset (default: 0) | ✅ Preserved | Added default value of 0 if not provided in service layer |
+| `search` | `string` | No | Search term for filtering scans | ✅ Preserved | Pass-through to backend; optional query string |
+
+#### Implementation (app/services/scan.service.ts):
+
+```ts
+export interface GetScansParams {
+  limit?: number
+  offset?: number
+  search?: string
+}
+
+export async function getScans(params?: GetScansParams): Promise<ScanPaginated> {
+  return apiRequest<ScanPaginated>('/scans', {
+    method: 'GET',
+    params: {
+      limit: params?.limit ?? 20,   // Default applied here
+      offset: params?.offset ?? 0,  // Default applied here
+      search: params?.search        // Optional pass-through
+    }
+  })
+}
+```
+
+**Key Observations During Refactoring**:
+- No breaking changes to API parameters — existing `GetScansParams` interface remained intact throughout toast migration
+- Default values were added at the service layer (`getScans` function) for better UX when callers omit pagination
+- All toast-related refactorizations were limited to UI/composable layers and did **not** affect API request/response structures or endpoint signatures
+- TypeScript type definitions in `~/types` (e.g., `ScanPaginated`, `ScanResponse`) remain unchanged
+
 ## 📋 Project Overview
 
 A Nuxt 4 + Vue 3 web application for discovering and monitoring LTE network information via USB modems. Features real-time scanning, signal monitoring, cell tower details, system health monitoring, WebSocket live updates, and a fully functional toast notification system.
