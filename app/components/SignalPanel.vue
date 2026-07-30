@@ -15,6 +15,30 @@ function fmt(value: unknown): string {
   if (value === null || value === undefined || value === '') return '\u2011'
   return String(value)
 }
+
+/**
+ * Assigns a Nuxt UI semantic color based on the RAT technology.
+ * Used directly by UBadge `color` prop with variant="subtle".
+ */
+function getRatColor(rat: string | null | undefined): string {
+  if (!rat) return 'neutral' // unknown/neutral
+  const normalized = rat.trim().toUpperCase()
+  switch (normalized) {
+    case 'GSM':
+    case 'GPRS':
+    case 'EDGE':
+      return 'success'      // 2G
+    case 'UMTS':
+    case 'HSPA':
+      return 'warning'      // 3G
+    case 'LTE':
+      return 'info'         // 4G
+    case 'NR':
+      return 'primary'      // 5G
+    default:
+      return 'neutral'
+  }
+}
 </script>
 
 <template>
@@ -27,9 +51,15 @@ function fmt(value: unknown): string {
     </div>
 
     <!-- RAT -->
-    <div>
-      <span class="text-muted">RAT</span>
-      <p class="text-default font-medium">{{ fmt(selectedScan.rat) }}</p>
+    <div class="flex flex-col items-start">
+      <span class="text-muted text-xs mb-0.5">RAT</span>
+      <UBadge
+        :label="fmt(selectedScan.rat) === '\u2011' ? 'N/A' : fmt(selectedScan.rat)"
+        size="xs"
+        :color="getRatColor(selectedScan.rat)"
+        variant="subtle"
+        class="mt-0.5"
+      />
     </div>
 
     <!-- MCC -->
