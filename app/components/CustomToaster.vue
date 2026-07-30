@@ -7,11 +7,14 @@ const { toasts, remove, colorClass } = useCustomToast()
 <template>
   <ClientOnly>
     <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm">
-      <TransitionGroup name="toast" tag="div">
+      <TransitionGroup
+        name="toast"
+        tag="div"
+      >
         <div
           v-for="t in toasts"
           :key="t.id"
-          class="pointer-events-auto rounded-lg shadow-lg p-3 transition-all duration-300 ease-in-out transform translate-x-0"
+          class="pointer-events-auto rounded-lg shadow p-3 transition-all duration-300 ease-in-out transform translate-x-0"
           :class="colorClass(t.color)"
         >
           <div class="flex items-start gap-2">
@@ -31,23 +34,30 @@ const { toasts, remove, colorClass } = useCustomToast()
               }[t.color]"
               class="size-5 mt-1 flex-shrink-0"
             />
-            
+
             <!-- Content -->
             <div class="flex-1 min-w-0">
-              <p class="font-medium text-sm truncate">{{ t.title }}</p>
+              <p class="font-medium text-sm truncate">
+                {{ t.title }}
+              </p>
               <p
                 v-if="t.description"
                 class="text-xs opacity-90 truncate mt-0.5"
-              >{{ t.description }}</p>
+              >
+                {{ t.description }}
+              </p>
             </div>
 
             <!-- Close button -->
             <button
-              @click="remove(t.id)"
               class="opacity-75 hover:opacity-100 focus:outline-none"
               aria-label="Close toast"
+              @click="remove(t.id)"
             >
-              <UIcon name="i-lucide-x" class="size-4" />
+              <UIcon
+                name="i-lucide-x"
+                class="size-4"
+              />
             </button>
           </div>
         </div>

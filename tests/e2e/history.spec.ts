@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('History Page - /history', () => {
-  test('page loads successfully', async ({ page }) => {
-    await page.goto('/history')
-    expect(await page.url()).toContain('/history')
-    expect(await page.locator('ul').count()).toBeGreaterThanOrEqual(0)
+test.describe('History Page Smoke Test', () => {
+  test('should load without HTTP error', async ({ page }) => {
+    const response = await page.goto('/history', { waitUntil: 'networkidle' })
+    expect(response.status()).toBe(200)
   })
 })

@@ -2,8 +2,8 @@ import { apiRequest } from './api'
 import type { ScanResponse, ScanPaginated, ScanCreate } from '~/types'
 
 export interface GetScansParams {
-  limit?: number
-  offset?: number
+  page?: number
+  pageSize?: number
   search?: string
 }
 
@@ -18,8 +18,8 @@ export async function getScans(params?: GetScansParams): Promise<ScanPaginated> 
   return apiRequest<ScanPaginated>('/scans', {
     method: 'GET',
     params: {
-      limit: params?.limit ?? 20,
-      offset: params?.offset ?? 0,
+      page: params?.page ?? 1,
+      page_size: params?.pageSize ?? 10,
       search: params?.search
     }
   })

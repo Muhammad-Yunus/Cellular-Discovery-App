@@ -1,68 +1,102 @@
 <script setup lang="ts">
 import { useScanStore } from '~/stores/scanStore'
+import { formatDateTime } from '~/utils/dateFormat'
+import { getOperatorLogoPath } from '~/utils/operatorLogoMap'
 
 const scanStore = useScanStore()
 const selectedScan = computed(() => scanStore.selectedScan)
 
-function formatTime(iso: string | undefined): string {
-  if (!iso) return '-'
-  try {
-    return new Date(iso).toLocaleString()
-  } catch {
-    return iso
+/**
+ * Display-safe value. Returns a non-breaking hyphen ('-') when the
+ * value is null, undefined, or an empty string so the panel never
+ * renders the literal string 'undefined' or 'null'.
+ */
+function fmt(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '\u2011'
+  return String(value)
+}
+
+/**
+ * Assigns a Nuxt UI semantic color based on the RAT technology.
+ * Used directly by UBadge `color` prop with variant="subtle".
+ */
+function getRatColor(rat: string | null | undefined): string {
+  if (!rat) return 'neutral' // unknown/neutral
+  const normalized = rat.trim().toUpperCase()
+  switch (normalized) {
+    case 'GSM':
+    case 'GPRS':
+    case 'EDGE':
+      return 'success'      // 2G
+    case 'UMTS':
+    case 'HSPA':
+      return 'warning'      // 3G
+    case 'LTE':
+      return 'info'         // 4G
+    case 'NR':
+      return 'primary'      // 5G
+    default:
+      return 'neutral'
   }
 }
 </script>
 
 <template>
-  <div class="p-3 text-sm">
-    <div
-      v-if="selectedScan"
-      class="grid grid-cols-2 gap-x-6 gap-y-2"
-    >
-      <div>
-        <span class="text-muted">Operator</span>
-        <p class="text-default font-medium">
-          {{ selectedScan.operator || '-' }}
-        </p>
-      </div>
-      <div>
-        <span class="text-muted">RAT</span>
-        <p class="text-default font-medium">
-          {{ selectedScan.rat || '-' }}
-        </p>
-      </div>
-      <div>
-        <span class="text-muted">MCC</span>
-        <p class="text-default font-medium">
-          {{ selectedScan.mcc || '-' }}
-        </p>
-      </div>
-      <div>
-        <span class="text-muted">MNC</span>
-        <p class="text-default font-medium">
-          {{ selectedScan.mnc || '-' }}
-        </p>
-      </div>
-      <div class="col-span-2">
-        <span class="text-muted">Scan Time</span>
-        <p class="text-default font-medium">
-          {{ formatTime(selectedScan.scan_time) }}
-        </p>
-      </div>
+<div class="p-3 text-sm relative">
+  <div v-if="selectedScan" class="grid grid-cols-2 gap-x-6 gap-y-2">
+    <!-- Operator -->
+    <div>
+      <span class="text-muted">Operator</span>
+      <p class="text-default font-medium">{{ fmt(selectedScan.operator) }}</p>
     </div>
 
-    <div
-      v-else
-      class="flex flex-col items-center justify-center py-6 text-center"
-    >
-      <div class="i-lucide-radio size-6 text-muted mb-2" />
-      <p class="text-sm text-muted">
-        No scan selected
-      </p>
-      <p class="text-xs text-muted mt-1">
-        Select a scan from the sidebar to view details
-      </p>
+    <!-- RAT -->
+    <div class="flex flex-col items-start">
+      <span class="text-muted text-xs mb-0.5">RAT</span>
+      <UBadge
+        :label="fmt(selectedScan.rat) === '\u2011' ? 'N/A' : fmt(selectedScan.rat)"
+        size="xs"
+        :color="getRatColor(selectedScan.rat)"
+        variant="subtle"
+        class="mt-0.5"
+      />
+    </div>
+
+    <!-- MCC -->
+    <div>
+      <span class="text-muted">MCC</span>
+      <p class="text-default font-medium">{{ fmt(selectedScan.mcc) }}</p>
+    </div>
+
+    <!-- MNC -->
+    <div>
+      <span class="text-muted">MNC</span>
+      <p class="text-default font-medium">{{ fmt(selectedScan.mnc) }}</p>
+    </div>
+
+    <!-- Scan Time (spans both columns) -->
+    <div class="col-span-2">
+      <span class="text-muted">Scan Time</span>
+      <p class="text-default font-medium">{{ formatDateTime(selectedScan.scan_time) }}</p>
     </div>
   </div>
+
+  <!-- Operator logo positioned absolutely so it doesn't affect row heights -->
+  <div
+    v-if="selectedScan && getOperatorLogoPath(selectedScan.operator)"
+    class="absolute right-3 top-4 flex"
+  >
+    <img
+      :src="getOperatorLogoPath(selectedScan.operator)"
+      alt="Operator logo"
+      class="w-15 h-15 object-contain"
+    >
+  </div>
+
+  <div v-else class="flex flex-col items-center justify-center py-6 text-center">
+    <div class="i-lucide-radio size-6 text-muted mb-2" />
+    <p class="text-sm text-muted">No scan selected</p>
+    <p class="text-xs text-muted mt-1">Select a scan from the sidebar to view details</p>
+  </div>
+</div>
 </template>

@@ -92,6 +92,21 @@ export class ReconnectingWebSocket {
 }
 
 export function buildWsUrl(apiBase: string, path: string): string {
-  const base = apiBase.replace(/^http/, 'ws').replace(/\/api\/v1\/?$/, '')
-  return `${base}${path}`
+  // API base is an absolute HTTP/HTTPS URL when running in production or
+  // when using a direct remote address. In that case convert to WS/WSS and strip /api/v1.
+  if (apiBase.startsWith('http://') || apiBase.startsWith('https://')) {
+    const base = apiBase.replace(/^http/, 'ws').replace(/\/api\/v1\/?$/, '')
+    return `${base}${path}`
+  } else {
+    // Relative API base (e.g., '/api/v1') – combine with current page location.
+    // This works for development where the frontend and backend are on different origins
+    // and we rely on a proxy to forward WebSocket requests.
+    const cleanApiBase = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+    if (typeof window !== 'undefined') {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${protocol}//${window.location.host}${cleanApiBase}${path}`;
+    }
+    // Fallback for SSR/testing – just concatenate.
+    return `${apiBase}${path}`;
+  }
 }

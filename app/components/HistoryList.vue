@@ -40,7 +40,7 @@ const emit = defineEmits<{
 
     <div
       v-else
-      class="space-y-2"
+      class="space-y-1"
     >
       <HistoryCard
         v-for="scan in scans"

@@ -6,16 +6,16 @@ useHead({
 })
 
 useSeoMeta({
-  title: 'LTE Scanner',
-  description: 'USB Modem LTE Network Discovery Web Frontend'
+  title: 'Cellular Discovery',
+  description: 'USB Modem Cellular Network Discovery Web Frontend'
 })
 </script>
 
 <template>
-  <UApp :toaster="null">
+  <div>
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
     <CustomToaster />
-  </UApp>
+  </div>
 </template>
