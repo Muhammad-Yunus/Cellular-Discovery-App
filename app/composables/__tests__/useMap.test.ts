@@ -65,7 +65,7 @@ describe('useMap', () => {
     expect(window.L.map).toHaveBeenCalledWith('map-container', {
       center: [-6.15, 106.89],
       zoom: 17,
-      zoomControl: true
+      zoomControl: false
     })
   })
 
@@ -87,7 +87,7 @@ describe('useMap', () => {
 
     result.addMarker(scan)
 
-    expect(window.L.marker).toHaveBeenCalledWith([-6.15, 106.89])
+    expect(window.L.marker).toHaveBeenCalledWith([-6.15, 106.89], expect.objectContaining({ icon: expect.anything() }))
   })
 
   it('removeMarker removes specific marker', async () => {
