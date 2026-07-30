@@ -44,12 +44,8 @@ function formatLocalIso(val: string): string | null {
   const hh = pad(d.getHours())
   const mm = pad(d.getMinutes())
   const ss = pad(d.getSeconds())
-  const offset = -d.getTimezoneOffset() // minutes east of UTC
-  const sign = offset >= 0 ? '+' : '-'
-  const absOffset = Math.abs(offset)
-  const offsetH = pad(Math.floor(absOffset / 60))
-  const offsetM = pad(absOffset % 60)
-  return `${y}-${m}-${day}T${hh}:${mm}:${ss}${sign}${offsetH}:${offsetM}`
+  // Return ISO without timezone offset (local time)
+  return `${y}-${m}-${day}T${hh}:${mm}:${ss}`
 }
 
 function updateTimeRange() {
