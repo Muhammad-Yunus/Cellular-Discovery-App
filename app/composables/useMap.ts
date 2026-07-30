@@ -5,12 +5,38 @@ import { formatDateTime, formatRelativeTime } from '~/utils/dateFormat'
 
 /**
  * Format a value for display in the marker popup. Returns a non-breaking
- * hyphen ('-') when the value is null, undefined, or an empty string so
- * the popup never renders the literal string "undefined" or "null".
+ * hyphen ('-') when the value is null, undefined, or an empty string so the
+ * popup never renders the literal string "undefined" or "null".
  */
 function fmt(value: unknown): string {
   if (value === null || value === undefined || value === '') return '\u2011' // non-breaking hyphen
   return String(value)
+}
+
+/**
+ * Map a radio technology (RAT) to a concrete hex colour that matches the
+ * palette used by the sidebar `UBadge` colours. The SVG inside the marker
+ * uses `stroke="currentColor"` so the colour is applied by setting the
+ * `color` CSS property on the marker wrapper.
+ */
+function getRatColorHex(rat: string | null | undefined): string {
+  if (!rat) return '#6b7280' // slate-500 (neutral)
+  const normalized = rat.trim().toUpperCase()
+  switch (normalized) {
+    case 'GSM':
+    case 'GPRS':
+    case 'EDGE':
+      return '#16a34a' // success – green-500 (2G)
+    case 'UMTS':
+    case 'HSPA':
+      return '#f59e0b' // warning – amber-500 (3G)
+    case 'LTE':
+      return '#2563eb' // info – blue-500 (4G)
+    case 'NR':
+      return '#9333ea' // primary – purple-500 (5G)
+    default:
+      return '#6b7280' // slate-500 (neutral)
+  }
 }
 
 export interface MapActions {
@@ -115,14 +141,17 @@ export function useMap(): MapActions {
 
     const L = useLeaflet()
 
+    // Determine the colour for the marker based on RAT technology.
+    const markerColor = getRatColorHex(scan.rat)
+
     // Custom divIcon using the Lucide "radio-tower" SVG path data
     // (identical to the navbar app-logo icon "lucide:radio-tower"). The
-    // badge has a primary-coloured gradient so the marker is visible on
-    // both dark and light tiles.
+    // badge gets its colour from the inline style we set; the SVG uses
+    // `stroke="currentColor"` so the colour inherits from the wrapper.
     const signalIcon = L.divIcon({
       className: 'leaflet-signal-marker',
       html: `
-        <div class="signal-marker-badge">
+        <div class="signal-marker-badge" style="color: ${markerColor}">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9m2.9 2.8a6.14 6.14 0 0 0-.8 7.5"></path>
             <circle cx="12" cy="9" r="2"></circle>
