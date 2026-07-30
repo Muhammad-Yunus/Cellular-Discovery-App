@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { ScanSummary } from '~/types'
+import FilterPanel from '@/components/FilterPanel.vue'
 
 definePageMeta({ title: 'Scan Result' })
+
+const scanStore = useScanStore()
 
 const {
   scans,
@@ -73,6 +76,13 @@ const columns: TableColumn<ScanSummary>[] = [
       placeholder="Search by operator, MCC, or MNC..."
       class="mb-4"
     />
+
+    <div class="mb-4">
+      <FilterPanel
+        :selected-rat="scanStore.ratFilter"
+        @update:selected-rat="scanStore.setRat"
+      />
+    </div>
 
     <template v-if="loading">
       <div class="space-y-3">
