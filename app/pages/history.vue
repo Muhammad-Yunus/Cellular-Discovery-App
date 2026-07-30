@@ -100,21 +100,23 @@ const columns: TableColumn<ScanSummary>[] = [
         />
       </div>
       <!-- From datetime -->
-      <div class="flex-1 max-w-xs">
+      <div class="flex-1">
         <label class="block text-sm font-medium text-muted mb-1">From</label>
         <UInput
           type="datetime-local"
           v-model="startDateTime"
           @input="updateTimeRange"
+          class="w-full"
         />
       </div>
       <!-- To datetime -->
-      <div class="flex-1 max-w-xs">
+      <div class="flex-1">
         <label class="block text-sm font-medium text-muted mb-1">To</label>
         <UInput
           type="datetime-local"
           v-model="endDateTime"
           @input="updateTimeRange"
+          class="w-full"
         />
       </div>
       <!-- RAT filter -->
