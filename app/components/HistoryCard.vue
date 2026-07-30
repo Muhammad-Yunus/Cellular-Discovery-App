@@ -22,26 +22,29 @@ function fmt(value: unknown): string {
 }
 
 /**
- * Assigns a Tailwind color key based on RAT technology.
- * This helps visually differentiate network types in the UI.
+ * Assigns a Nuxt-UI color key based on the RAT (Radio Access Technology).
+ * Using the built-in semantic colors to ensure the badge looks correct
+ * across the whole theme (e.g. 'success' → green, 'warning' → amber,
+ * 'info' → cyan/blue, 'primary' → sky, 'neutral' → gray).
  */
 function getRatColor(rat: string | null | undefined): string {
   if (!rat) return 'neutral'
   const normalized = rat.trim().toUpperCase()
-  const map: Record<string, string> = {
-    GSM: 'green',
-    GPRS: 'green',
-    EDGE: 'green',
-    UMTS: 'orange',
-    HSPA: 'orange',
-    LTE: 'blue',
-    NR: 'purple',          // 5G New Radio
-    TDMA: 'yellow',        // sometimes used for older tech
-    CDMA: 'yellow',
-    IS95: 'yellow',
-    IDEN: 'yellow'
+  switch (normalized) {
+    case 'GSM':
+    case 'GPRS':
+    case 'EDGE':
+      return 'success'          // 2G → green
+    case 'UMTS':
+    case 'HSPA':
+      return 'warning'          // 3G → amber/orange
+    case 'LTE':
+      return 'info'             // 4G → blue
+    case 'NR':
+      return 'primary'          // 5G → sky (primary accent)
+    default:
+      return 'neutral'          // unknown / unmapped
   }
-  return map[normalized] || 'neutral'
 }
 </script>
 
