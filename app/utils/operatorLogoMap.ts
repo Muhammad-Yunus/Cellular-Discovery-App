@@ -1,33 +1,27 @@
-// Utility mapping from operator names (including aliases) to logo paths in public folder
-export const operatorLogoMap = {
-  Telkomsel: '/operator_logos/logo_telkomsel.png',
-  XL: '/operator_logos/logo_xl.png',
-  Indosat: '/operator_logos/logo_indosat.png',
-  Axis: '/operator_logos/logo_axis.png',
-  Tri: '/operator_logos/logo_tri.png',
-  Smartfren: '/operator_logos/logo_smartfrend.png', // matches actual filename "logo_smartfrend.png"
-} as const;
+import { operatorLogoMap } from './operatorLogoMap.generated';
 
-type OperatorKey = keyof typeof operatorLogoMap;
+export { operatorLogoMap };
+
+export type OperatorKey = keyof typeof operatorLogoMap;
 
 // Aliases map: alternate operator names that should resolve to the same logo key
 export const operatorAliasMap: Record<string, OperatorKey> = {
-  IM3: 'Indosat',
-  Ooredo: 'Indosat',
-  'IM3 Ooredo': 'Indosat',
-  // Add more variants here if needed (e.g., 'Smartfren'?: 'Smartfren')
-  // Note: the question mark was a typo; remove if adding
+  IM3: 'Indosat' as OperatorKey,
+  Ooredo: 'Indosat' as OperatorKey,
+  'IM3 Ooredo': 'Indosat' as OperatorKey,
+  // Add more variants here if needed
 };
 
 /**
  * Returns the logo URL for the given operator string if it matches a known operator or its alias.
- Returns null otherwise.
+ * Returns null otherwise.
  * Matching is case-insensitive and trims whitespace.
  */
 export function getOperatorLogoPath(operator: string | null): string | null {
   if (!operator) return null;
 
   const trimmed = operator.trim();
+
   // Try direct matching first
   const entry = Object.entries(operatorLogoMap).find(([key]) => {
     const keyLower = key.toLowerCase();
