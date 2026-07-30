@@ -249,6 +249,26 @@ body {
   font-style: italic;
 }
 
+/* RAT badge in popup */
+.leaflet-signal-popup .signal-popup-rat-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #fff;
+  line-height: 1;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Neutral fallback for missing value */
+.leaflet-signal-popup .signal-popup-rat-badge--neutral {
+  background-color: #6b7280; /* slate-500 */
+}
+
 /* Floating scan button (bottom-right of map) */
 .floating-scan-btn {
   position: absolute;

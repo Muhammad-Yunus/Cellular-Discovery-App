@@ -39,6 +39,21 @@ function getRatColorHex(rat: string | null | undefined): string {
   }
 }
 
+/**
+ * Build the HTML markup for a RAT tag inside the marker popup. The tag
+ * mirrors the styling of the `UBadge` used in the sidebar: small, rounded,
+ * coloured background, white text. When the RAT value is missing the badge
+ * shows "N/A" using a neutral background.
+ */
+function getRatBadgeHtml(rat: string | null | undefined): string {
+  const value = fmt(rat)
+  if (value === '\u2011') {
+    return `<span class="signal-popup-rat-badge signal-popup-rat-badge--neutral">N/A</span>`
+  }
+  const color = getRatColorHex(rat)
+  return `<span class="signal-popup-rat-badge" style="background-color:${color}">${value}</span>`
+}
+
 export interface MapActions {
   initMap: (containerId: string, center: [number, number], zoom: number) => void
   addMarker: (scan: ScanSummary) => Marker | null
@@ -185,7 +200,7 @@ export function useMap(): MapActions {
         </div>
         <div class="signal-popup-row"><span>MCC</span><span>${fmt(scan.mcc)}</span></div>
         <div class="signal-popup-row"><span>MNC</span><span>${fmt(scan.mnc)}</span></div>
-        <div class="signal-popup-row"><span>RAT</span><span>${fmt(scan.rat)}</span></div>
+        <div class="signal-popup-row"><span>RAT</span>${getRatBadgeHtml(scan.rat)}</div>
         <div class="signal-popup-row signal-popup-time">
           <span>Time</span>
           <span class="signal-popup-time-block">
