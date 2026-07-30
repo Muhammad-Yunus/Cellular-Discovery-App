@@ -42,11 +42,12 @@ export const useScanStore = defineStore('scan', {
   actions: {
     async fetchScans() {
       this.loading = true
+      this.loadingMore = false
       this.error = null
       try {
         const result = await scanService.getScans({
-          limit: this.pagination.limit,
-          offset: this.pagination.offset,
+          pageSize: this.pagination.limit,
+          page: this.pagination.currentPage,
           search: this.pagination.searchTerm || undefined
         })
         // Backend now returns flat items (one per scan_result). Map fields
@@ -63,6 +64,7 @@ export const useScanStore = defineStore('scan', {
         }))
         this.pagination.totalItems = result.total
         this.pagination.totalPages = Math.ceil(result.total / this.pagination.limit)
+        this.pagination.offset = (this.pagination.currentPage - 1) * this.pagination.limit
         // Default selection: pick the latest entry by timestamp (scans
         // are returned newest-first by the backend). If the previously
         // selected entry is still in the list, keep it; otherwise pick the
@@ -157,21 +159,21 @@ export const useScanStore = defineStore('scan', {
      * Called when the user scrolls to the bottom of the sidebar list.
      */
     async loadMoreScans() {
+      // Guard against concurrent requests
       if (this.loadingMore) return
 
-      const { limit, offset, totalItems, searchTerm } = this.pagination
-
-      // No more data available
-      if (offset + limit >= totalItems) {
+      // No more pages available
+      if (this.pagination.currentPage >= this.pagination.totalPages) {
         return
       }
 
-      const newOffset = offset + limit
+      const nextPage = this.pagination.currentPage + 1
+      this.loadingMore = true
       try {
         const result = await scanService.getScans({
-          limit,
-          offset: newOffset,
-          search: searchTerm,
+          pageSize: this.pagination.limit,
+          page: nextPage,
+          search: this.pagination.searchTerm,
         })
 
         // Append the new items (one per scan_result) to the UI list
@@ -187,9 +189,11 @@ export const useScanStore = defineStore('scan', {
         }))
 
         this.scans = [...this.scans, ...newItems]
-        this.pagination.offset = newOffset
+        // Update pagination metadata
+        this.pagination.currentPage = nextPage
+        this.pagination.offset = (nextPage - 1) * this.pagination.limit
         this.pagination.totalItems = result.total
-        this.pagination.totalPages = Math.ceil(result.total / limit)
+        this.pagination.totalPages = Math.ceil(result.total / this.pagination.limit)
       } catch (err) {
         console.error('Failed to load more scans', err)
         // Could show a toast notification here

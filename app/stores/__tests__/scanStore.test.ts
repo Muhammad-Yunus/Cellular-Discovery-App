@@ -72,7 +72,7 @@ describe('scanStore', () => {
 
     expect(store.pagination.currentPage).toBe(2)
     expect(store.pagination.offset).toBe(20)
-    expect(getScans).toHaveBeenCalledWith({ limit: 20, offset: 20, search: undefined })
+    expect(getScans).toHaveBeenCalledWith({ pageSize: 20, page: 2, search: undefined })
   })
 
   it('setSearch resets page and fetches', async () => {

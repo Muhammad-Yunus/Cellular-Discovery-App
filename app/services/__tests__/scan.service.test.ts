@@ -27,14 +27,14 @@ describe('scan.service', () => {
   })
 
   it('getScans calls GET /scans with params', async () => {
-    const mockResponse = { items: [], total: 0, limit: 20, offset: 0 }
+    const mockResponse = { items: [], total: 0, limit: 20, offset: 0 } // note backend may still return offset for other purposes
     mockApiRequest.mockResolvedValueOnce(mockResponse)
 
-    const result = await getScans({ limit: 10, offset: 5, search: 'test' })
+    const result = await getScans({ pageSize: 10, page: 2, search: 'test' })
 
     expect(mockApiRequest).toHaveBeenCalledWith('/scans', {
       method: 'GET',
-      params: { limit: 10, offset: 5, search: 'test' }
+      params: { page: 2, page_size: 10, search: 'test' }
     })
     expect(result).toEqual(mockResponse)
   })
@@ -47,7 +47,7 @@ describe('scan.service', () => {
 
     expect(mockApiRequest).toHaveBeenCalledWith('/scans', {
       method: 'GET',
-      params: { limit: 20, offset: 0, search: undefined }
+      params: { page: 1, page_size: 10, search: undefined }
     })
   })
 
