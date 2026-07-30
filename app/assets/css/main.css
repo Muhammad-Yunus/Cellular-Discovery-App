@@ -137,7 +137,7 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 9999px;
-  background: var(--theme-gradient);
+  background: transparent; /* default; will be overridden by inline style */
   color: #ffffff;
   display: flex;
   align-items: center;
