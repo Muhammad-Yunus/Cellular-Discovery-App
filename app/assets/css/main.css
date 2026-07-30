@@ -171,7 +171,7 @@ body {
   position: absolute;
   inset: -8px;
   border-radius: 9999px;
-  background: radial-gradient(circle, var(--glow-color, transparent) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--glow-color, transparent) 0%, var(--glow-color, transparent) 30%, transparent 85%);
   opacity: 0;
   pointer-events: none;
   animation: pulse-ring 1s ease-out infinite;
@@ -180,7 +180,7 @@ body {
 @keyframes pulse-ring {
   0% {
     transform: scale(0.4);
-    opacity: 0.8;
+    opacity: 1;
   }
   100% {
     transform: scale(2.2);
