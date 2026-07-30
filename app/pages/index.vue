@@ -22,6 +22,10 @@ function flyToScan(scanId: string | null) {
     // ensure the marker is prominent. Using setView avoids any drift
     // that can occur with animated flyTo.
     mapViewRef.value.mapActions.setView([scan.latitude, scan.longitude], 17)
+    // Force a size recalculation to ensure the map container is properly
+    // accounted for (especially after rapid UI transitions), guaranteeing
+    // the marker lands exactly at the viewport centre.
+    mapViewRef.value.mapActions.invalidateSize()
   }
 }
 
