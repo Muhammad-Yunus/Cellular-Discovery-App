@@ -17,14 +17,19 @@ function flyToScan(scanId: string | null) {
   if (!scanId || !mapViewRef.value) return
   const scan = scans.value.find(s => s.id === scanId)
   if (scan) {
-    // Directly use Leaflet's flyTo with animation disabled to instantly
-    // centre the map on the selected marker's coordinates and set zoom 17.
-    // This avoids any drift that can occur with animated flyTo and is
-    // more reliable than setView because it goes through the same code
-    // path as the existing flyTo function.
-    const map = mapViewRef.value.mapActions.getMap();
+    // Instant pan+zoom to the selected marker's coordinates. The fixed
+    // sidebar (width 300px) overlays the left side of the map; we apply a
+    // left padding equal to half the sidebar width so the map's visible
+    // centre aligns with the marker after flyTo.
+    const map = mapViewRef.value.mapActions.getMap()
     if (map) {
-      map.flyTo([scan.latitude, scan.longitude], 17, { animate: false, duration: 0 });
+      const SIDEBAR_WIDTH = 300 // px, matches Sidebar.vue's w-[300px]
+      map.flyTo([scan.latitude, scan.longitude], 17, {
+        animate: false,
+        duration: 0,
+        // padding: [top, right, bottom, left]
+        padding: [0, 0, 0, Math.floor(SIDEBAR_WIDTH / 2)]
+      })
     }
   }
 }
