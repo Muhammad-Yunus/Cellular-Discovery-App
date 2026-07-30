@@ -239,8 +239,21 @@ function addMarker(
         if (btn) {
           btn.addEventListener('click', (ev) => {
             ev.stopPropagation()
+            ev.preventDefault()
             marker.closePopup()
           })
+        } else {
+          // Fallback: if button not found immediately, retry after DOM settles.
+          setTimeout(() => {
+            const el = popupEl?.querySelector('.signal-popup-close-btn')
+            if (el) {
+              el.addEventListener('click', (ev) => {
+                ev.stopPropagation()
+                ev.preventDefault()
+                marker.closePopup()
+              })
+            }
+          }, 0)
         }
       })
 
