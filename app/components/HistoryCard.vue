@@ -22,28 +22,26 @@ function fmt(value: unknown): string {
 }
 
 /**
- * Assigns a Nuxt-UI color key based on the RAT (Radio Access Technology).
- * Using the built-in semantic colors to ensure the badge looks correct
- * across the whole theme (e.g. 'success' → green, 'warning' → amber,
- * 'info' → cyan/blue, 'primary' → sky, 'neutral' → gray).
+ * Assigns a Tailwind color name based on the RAT technology.
+ * Used directly by UBadge `color` prop with variant="subtle".
  */
 function getRatColor(rat: string | null | undefined): string {
-  if (!rat) return 'neutral'
+  if (!rat) return 'gray' // unknown/neutral
   const normalized = rat.trim().toUpperCase()
   switch (normalized) {
     case 'GSM':
     case 'GPRS':
     case 'EDGE':
-      return 'success'          // 2G → green
+      return 'green'         // 2G
     case 'UMTS':
     case 'HSPA':
-      return 'warning'          // 3G → amber/orange
+      return 'orange'        // 3G
     case 'LTE':
-      return 'info'             // 4G → blue
+      return 'blue'          // 4G
     case 'NR':
-      return 'primary'          // 5G → sky (primary accent)
+      return 'purple'        // 5G
     default:
-      return 'neutral'          // unknown / unmapped
+      return 'gray'
   }
 }
 </script>
