@@ -17,10 +17,11 @@ function flyToScan(scanId: string | null) {
   if (!scanId || !mapViewRef.value) return
   const scan = scans.value.find(s => s.id === scanId)
   if (scan) {
-    // Pan (and zoom) the map so the selected marker is placed at the
-    // centre of the viewport. We pass an explicit zoom (17) to ensure
-    // the marker is prominent even when the user previously zoomed out.
-    mapViewRef.value.mapActions.flyTo(scan.latitude, scan.longitude, 17)
+    // Instantly pan and zoom the map so the selected marker is placed
+    // at the centre of the viewport. We pass an explicit zoom (17) to
+    // ensure the marker is prominent. Using setView avoids any drift
+    // that can occur with animated flyTo.
+    mapViewRef.value.mapActions.setView([scan.latitude, scan.longitude], 17)
   }
 }
 
