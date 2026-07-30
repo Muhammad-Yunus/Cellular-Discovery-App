@@ -190,6 +190,12 @@ export function useMap(): MapActions {
 
     const popupHtml = `
       <div class="signal-popup">
+        <button type="button" class="signal-popup-close-btn" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
         <div class="signal-popup-header">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9m2.9 2.8a6.14 6.14 0 0 0-.8 7.5"></path>
@@ -218,6 +224,19 @@ export function useMap(): MapActions {
         autoClose: false,
         closeOnClick: false,
         className: 'leaflet-signal-popup'
+      })
+      // Wire the custom close button: clicking the X should dismiss the
+      // popup without touching the selected scan (the marker keeps its
+      // pulsing state and remains selected in the sidebar).
+      .on('popupopen', (e) => {
+        const popupEl = e?.target?.getElement?.()
+        const btn = popupEl?.querySelector('.signal-popup-close-btn')
+        if (btn) {
+          btn.addEventListener('click', (ev) => {
+            ev.stopPropagation()
+            marker.closePopup()
+          })
+        }
       })
 
     // Popups are no longer auto-opened here. The selected marker is

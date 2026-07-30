@@ -269,6 +269,35 @@ body {
   background-color: #6b7280; /* slate-500 */
 }
 
+/* Popup wrapper - positioned relative so the close button can be placed absolutely */
+.leaflet-signal-popup .signal-popup {
+  position: relative;
+}
+
+/* Close (X) button at the top-right corner of the popup */
+.leaflet-signal-popup .signal-popup-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: #fff;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  transition: background 150ms ease;
+}
+
+.leaflet-signal-popup .signal-popup-close-btn:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+
 /* Floating scan button (bottom-right of map) */
 .floating-scan-btn {
   position: absolute;
