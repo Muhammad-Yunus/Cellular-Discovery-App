@@ -11,6 +11,7 @@ interface ScanState {
   wsConnected: boolean
   loadingMore: boolean
   ratFilter: string | null // 'ALL' or specific RAT like 'LTE'
+  dateRange: { startDate: string | null; endDate: string | null } // ISO datetime strings
   pagination: PaginationMeta
 }
 
@@ -24,6 +25,7 @@ export const useScanStore = defineStore('scan', {
     wsConnected: false,
     loadingMore: false,
     ratFilter: 'ALL',
+    dateRange: { startDate: null, endDate: null },
     pagination: {
       currentPage: 1,
       limit: 20,
@@ -51,7 +53,9 @@ export const useScanStore = defineStore('scan', {
           pageSize: this.pagination.limit,
           page: this.pagination.currentPage,
           search: this.pagination.searchTerm || undefined,
-          rat: this.ratFilter
+          rat: this.ratFilter,
+          ...(this.dateRange.startDate !== null ? { startDate: this.dateRange.startDate } : {}),
+          ...(this.dateRange.endDate !== null ? { endDate: this.dateRange.endDate } : {})
         })
         // Backend now returns flat items (one per scan_result). Map fields
         // to the ScanSummary shape expected by UI (operator name -> operator).
@@ -157,6 +161,14 @@ export const useScanStore = defineStore('scan', {
       this.fetchScans()
     },
 
+    setDateRange(startDate?: string | null, endDate?: string | null) {
+      this.dateRange.startDate = startDate ?? null
+      this.dateRange.endDate = endDate ?? null
+      this.pagination.currentPage = 1
+      this.pagination.offset = 0
+      this.fetchScans()
+    },
+
     setLimit(limit: number) {
       this.pagination.limit = limit
       this.pagination.currentPage = 1
@@ -184,7 +196,9 @@ export const useScanStore = defineStore('scan', {
           pageSize: this.pagination.limit,
           page: nextPage,
           search: this.pagination.searchTerm,
-          rat: this.ratFilter
+          rat: this.ratFilter,
+          ...(this.dateRange.startDate !== null ? { startDate: this.dateRange.startDate } : {}),
+          ...(this.dateRange.endDate !== null ? { endDate: this.dateRange.endDate } : {})
         })
 
         // Append the new items (one per scan_result) to the UI list

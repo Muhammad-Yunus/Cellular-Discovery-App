@@ -14,13 +14,30 @@ const {
   pagination,
   fetchScans,
   setPage,
-  setSearch
+  setSearch,
+  setDateRange
 } = useScan()
 
 const search = ref(pagination.searchTerm)
 const currentPage = computed(() => pagination.offset / pagination.limit + 1)
 const totalPages = computed(() => pagination.totalPages)
 const totalItems = computed(() => pagination.totalItems)
+
+// Time range filter refs
+const startDateTime = ref<string | null>(null)
+const endDateTime = ref<string | null>(null)
+
+onMounted(() => {
+  // Initialize from store's date range
+  startDateTime.value = scanStore.dateRange.startDate ?? ''
+  endDateTime.value = scanStore.dateRange.endDate ?? ''
+})
+
+function updateTimeRange() {
+  const start = startDateTime.value === '' ? null : startDateTime.value
+  const end = endDateTime.value === '' ? null : endDateTime.value
+  setDateRange(start, end)
+}
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 watch(search, (val) => {
@@ -70,6 +87,27 @@ const columns: TableColumn<ScanSummary>[] = [
       </h1>
     </div>
 
+    <!-- Time Range Filter -->
+    <div class="flex flex-col md:flex-row gap-4 mb-4 items-end">
+      <div class="flex-1 max-w-xs">
+        <label class="block text-sm font-medium text-muted mb-1">From</label>
+        <UInput
+          type="datetime-local"
+          v-model="startDateTime"
+          @input="updateTimeRange"
+        />
+      </div>
+      <div class="flex-1 max-w-xs">
+        <label class="block text-sm font-medium text-muted mb-1">To</label>
+        <UInput
+          type="datetime-local"
+          v-model="endDateTime"
+          @input="updateTimeRange"
+        />
+      </div>
+    </div>
+
+    <!-- Search and RAT Filter -->
     <div class="flex flex-col md:flex-row gap-4 mb-4 items-center">
       <UInput
         v-model="search"

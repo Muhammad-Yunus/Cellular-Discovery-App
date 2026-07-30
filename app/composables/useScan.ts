@@ -75,6 +75,10 @@ export function useScan() {
     scanStore.setSearch(search)
   }
 
+  function setDateRange(startDate?: string | null, endDate?: string | null) {
+    scanStore.setDateRange(startDate, endDate)
+  }
+
   onMounted(() => {
     connectWs()
     scanStore.fetchScans()
@@ -99,6 +103,7 @@ export function useScan() {
     selectScan,
     removeScan,
     setPage,
-    setSearch
+    setSearch,
+    setDateRange
   }
 }
