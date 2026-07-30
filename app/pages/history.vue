@@ -87,8 +87,16 @@ const columns: TableColumn<ScanSummary>[] = [
       </h1>
     </div>
 
-    <!-- Time Range Filter -->
-    <div class="flex flex-col md:flex-row gap-4 mb-4 items-end">
+    <!-- Combined Filters: Search, Time Range, RAT -->
+    <div class="flex flex-col md:flex-row gap-4 mb-4 items-center">
+      <!-- Search input -->
+      <UInput
+        v-model="search"
+        icon="i-lucide-search"
+        placeholder="Search by operator, MCC, or MNC..."
+        class="flex-1 min-w-[200px]"
+      />
+      <!-- From datetime -->
       <div class="flex-1 max-w-xs">
         <label class="block text-sm font-medium text-muted mb-1">From</label>
         <UInput
@@ -97,6 +105,7 @@ const columns: TableColumn<ScanSummary>[] = [
           @input="updateTimeRange"
         />
       </div>
+      <!-- To datetime -->
       <div class="flex-1 max-w-xs">
         <label class="block text-sm font-medium text-muted mb-1">To</label>
         <UInput
@@ -105,19 +114,11 @@ const columns: TableColumn<ScanSummary>[] = [
           @input="updateTimeRange"
         />
       </div>
-    </div>
-
-    <!-- Search and RAT Filter -->
-    <div class="flex flex-col md:flex-row gap-4 mb-4 items-center">
-      <UInput
-        v-model="search"
-        icon="i-lucide-search"
-        placeholder="Search by operator, MCC, or MNC..."
-        class="flex-1"
-      />
+      <!-- RAT filter -->
       <FilterPanel
         :selected-rat="scanStore.ratFilter"
         @update:selected-rat="scanStore.setRat"
+        class="min-w-[150px]"
       />
     </div>
 
