@@ -47,7 +47,23 @@ export const useScanStore = defineStore('scan', {
           offset: this.pagination.offset,
           search: this.pagination.searchTerm || undefined
         })
-        this.scans = result.items
+        // Transform backend response (which includes nested results array)
+        // to flat ScanSummary shape expected by UI.
+        const transformedItems = result.items.map(item => {
+          const firstResult = item.results && item.results.length > 0 ? item.results[0] : null
+          return {
+            id: item.id,
+            operator: firstResult ? firstResult.operator_name : 'Unknown',
+            mcc: firstResult ? firstResult.mcc : '',
+            mnc: firstResult ? firstResult.mnc : '',
+            rat: firstResult ? firstResult.rat : '',
+            latitude: item.latitude,
+            longitude: item.longitude,
+            scan_time: item.scan_time,
+            signal_strength: undefined // not provided in summary
+          }
+        })
+        this.scans = transformedItems
         this.pagination.totalItems = result.total
         this.pagination.totalPages = Math.ceil(result.total / this.pagination.limit)
         // Default selection: pick the latest scan by id timestamp (scans
