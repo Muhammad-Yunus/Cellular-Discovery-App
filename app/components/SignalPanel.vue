@@ -18,50 +18,42 @@ function fmt(value: unknown): string {
 </script>
 
 <template>
-  <div class="p-3 text-sm">
-    <div
-      v-if="selectedScan"
-      class="grid grid-cols-2 gap-x-6 gap-y-2"
-    >
-<div class="flex items-center justify-between">
-  <div>
-    <span class="text-muted">Operator</span>
-    <p class="text-default font-medium">
-      {{ fmt(selectedScan.operator) }}
-    </p>
-  </div>
-  <img
-    v-if="getOperatorLogoPath(selectedScan.operator)"
-    :src="getOperatorLogoPath(selectedScan.operator)"
-    alt="Operator logo"
-    class="h-8 w-auto ml-2"
-  >
+<div class="p-3 text-sm">
+    <div v-if="selectedScan" class="flex items-center justify-between gap-4">
+      <!-- Left side: two-column grid -->
+      <div class="grid grid-cols-2 gap-x-6 gap-y-2 shrink-0">
+        <div>
+          <span class="text-muted">Operator</span>
+          <p class="text-default font-medium">{{ fmt(selectedScan.operator) }}</p>
+        </div>
+        <div>
+          <span class="text-muted">RAT</span>
+          <p class="text-default font-medium">{{ fmt(selectedScan.rat) }}</p>
+        </div>
+        <div>
+          <span class="text-muted">MCC</span>
+          <p class="text-default font-medium">{{ fmt(selectedScan.mcc) }}</p>
+        </div>
+        <div>
+          <span class="text-muted">MNC</span>
+          <p class="text-default font-medium">{{ fmt(selectedScan.mnc) }}</p>
+        </div>
+        <div class="col-span-2">
+          <span class="text-muted">Scan Time</span>
+          <p class="text-default font-medium">{{ formatDateTime(selectedScan.scan_time) }}</p>
+        </div>
+      </div>
+
+      <!-- Right side: operator logo -->
+      <div class="shrink-0">
+        <img
+          v-if="getOperatorLogoPath(selectedScan.operator)"
+          :src="getOperatorLogoPath(selectedScan.operator)"
+          alt="Operator logo"
+          class="h-8 w-auto"
+        >
+      </div>
 </div>
-      <div>
-        <span class="text-muted">RAT</span>
-        <p class="text-default font-medium">
-          {{ fmt(selectedScan.rat) }}
-        </p>
-      </div>
-      <div>
-        <span class="text-muted">MCC</span>
-        <p class="text-default font-medium">
-          {{ fmt(selectedScan.mcc) }}
-        </p>
-      </div>
-      <div>
-        <span class="text-muted">MNC</span>
-        <p class="text-default font-medium">
-          {{ fmt(selectedScan.mnc) }}
-        </p>
-      </div>
-      <div class="col-span-2">
-        <span class="text-muted">Scan Time</span>
-        <p class="text-default font-medium">
-          {{ formatDateTime(selectedScan.scan_time) }}
-        </p>
-      </div>
-    </div>
 
     <div
       v-else
