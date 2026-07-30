@@ -33,36 +33,33 @@ onMounted(() => {
   endDateTime.value = scanStore.dateRange.endDate ?? ''
 })
 
-function formatUtcIso(val: string): string | null {
-  // Input is local datetime like "YYYY-MM-DDTHH:mm". Interpret as local time,
-  // then convert to UTC ISO string with seconds, e.g., "2026-07-30T10:22:00Z"
+function formatLocalIsoOffset(val: string): string | null {
+  // Input is local datetime like "YYYY-MM-DDTHH:mm" or "YYYY-MM-DDTHH:mm:ss".
+  // Produce ISO string with seconds and local timezone offset, e.g., "2026-07-30T17:22:00+07:00"
   const d = new Date(val)
   if (isNaN(d.getTime())) return null
   const pad = (n: number) => String(n).padStart(2, '0')
-  const y = d.getUTCFullYear()
-  const m = pad(d.getUTCMonth() + 1)
-  const day = pad(d.getUTCDate())
-  const hh = pad(d.getUTCHours())
-  const mm = pad(d.getUTCMinutes())
-  const ss = pad(d.getUTCSeconds())
-  return `${y}-${m}-${day}T${hh}:${mm}:${ss}Z`
+  const y = d.getFullYear()
+  const m = pad(d.getMonth() + 1)
+  const day = pad(d.getDate())
+  const hh = pad(d.getHours())
+  const mm = pad(d.getMinutes())
+  const ss = pad(d.getSeconds())
+  const offsetMinutes = -d.getTimezoneOffset() // minutes east of UTC
+  const offsetSign = offsetMinutes >= 0 ? '+' : '-'
+  const absOffset = Math.abs(offsetMinutes)
+  const offsetH = pad(Math.floor(absOffset / 60))
+  const offsetM = pad(absOffset % 60)
+  return `${y}-${m}-${day}T${hh}:${mm}:${ss}${offsetSign}${offsetH}:${offsetM}`
 }
 
 function updateTimeRange() {
-  const start = startDateTime.value ? formatUtcIso(startDateTime.value) : null
-  const end = endDateTime.value ? formatUtcIso(endDateTime.value) : null
+  const start = startDateTime.value ? formatLocalIsoOffset(startDateTime.value) : null
+  const end = endDateTime.value ? formatLocalIsoOffset(endDateTime.value) : null
   setDateRange(start, end)
 }
 
-function updateTimeRange() {
-  const start = startDateTime.value
-    ? formatLocalIso(startDateTime.value)
-    : null
-  const end = endDateTime.value
-    ? formatLocalIso(endDateTime.value)
-    : null
-  setDateRange(start, end)
-}
+
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 watch(search, (val) => {

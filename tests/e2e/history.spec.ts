@@ -40,9 +40,9 @@ test.describe('History Page Date Range Filter', () => {
     const startDate = url.searchParams.get('start_date') ?? ''
     const endDate = url.searchParams.get('end_date') ?? ''
 
-    // Validasi bahwa nilai yang dikirim sesuai format ISO UTC (akhiran Z)
-    expect(startDate).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/)
-    expect(endDate).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/)
+    // Validasi bahwa nilai yang dikirim sesuai format ISO dengan offset zona waktu
+    expect(startDate).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/)
+    expect(endDate).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/)
     // Pasti start_date <= end_date
     expect(new Date(startDate).getTime()).toBeLessThanOrEqual(new Date(endDate).getTime())
   })
