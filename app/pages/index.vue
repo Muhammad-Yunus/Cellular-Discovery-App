@@ -17,15 +17,15 @@ function flyToScan(scanId: string | null) {
   if (!scanId || !mapViewRef.value) return
   const scan = scans.value.find(s => s.id === scanId)
   if (scan) {
-    // Instantly pan and zoom the map so the selected marker is placed
-    // at the centre of the viewport. We pass an explicit zoom (17) to
-    // ensure the marker is prominent. Using setView avoids any drift
-    // that can occur with animated flyTo.
-    mapViewRef.value.mapActions.setView([scan.latitude, scan.longitude], 17)
-    // Force a size recalculation to ensure the map container is properly
-    // accounted for (especially after rapid UI transitions), guaranteeing
-    // the marker lands exactly at the viewport centre.
-    mapViewRef.value.mapActions.invalidateSize()
+    // Directly use Leaflet's flyTo with animation disabled to instantly
+    // centre the map on the selected marker's coordinates and set zoom 17.
+    // This avoids any drift that can occur with animated flyTo and is
+    // more reliable than setView because it goes through the same code
+    // path as the existing flyTo function.
+    const map = mapViewRef.value.mapActions.getMap();
+    if (map) {
+      map.flyTo([scan.latitude, scan.longitude], 17, { animate: false, duration: 0 });
+    }
   }
 }
 
