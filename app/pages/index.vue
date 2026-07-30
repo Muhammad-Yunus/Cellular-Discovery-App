@@ -17,19 +17,21 @@ function flyToScan(scanId: string | null) {
   if (!scanId || !mapViewRef.value) return
   const scan = scans.value.find(s => s.id === scanId)
   if (scan) {
-    // Instant pan+zoom to the selected marker's coordinates. The fixed
-    // sidebar (width 300px) overlays the left side of the map; we apply a
-    // left padding equal to half the sidebar width so the map's visible
-    // centre aligns with the marker after flyTo.
     const map = mapViewRef.value.mapActions.getMap()
     if (map) {
+      // Ensure the map container size is up‑to‑date before fitting bounds.
+      map.invalidateSize()
       const SIDEBAR_WIDTH = 300 // px, matches Sidebar.vue's w-[300px]
-      map.flyTo([scan.latitude, scan.longitude], 17, {
-        animate: false,
-        duration: 0,
-        // padding: [top, right, bottom, left]
-        padding: [0, 0, 0, Math.floor(SIDEBAR_WIDTH / 2)]
-      })
+      // fitBounds with left padding equal to half the sidebar width makes the
+      // selected marker exactly the centre of the visible map area.
+      map.fitBounds(
+        [[scan.latitude, scan.longitude], [scan.latitude, scan.longitude]],
+        {
+          padding: [0, 0, 0, Math.floor(SIDEBAR_WIDTH / 2)], // top, right, bottom, left
+          maxZoom: 17,
+          animate: false
+        }
+      )
     }
   }
 }
