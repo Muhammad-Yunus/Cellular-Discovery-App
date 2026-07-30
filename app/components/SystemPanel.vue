@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSystemStore } from '~/stores/systemStore'
+import { formatDateTime } from '~/utils/dateFormat'
 
 const systemStore = useSystemStore()
 
@@ -21,16 +22,6 @@ function statusLabel(status: string): string {
     case 'warning': return 'Warning'
     case 'error': return 'Error'
     default: return 'Unknown'
-  }
-}
-
-function formatTimestamp(iso: string | null): string {
-  if (!iso) return '-'
-  try {
-    const d = new Date(iso)
-    return d.toLocaleString()
-  } catch {
-    return iso
   }
 }
 </script>
@@ -72,7 +63,7 @@ function formatTimestamp(iso: string | null): string {
       <div>
         <span class="text-muted">Last Check</span>
         <p class="text-default font-mono font-medium">
-          {{ formatTimestamp(systemStore.lastCheck) }}
+          {{ formatDateTime(systemStore.lastCheck) }}
         </p>
       </div>
     </div>

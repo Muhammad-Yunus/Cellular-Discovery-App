@@ -2,9 +2,10 @@
   <div
     :id="mapId"
     ref="mapContainer"
-    class="w-full h-full"
+    class="w-full h-full bg-neutral-900"
   >
     <slot />
+    <FloatingScanButton />
   </div>
 </template>
 
@@ -15,15 +16,19 @@ const props = withDefaults(defineProps<{
   markers?: ScanSummary[]
   center?: [number, number]
   zoom?: number
+  selectedScanId?: string | null
 }>(), {
   markers: () => [],
-  zoom: 17
+  zoom: 17,
+  selectedScanId: null
 })
 
 const emit = defineEmits<{
   click: [latlng: { lat: number, lng: number }]
   markerClick: [scan: ScanSummary]
 }>()
+
+const activeMarkerId = ref<string | null>(props.selectedScanId)
 
 const runtimeConfig = useRuntimeConfig()
 const mapContainer = ref<HTMLDivElement | null>(null)
@@ -41,10 +46,34 @@ function getCenter(): [number, number] {
   ]
 }
 
+function syncSelectedPopup() {
+  if (!props.selectedScanId) {
+    mapActions.closeAllPopups()
+    return
+  }
+  mapActions.openPopupFor(props.selectedScanId)
+}
+
+/**
+ * Sync the pulsing animation on the marker that matches the selected scan.
+ * Removes the highlight from any previously highlighted marker.
+ */
+function updateMarkerHighlight() {
+  if (activeMarkerId.value && activeMarkerId.value !== props.selectedScanId) {
+    mapActions.setMarkerActive(activeMarkerId.value, false)
+  }
+  if (props.selectedScanId) {
+    mapActions.setMarkerActive(props.selectedScanId, true)
+  }
+  activeMarkerId.value = props.selectedScanId ?? null
+}
+
 onMounted(() => {
   if (!mapContainer.value) return
   mapActions.initMap(mapId, getCenter(), props.zoom)
   props.markers.forEach(m => mapActions.addMarker(m))
+  syncSelectedPopup()
+  updateMarkerHighlight()
 
   mapActions.getMap()?.on('click', (e: { latlng: { lat: number, lng: number } }) => {
     emit('click', e.latlng)
@@ -54,7 +83,14 @@ onMounted(() => {
 watch(() => props.markers, (markers) => {
   mapActions.clearMarkers()
   markers.forEach(m => mapActions.addMarker(m))
+  syncSelectedPopup()
+  updateMarkerHighlight()
 }, { deep: true })
+
+watch(() => props.selectedScanId, () => {
+  syncSelectedPopup()
+  updateMarkerHighlight()
+})
 
 onUnmounted(() => {
   mapActions.destroy()

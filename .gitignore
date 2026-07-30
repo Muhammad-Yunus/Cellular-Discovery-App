@@ -22,3 +22,24 @@ logs
 .env
 .env.*
 !.env.example
+
+# Playwright artifacts (debug output)
+playwright-report/
+test-results/
+tests/e2e/__screenshots__/
+
+# Local debug scripts (root)
+check-*.cjs
+debug-*.cjs
+run-e2e.cjs
+home-page.html
+
+# OS / accidental path artifacts
+C/
+
+# Deep-debug specs (kept locally, not in CI)
+tests/e2e/debug-icons.spec.ts
+tests/e2e/debug-icons-deep.spec.ts
+tests/e2e/debug-tabs.spec.ts
+
+

@@ -72,7 +72,7 @@ describe('scanStore', () => {
 
     expect(store.pagination.currentPage).toBe(2)
     expect(store.pagination.offset).toBe(20)
-    expect(getScans).toHaveBeenCalledWith({ limit: 20, offset: 20, search: undefined })
+    expect(getScans).toHaveBeenCalledWith({ pageSize: 20, page: 2, search: undefined })
   })
 
   it('setSearch resets page and fetches', async () => {
@@ -103,5 +103,47 @@ describe('scanStore', () => {
     expect(store.scans.length).toBe(1)
     expect(store.scans[0].id).toBe('2')
     expect(store.selectedScanId).toBeNull()
+  })
+
+  it('fetchScans auto-selects the latest scan when none is selected', async () => {
+    const store = useScanStore()
+    const { getScans } = await import('~/services/scan.service')
+
+    const latest = { id: 'scan-latest', operator: 'A', mcc: '1', mnc: '1', rat: 'LTE', latitude: 0, longitude: 0, scan_time: '2024-01-02T00:00:00Z' }
+    const older = { id: 'scan-older', operator: 'B', mcc: '2', mnc: '2', rat: 'NR', latitude: 0, longitude: 0, scan_time: '2024-01-01T00:00:00Z' }
+    // Backend returns newest-first
+    vi.mocked(getScans).mockResolvedValueOnce({ items: [latest, older], total: 2, limit: 20, offset: 0 })
+
+    expect(store.selectedScanId).toBeNull()
+    await store.fetchScans()
+
+    expect(store.selectedScanId).toBe('scan-latest')
+  })
+
+  it('fetchScans keeps existing selection when the selected scan is still in the list', async () => {
+    const store = useScanStore()
+    const { getScans } = await import('~/services/scan.service')
+
+    const a = { id: 'a', operator: 'A', mcc: '1', mnc: '1', rat: 'LTE', latitude: 0, longitude: 0, scan_time: '' }
+    const b = { id: 'b', operator: 'B', mcc: '2', mnc: '2', rat: 'NR', latitude: 0, longitude: 0, scan_time: '' }
+    vi.mocked(getScans).mockResolvedValueOnce({ items: [a, b], total: 2, limit: 20, offset: 0 })
+
+    store.selectScan('b')
+    await store.fetchScans()
+
+    expect(store.selectedScanId).toBe('b')
+  })
+
+  it('fetchScans falls back to latest when the previously selected scan disappeared', async () => {
+    const store = useScanStore()
+    const { getScans } = await import('~/services/scan.service')
+
+    const a = { id: 'a', operator: 'A', mcc: '1', mnc: '1', rat: 'LTE', latitude: 0, longitude: 0, scan_time: '' }
+    store.selectScan('stale-id')
+    vi.mocked(getScans).mockResolvedValueOnce({ items: [a], total: 1, limit: 20, offset: 0 })
+
+    await store.fetchScans()
+
+    expect(store.selectedScanId).toBe('a')
   })
 })

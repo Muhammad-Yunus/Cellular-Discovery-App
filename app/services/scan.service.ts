@@ -2,9 +2,10 @@ import { apiRequest } from './api'
 import type { ScanResponse, ScanPaginated, ScanCreate } from '~/types'
 
 export interface GetScansParams {
-  limit?: number
-  offset?: number
+  page?: number
+  pageSize?: number
   search?: string
+  rat?: string // Filter by RAT (e.g., 'LTE', 'NR'); if null or 'ALL', no filter applied
 }
 
 export async function createScan(data: ScanCreate): Promise<ScanResponse> {
@@ -15,13 +16,20 @@ export async function createScan(data: ScanCreate): Promise<ScanResponse> {
 }
 
 export async function getScans(params?: GetScansParams): Promise<ScanPaginated> {
+  const queryParams: Record<string, unknown> = {
+    page: params?.page ?? 1,
+    page_size: params?.pageSize ?? 10,
+    search: params?.search ?? null
+  }
+
+  // Only include rat filter if it's provided AND is NOT 'ALL' or null
+  if (params?.rat !== undefined && params?.rat !== '' && params?.rat !== 'ALL') {
+    queryParams.rat = params?.rat
+  }
+
   return apiRequest<ScanPaginated>('/scans', {
     method: 'GET',
-    params: {
-      limit: params?.limit ?? 20,
-      offset: params?.offset ?? 0,
-      search: params?.search
-    }
+    params: queryParams
   })
 }
 

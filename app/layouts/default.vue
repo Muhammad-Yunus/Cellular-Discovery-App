@@ -5,10 +5,4 @@
       <NuxtPage />
     </main>
   </div>
-  <ClientOnly>
-    <Sidebar />
-  </ClientOnly>
-  <ClientOnly>
-    <BottomPanel />
-  </ClientOnly>
 </template>

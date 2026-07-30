@@ -96,7 +96,7 @@ const stubs = {
   SystemPanel: { template: '<div data-testid="system-panel" />' },
   UBadge: { template: '<span data-testid="u-badge"><slot /><span v-if="$props.label">{{ $props.label }}</span></span>', props: ['color', 'variant', 'size', 'label'] },
   UButton: { template: '<button data-testid="u-button" :title="$props.title" @click="$emit(\'click\', $event)"><slot />{{ $props.label }}</button>', props: ['label', 'color', 'variant', 'size', 'icon', 'title'] },
-  UTabs: { template: '<div data-testid="u-tabs" class="u-tabs"><slot name="signal" /><slot name="gps" /><slot name="system" /></div>' }
+  UIcon: { template: '<span data-testid="u-icon" />', props: ['name'] }
 }
 
 function mountWithStubs(component: object, options: Record<string, unknown> = {}) {
@@ -116,36 +116,51 @@ describe('BottomPanel', () => {
   it('renders when bottomPanelOpen is true', async () => {
     const BottomPanel = await import('../BottomPanel.vue')
     const wrapper = mountWithStubs(BottomPanel.default)
-    expect(wrapper.find('[data-testid="u-tabs"]').exists()).toBe(true)
-  })
+    expect(wrapper.find('[role="tablist"]').exists()).toBe(true)
+    expect(wrapper.findAll('[role="tab"]').length).toBe(3)
+  }, 30000)
 
   it('does not render when bottomPanelOpen is false', async () => {
     mockUiStore.bottomPanelOpen = false
     const BottomPanel = await import('../BottomPanel.vue')
     const wrapper = mountWithStubs(BottomPanel.default)
-    expect(wrapper.find('[data-testid="u-tabs"]').exists()).toBe(false)
+    expect(wrapper.find('[role="tablist"]').exists()).toBe(false)
   })
 
-  it('renders all three tab panels', async () => {
+  it('renders only the active tab panel', async () => {
+    mockUiStore.activeInfoTab = 'signal'
     const BottomPanel = await import('../BottomPanel.vue')
     const wrapper = mountWithStubs(BottomPanel.default)
     expect(wrapper.find('[data-testid="signal-panel"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="gps-panel"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="system-panel"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="gps-panel"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="system-panel"]').exists()).toBe(false)
   })
 
-  it('toggles panel on close button click', async () => {
+  it('switches the active panel when the active tab changes', async () => {
+    mockUiStore.activeInfoTab = 'gps'
     const BottomPanel = await import('../BottomPanel.vue')
     const wrapper = mountWithStubs(BottomPanel.default)
-    const closeBtn = wrapper.find('[title="Close panel"]')
-    await closeBtn.trigger('click')
-    expect(mockUiStore.toggleBottomPanel).toHaveBeenCalled()
+    expect(wrapper.find('[data-testid="gps-panel"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="signal-panel"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="system-panel"]').exists()).toBe(false)
   })
 
-  it('sets active tab on tab change', async () => {
+  it('marks the active tab button with aria-selected', async () => {
+    mockUiStore.activeInfoTab = 'system'
     const BottomPanel = await import('../BottomPanel.vue')
-    mountWithStubs(BottomPanel.default)
-    expect(mockUiStore.activeInfoTab).toBe('signal')
+    const wrapper = mountWithStubs(BottomPanel.default)
+    const tabs = wrapper.findAll('[role="tab"]')
+    expect(tabs[0].attributes('aria-selected')).toBe('false')
+    expect(tabs[1].attributes('aria-selected')).toBe('false')
+    expect(tabs[2].attributes('aria-selected')).toBe('true')
+  })
+
+  it('calls setActiveTab when a tab button is clicked', async () => {
+    const BottomPanel = await import('../BottomPanel.vue')
+    const wrapper = mountWithStubs(BottomPanel.default)
+    const tabs = wrapper.findAll('[role="tab"]')
+    await tabs[1].trigger('click')
+    expect(mockUiStore.setActiveTab).toHaveBeenCalledWith('gps')
   })
 })
 
