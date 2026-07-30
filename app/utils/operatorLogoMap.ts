@@ -8,7 +8,8 @@ export type OperatorKey = keyof typeof operatorLogoMap;
 export const operatorAliasMap: Record<string, OperatorKey> = {
   IM3: 'Indosat' as OperatorKey,
   Ooredo: 'Indosat' as OperatorKey,
-  'IM3 Ooredo': 'Indosat' as OperatorKey,
+  Ooredoo: 'Indosat' as OperatorKey,
+  'IM3 Ooredoo': 'Indosat' as OperatorKey,
   // Add more variants here if needed
 };
 
