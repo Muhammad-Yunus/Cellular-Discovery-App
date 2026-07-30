@@ -10,6 +10,7 @@ interface ScanState {
   error: string | null
   wsConnected: boolean
   loadingMore: boolean
+  ratFilter: string | null // 'ALL' or specific RAT like 'LTE'
   pagination: PaginationMeta
 }
 
@@ -22,6 +23,7 @@ export const useScanStore = defineStore('scan', {
     error: null,
     wsConnected: false,
     loadingMore: false,
+    ratFilter: 'ALL',
     pagination: {
       currentPage: 1,
       limit: 20,
@@ -48,7 +50,8 @@ export const useScanStore = defineStore('scan', {
         const result = await scanService.getScans({
           pageSize: this.pagination.limit,
           page: this.pagination.currentPage,
-          search: this.pagination.searchTerm || undefined
+          search: this.pagination.searchTerm || undefined,
+          rat: this.ratFilter
         })
         // Backend now returns flat items (one per scan_result). Map fields
         // to the ScanSummary shape expected by UI (operator name -> operator).
@@ -147,6 +150,13 @@ export const useScanStore = defineStore('scan', {
       this.fetchScans()
     },
 
+    setRat(rat: string) {
+      this.ratFilter = rat
+      this.pagination.currentPage = 1
+      this.pagination.offset = 0
+      this.fetchScans()
+    },
+
     setLimit(limit: number) {
       this.pagination.limit = limit
       this.pagination.currentPage = 1
@@ -174,6 +184,7 @@ export const useScanStore = defineStore('scan', {
           pageSize: this.pagination.limit,
           page: nextPage,
           search: this.pagination.searchTerm,
+          rat: this.ratFilter
         })
 
         // Append the new items (one per scan_result) to the UI list

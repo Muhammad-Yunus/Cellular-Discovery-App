@@ -8,17 +8,21 @@ const scanStore = useScanStore()
 const uiStore = useUiStore()
 
 const searchTerm = ref('')
-const selectedRat = ref('ALL')
+// Initialise from the store so the filter survives page reloads.
+const selectedRat = ref(scanStore.ratFilter ?? 'ALL')
 
-const filteredScans = computed(() => {
-  let list = scanStore.scans
-
-  if (selectedRat.value !== 'ALL') {
-    list = list.filter(s => s.rat === selectedRat.value)
+// Reactively reflect any external changes to the store filter (e.g. when
+// navigating back to the page). The FilterPanel also emits updates.
+watch(
+  () => scanStore.ratFilter,
+  (val) => {
+    if (val !== selectedRat.value) selectedRat.value = val ?? 'ALL'
   }
+)
 
-  return list
-})
+// The list displayed in the sidebar is already filtered server‑side via
+// the `rat` query parameter, so we can use the store list directly.
+const filteredScans = computed(() => scanStore.scans)
 
 function handleSearch(val: string) {
   searchTerm.value = val
@@ -27,6 +31,12 @@ function handleSearch(val: string) {
 
 function handleSelectScan(id: string) {
   scanStore.selectScan(id)
+}
+
+function handleRatChange(val: string) {
+  selectedRat.value = val
+  // Push the filter to the store which triggers a fresh API call.
+  scanStore.setRat(val)
 }
 
 const isLoading = computed(() => scanStore.loading)
@@ -65,7 +75,7 @@ function handleScroll(event: Event) {
 
       <FilterPanel
         :selected-rat="selectedRat"
-        @update:selected-rat="selectedRat = $event"
+        @update:selected-rat="handleRatChange"
       />
     </div>
 

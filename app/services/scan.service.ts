@@ -16,20 +16,14 @@ export async function createScan(data: ScanCreate): Promise<ScanResponse> {
 }
 
 export async function getScans(params?: GetScansParams): Promise<ScanPaginated> {
-  const queryParams: Record<string, unknown> = {
-    page: params?.page ?? 1,
-    page_size: params?.pageSize ?? 10,
-    search: params?.search ?? null
-  }
-
-  // Only include rat filter if it's provided AND is NOT 'ALL' or null
-  if (params?.rat !== undefined && params?.rat !== '' && params?.rat !== 'ALL') {
-    queryParams.rat = params?.rat
-  }
-
   return apiRequest<ScanPaginated>('/scans', {
     method: 'GET',
-    params: queryParams
+    params: {
+      page: params?.page ?? 1,
+      page_size: params?.pageSize ?? 10,
+      search: params?.search,
+      rat: params?.rat && params.rat !== 'ALL' ? params.rat : undefined
+    }
   })
 }
 
