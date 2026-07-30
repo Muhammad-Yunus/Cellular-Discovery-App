@@ -151,7 +151,11 @@ export function useMap(): MapActions {
     const signalIcon = L.divIcon({
       className: 'leaflet-signal-marker',
       html: `
-        <div class="signal-marker-badge" style="background-color: ${markerColor}; color: #ffffff;">
+        <div class="signal-marker-badge" style="
+          background-color: ${markerColor};
+          color: #ffffff;
+          --glow-color: ${markerColor};
+        ">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9m2.9 2.8a6.14 6.14 0 0 0-.8 7.5"></path>
             <circle cx="12" cy="9" r="2"></circle>

@@ -142,7 +142,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.55), 0 0 0 2px var(--theme-glow);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.55), 0 0 0 2px var(--glow-color, var(--theme-glow));
   border: 1.5px solid rgba(255, 255, 255, 0.15);
   transition: transform 0.15s ease;
 }
