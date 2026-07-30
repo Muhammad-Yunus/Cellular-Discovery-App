@@ -68,8 +68,8 @@ function getRatColor(rat: string | null | undefined): string {
       />
 
       <div class="flex-1 min-w-0 flex flex-col">
-        <!-- Row 1: operator + badge -->
-        <div class="flex items-center gap-2">
+        <!-- Row 1: operator + badge, badge on right -->
+        <div class="flex justify-between items-center mb-0.5">
           <p class="text-sm font-medium text-default truncate leading-tight">
             {{ scan.operator || 'Unknown Operator' }}
           </p>
@@ -82,12 +82,12 @@ function getRatColor(rat: string | null | undefined): string {
         </div>
 
         <!-- Row 2: MCC/MNC -->
-        <p class="text-xs text-muted leading-tight">
+        <p class="text-xs text-muted leading-tight mb-0.5">
           MCC: {{ fmt(scan.mcc) }} / MNC: {{ fmt(scan.mnc) }}
         </p>
 
-        <!-- Row 3: datetime, right aligned -->
-        <p class="text-xs text-muted leading-tight mt-0.5 self-end">
+        <!-- Row 3: datetime, left aligned -->
+        <p class="text-xs text-muted leading-tight">
           {{ formatDateTime(scan.scan_time) }}
         </p>
       </div>
