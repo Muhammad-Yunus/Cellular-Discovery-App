@@ -209,7 +209,7 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: var(--color-primary-300);
+  color: #ffffff;
   padding-bottom: 6px;
   margin-bottom: 6px;
   border-bottom: 1px solid var(--theme-border);
