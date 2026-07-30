@@ -58,33 +58,36 @@ function getRatColor(rat: string | null | undefined): string {
     ]"
     @click="emit('select', scan.id)"
   >
-    <div class="flex items-center justify-between gap-2">
+    <div class="flex items-stretch gap-2">
       <!-- Logo image (optional) -->
       <img
         v-if="getOperatorLogoPath(scan.operator)"
         :src="getOperatorLogoPath(scan.operator)"
         alt=""
-        class="w-8 h-8 object-contain mr-2"
+        class="w-8 self-stretch object-contain"
       />
 
-      <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium text-default truncate leading-tight">
-          {{ scan.operator || 'Unknown Operator' }}
-        </p>
-        <p class="text-xs text-muted leading-tight">
-          MCC: {{ fmt(scan.mcc) }} / MNC: {{ fmt(scan.mnc) }}
+      <div class="flex-1 min-w-0 flex justify-between items-center">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <p class="text-sm font-medium text-default truncate leading-tight">
+              {{ scan.operator || 'Unknown Operator' }}
+            </p>
+            <UBadge
+              :label="fmt(scan.rat) === '\u2011' ? 'N/A' : fmt(scan.rat)"
+              size="xs"
+              :color="getRatColor(scan.rat)"
+              variant="subtle"
+            />
+          </div>
+          <p class="text-xs text-muted leading-tight">
+            MCC: {{ fmt(scan.mcc) }} / MNC: {{ fmt(scan.mnc) }}
+          </p>
+        </div>
+        <p class="ml-2 text-xs text-muted leading-tight truncate">
+          {{ formatDateTime(scan.scan_time) }}
         </p>
       </div>
-
-       <UBadge
-         :label="fmt(scan.rat) === '\u2011' ? 'N/A' : fmt(scan.rat)"
-         size="xs"
-         :color="getRatColor(scan.rat)"
-         variant="subtle"
-       />
     </div>
-    <p class="mt-0.5 text-xs text-muted leading-tight">
-      {{ formatDateTime(scan.scan_time) }}
-    </p>
   </div>
 </template>
