@@ -31,6 +31,18 @@ function handleSelectScan(id: string) {
 
 const isLoading = computed(() => scanStore.loading)
 const isOpen = computed(() => uiStore.sidebarOpen)
+
+const scrollContainer = ref<HTMLDivElement | null>(null)
+
+function handleScroll(event: Event) {
+  const el = event.target as HTMLDivElement
+  // Load more when within 50px of bottom
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) {
+    if (!scanStore.loadingMore) {
+      scanStore.loadMoreScans()
+    }
+  }
+}
 </script>
 
 <template>
@@ -57,13 +69,22 @@ const isOpen = computed(() => uiStore.sidebarOpen)
       />
     </div>
 
-    <div class="flex-1 overflow-y-auto px-3 pb-3">
+    <div
+      ref="scrollContainer"
+      class="flex-1 overflow-y-auto px-3 pb-3"
+      @scroll="handleScroll"
+    >
       <HistoryList
         :scans="filteredScans"
         :loading="isLoading"
         :selected-id="scanStore.selectedScanId"
         @select-scan="handleSelectScan"
       />
+
+      <!-- Loading indicator when fetching more data -->
+      <div v-if="scanStore.loadingMore" class="text-center py-2">
+        <USkeleton class="w-16 mx-auto" />
+      </div>
     </div>
   </aside>
 </template>

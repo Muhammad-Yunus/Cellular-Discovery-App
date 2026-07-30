@@ -9,6 +9,7 @@ interface ScanState {
   creating: boolean
   error: string | null
   wsConnected: boolean
+  loadingMore: boolean
   pagination: PaginationMeta
 }
 
@@ -20,6 +21,7 @@ export const useScanStore = defineStore('scan', {
     creating: false,
     error: null,
     wsConnected: false,
+    loadingMore: false,
     pagination: {
       currentPage: 1,
       limit: 20,
@@ -148,6 +150,52 @@ export const useScanStore = defineStore('scan', {
       this.pagination.currentPage = 1
       this.pagination.offset = 0
       this.fetchScans()
+    },
+
+    /**
+     * Load the next page of scans and append them to the existing list.
+     * Called when the user scrolls to the bottom of the sidebar list.
+     */
+    async loadMoreScans() {
+      if (this.loadingMore) return
+
+      const { limit, offset, totalItems, searchTerm } = this.pagination
+
+      // No more data available
+      if (offset + limit >= totalItems) {
+        return
+      }
+
+      const newOffset = offset + limit
+      try {
+        const result = await scanService.getScans({
+          limit,
+          offset: newOffset,
+          search: searchTerm,
+        })
+
+        // Append the new items (one per scan_result) to the UI list
+        const newItems = result.items.map(item => ({
+          id: item.id,
+          operator: item.operator_name,
+          mcc: item.mcc,
+          mnc: item.mnc,
+          rat: item.rat,
+          latitude: item.latitude,
+          longitude: item.longitude,
+          scan_time: item.scan_time,
+        }))
+
+        this.scans = [...this.scans, ...newItems]
+        this.pagination.offset = newOffset
+        this.pagination.totalItems = result.total
+        this.pagination.totalPages = Math.ceil(result.total / limit)
+      } catch (err) {
+        console.error('Failed to load more scans', err)
+        // Could show a toast notification here
+      } finally {
+        this.loadingMore = false
+      }
     }
   }
 })
