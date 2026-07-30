@@ -162,14 +162,14 @@ body {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.15);
   }
 }
 
 .signal-marker-badge.pulse::after {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: -8px;
   border-radius: 9999px;
   background: radial-gradient(circle, var(--glow-color, transparent) 0%, transparent 70%);
   opacity: 0;
@@ -179,11 +179,11 @@ body {
 
 @keyframes pulse-ring {
   0% {
-    transform: scale(0.6);
-    opacity: 0.7;
+    transform: scale(0.4);
+    opacity: 0.8;
   }
   100% {
-    transform: scale(1.6);
+    transform: scale(2.2);
     opacity: 0;
   }
 }
