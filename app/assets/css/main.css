@@ -277,9 +277,9 @@ body {
 /* Close (X) button at the top-right corner of the popup */
 .leaflet-signal-popup .signal-popup-close-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.5);
+  top: -4px;
+  right: -8px;
+  background: none;
   border: none;
   color: #fff;
   width: 24px;
@@ -291,11 +291,11 @@ body {
   cursor: pointer;
   padding: 0;
   font-size: 14px;
-  transition: background 150ms ease;
+  transition: opacity 150ms ease;
 }
 
 .leaflet-signal-popup .signal-popup-close-btn:hover {
-  background: rgba(0, 0, 0, 0.75);
+  opacity: 0.7;
 }
 
 /* Floating scan button (bottom-right of map) */
