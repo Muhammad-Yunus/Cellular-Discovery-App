@@ -151,6 +151,26 @@ body {
   transform: scale(1.08);
 }
 
+/* Pulsing animation for active marker badge */
+.signal-marker-badge.pulse {
+  animation: pulse-scale 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-scale {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.55), 0 0 0 2px var(--glow-color, transparent);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 0 6px var(--glow-color, transparent);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.55), 0 0 0 2px var(--glow-color, transparent);
+  }
+}
+
 /* Info window popup styling */
 .leaflet-signal-popup .leaflet-popup-content-wrapper {
   background: rgba(24, 24, 27, 0.95) !important;

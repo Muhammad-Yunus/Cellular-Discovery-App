@@ -52,6 +52,8 @@ export interface MapActions {
   closeAllPopups: () => void
   destroy: () => void
   getMap: () => LeafletMap | null
+  // Highlight an existing marker with a pulsing animation when active
+  setMarkerActive(id: string, active: boolean): void
 }
 
 // Tile themes. Dark uses CartoDB base + label overlay so street names, roads,

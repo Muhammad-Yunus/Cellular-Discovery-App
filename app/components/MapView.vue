@@ -28,6 +28,8 @@ const emit = defineEmits<{
   markerClick: [scan: ScanSummary]
 }>()
 
+const activeMarkerId = ref<string | null>(props.selectedScanId)
+
 const runtimeConfig = useRuntimeConfig()
 const mapContainer = ref<HTMLDivElement | null>(null)
 const mapId = `map-${Math.random().toString(36).slice(2, 9)}`
@@ -52,11 +54,26 @@ function syncSelectedPopup() {
   mapActions.openPopupFor(props.selectedScanId)
 }
 
+/**
+ * Sync the pulsing animation on the marker that matches the selected scan.
+ * Removes the highlight from any previously highlighted marker.
+ */
+function updateMarkerHighlight() {
+  if (activeMarkerId.value && activeMarkerId.value !== props.selectedScanId) {
+    mapActions.setMarkerActive(activeMarkerId.value, false)
+  }
+  if (props.selectedScanId) {
+    mapActions.setMarkerActive(props.selectedScanId, true)
+  }
+  activeMarkerId.value = props.selectedScanId ?? null
+}
+
 onMounted(() => {
   if (!mapContainer.value) return
   mapActions.initMap(mapId, getCenter(), props.zoom)
   props.markers.forEach(m => mapActions.addMarker(m))
   syncSelectedPopup()
+  updateMarkerHighlight()
 
   mapActions.getMap()?.on('click', (e: { latlng: { lat: number, lng: number } }) => {
     emit('click', e.latlng)
@@ -67,10 +84,12 @@ watch(() => props.markers, (markers) => {
   mapActions.clearMarkers()
   markers.forEach(m => mapActions.addMarker(m))
   syncSelectedPopup()
+  updateMarkerHighlight()
 }, { deep: true })
 
 watch(() => props.selectedScanId, () => {
   syncSelectedPopup()
+  updateMarkerHighlight()
 })
 
 onUnmounted(() => {
