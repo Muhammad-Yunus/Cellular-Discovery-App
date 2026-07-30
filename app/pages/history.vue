@@ -90,12 +90,15 @@ const columns: TableColumn<ScanSummary>[] = [
     <!-- Combined Filters: Search, Time Range, RAT -->
     <div class="flex flex-col md:flex-row gap-4 mb-4 items-center">
       <!-- Search input -->
-      <UInput
-        v-model="search"
-        icon="i-lucide-search"
-        placeholder="Search by operator, MCC, or MNC..."
-        class="flex-1 min-w-[200px]"
-      />
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-sm font-medium text-muted mb-1">Search</label>
+        <UInput
+          v-model="search"
+          icon="i-lucide-search"
+          placeholder="Search by operator, MCC, or MNC..."
+          class="w-full"
+        />
+      </div>
       <!-- From datetime -->
       <div class="flex-1 max-w-xs">
         <label class="block text-sm font-medium text-muted mb-1">From</label>
@@ -115,11 +118,14 @@ const columns: TableColumn<ScanSummary>[] = [
         />
       </div>
       <!-- RAT filter -->
-      <FilterPanel
-        :selected-rat="scanStore.ratFilter"
-        @update:selected-rat="scanStore.setRat"
-        class="min-w-[150px]"
-      />
+      <div class="min-w-[150px]">
+        <label class="block text-sm font-medium text-muted mb-1">RAT Filter</label>
+        <FilterPanel
+          :selected-rat="scanStore.ratFilter"
+          @update:selected-rat="scanStore.setRat"
+          class="w-full"
+        />
+      </div>
     </div>
 
     <template v-if="loading">
