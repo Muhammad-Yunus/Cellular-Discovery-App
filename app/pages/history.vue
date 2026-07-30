@@ -35,7 +35,7 @@ onMounted(() => {
 
 function formatLocalIsoOffset(val: string): string | null {
   // Input is local datetime like "YYYY-MM-DDTHH:mm" or "YYYY-MM-DDTHH:mm:ss".
-  // Produce ISO string with seconds and local timezone offset, e.g., "2026-07-30T17:22:00+07:00"
+  // Produce ISO string with milliseconds (always .000000) and local timezone offset, e.g., "2026-07-30T17:22:00.000000+07:00"
   const d = new Date(val)
   if (isNaN(d.getTime())) return null
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -50,7 +50,7 @@ function formatLocalIsoOffset(val: string): string | null {
   const absOffset = Math.abs(offsetMinutes)
   const offsetH = pad(Math.floor(absOffset / 60))
   const offsetM = pad(absOffset % 60)
-  return `${y}-${m}-${day}T${hh}:${mm}:${ss}${offsetSign}${offsetH}:${offsetM}`
+  return `${y}-${m}-${day}T${hh}:${mm}:${ss}.000000${offsetSign}${offsetH}:${offsetM}`
 }
 
 function updateTimeRange() {
