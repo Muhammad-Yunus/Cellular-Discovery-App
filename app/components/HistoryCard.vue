@@ -20,6 +20,29 @@ function fmt(value: unknown): string {
   if (value === null || value === undefined || value === '') return '\u2011'
   return String(value)
 }
+
+/**
+ * Assigns a Tailwind color key based on RAT technology.
+ * This helps visually differentiate network types in the UI.
+ */
+function getRatColor(rat: string | null | undefined): string {
+  if (!rat) return 'neutral'
+  const normalized = rat.trim().toUpperCase()
+  const map: Record<string, string> = {
+    GSM: 'green',
+    GPRS: 'green',
+    EDGE: 'green',
+    UMTS: 'orange',
+    HSPA: 'orange',
+    LTE: 'blue',
+    NR: 'purple',          // 5G New Radio
+    TDMA: 'yellow',        // sometimes used for older tech
+    CDMA: 'yellow',
+    IS95: 'yellow',
+    IDEN: 'yellow'
+  }
+  return map[normalized] || 'neutral'
+}
 </script>
 
 <template>
@@ -39,12 +62,12 @@ function fmt(value: unknown): string {
           MCC: {{ fmt(scan.mcc) }} / MNC: {{ fmt(scan.mnc) }}
         </p>
       </div>
-      <UBadge
-        :label="fmt(scan.rat) === '\u2011' ? 'N/A' : fmt(scan.rat)"
-        size="xs"
-        color="neutral"
-        variant="subtle"
-      />
+       <UBadge
+         :label="fmt(scan.rat) === '\u2011' ? 'N/A' : fmt(scan.rat)"
+         size="xs"
+         :color="getRatColor(scan.rat)"
+         variant="subtle"
+       />
     </div>
     <p class="mt-0.5 text-xs text-muted leading-tight">
       {{ formatDateTime(scan.scan_time) }}
