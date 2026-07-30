@@ -70,14 +70,13 @@ const columns: TableColumn<ScanSummary>[] = [
       </h1>
     </div>
 
-    <UInput
-      v-model="search"
-      icon="i-lucide-search"
-      placeholder="Search by operator, MCC, or MNC..."
-      class="mb-4"
-    />
-
-    <div class="mb-4">
+    <div class="flex flex-col md:flex-row gap-4 mb-4 items-center">
+      <UInput
+        v-model="search"
+        icon="i-lucide-search"
+        placeholder="Search by operator, MCC, or MNC..."
+        class="flex-1"
+      />
       <FilterPanel
         :selected-rat="scanStore.ratFilter"
         @update:selected-rat="scanStore.setRat"
