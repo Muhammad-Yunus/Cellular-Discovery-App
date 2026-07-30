@@ -73,18 +73,18 @@ export const useScanStore = defineStore('scan', {
       this.creating = true
       this.error = null
       try {
-        const { defaultLat, defaultLon } = useRuntimeConfig().public
-        const newScan = await scanService.createScan({
-          operator: '',
-          mcc: '',
-          mnc: '',
-          rat: '',
-          latitude: parseFloat(defaultLat as string),
-          longitude: parseFloat(defaultLon as string)
-        })
-        this.scans.unshift(newScan)
-        this.selectedScanId = newScan.id
-        return newScan
+        // Minimal payload required by backend (only tty)
+        // @ts-ignore
+        await (scanService as any).createScan({ tty: '/dev/ttyUSB0' })
+        // Refresh scans list from server
+        await this.fetchScans()
+        // Select the latest scan (most recent scan_time)
+        if (this.scans.length > 0) {
+          const sorted = [...this.scans].sort(
+            (a, b) => new Date(b.scan_time).getTime() - new Date(a.scan_time).getTime()
+          )
+          this.selectedScanId = sorted[0].id
+        }
       } catch (e) {
         const { parseApiError } = await import('~/types/api')
         const appError = parseApiError(e)

@@ -1,14 +1,30 @@
 <script setup lang="ts">
 import { useScanStore } from '~/stores/scanStore'
+import { useCustomToast } from '@/composables/useCustomToast'
 
 defineOptions({ name: 'FloatingScanButton' })
 
 const scanStore = useScanStore()
+const toast = useCustomToast()
 const isCreating = computed(() => scanStore.creating)
 
 async function handleScan() {
   if (isCreating.value) return
-  await scanStore.createScan()
+  try {
+    await scanStore.createScan()
+    toast.add({
+      title: 'Scan started successfully',
+      color: 'success',
+      icon: 'i-lucide-check-circle'
+    })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Scan failed. Please try again.'
+    toast.add({
+      title: msg,
+      color: 'error',
+      icon: 'i-lucide-alert-circle'
+    })
+  }
 }
 </script>
 
