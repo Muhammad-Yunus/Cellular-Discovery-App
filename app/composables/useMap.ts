@@ -229,7 +229,9 @@ export function useMap(): MapActions {
       // popup without touching the selected scan (the marker keeps its
       // pulsing state and remains selected in the sidebar).
       .on('popupopen', (e) => {
-        const popupEl = e?.target?.getElement?.()
+        // 'e.popup' is the Leaflet popup instance; fetch its DOM node to
+        // attach the click handler to the custom close button.
+        const popupEl = e?.popup?.getElement?.()
         const btn = popupEl?.querySelector('.signal-popup-close-btn')
         if (btn) {
           btn.addEventListener('click', (ev) => {
