@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useScanStore } from '~/stores/scanStore'
 import { formatDateTime } from '~/utils/dateFormat'
+import { getOperatorLogoPath } from '~/utils/operatorLogoMap'
 
 const scanStore = useScanStore()
 const selectedScan = computed(() => scanStore.selectedScan)
@@ -22,12 +23,20 @@ function fmt(value: unknown): string {
       v-if="selectedScan"
       class="grid grid-cols-2 gap-x-6 gap-y-2"
     >
-      <div>
-        <span class="text-muted">Operator</span>
-        <p class="text-default font-medium">
-          {{ fmt(selectedScan.operator) }}
-        </p>
-      </div>
+<div class="flex items-center justify-between">
+  <div>
+    <span class="text-muted">Operator</span>
+    <p class="text-default font-medium">
+      {{ fmt(selectedScan.operator) }}
+    </p>
+  </div>
+  <img
+    v-if="getOperatorLogoPath(selectedScan.operator)"
+    :src="getOperatorLogoPath(selectedScan.operator)"
+    alt="Operator logo"
+    class="h-8 w-auto ml-2"
+  >
+</div>
       <div>
         <span class="text-muted">RAT</span>
         <p class="text-default font-medium">
