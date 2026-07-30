@@ -52,6 +52,7 @@ function getRatColor(rat: string | null | undefined): string {
 
 <template>
   <div
+    :data-scan-id="scan.id"
     :class="[
       'cursor-pointer transition-colors rounded-md border px-2.5 py-1.5',
       selected ? 'border-primary bg-primary/10' : 'border-muted hover:bg-elevated'

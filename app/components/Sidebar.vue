@@ -53,6 +53,26 @@ function handleScroll(event: Event) {
     }
   }
 }
+
+/**
+ * When the selected scan changes (e.g. via clicking a map marker),
+ * bring the corresponding HistoryCard into view inside the sidebar so
+ * the user can see which item is currently active.
+ */
+watch(
+  () => scanStore.selectedScanId,
+  async (id) => {
+    if (!id) return
+    // Wait for Vue to flush DOM updates so the target card exists.
+    await nextTick()
+    const container = scrollContainer.value
+    if (!container) return
+    const el = container.querySelector(`[data-scan-id="${id}"]`) as HTMLElement | null
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  }
+)
 </script>
 
 <template>
