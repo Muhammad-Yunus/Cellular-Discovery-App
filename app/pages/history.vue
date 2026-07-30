@@ -33,9 +33,32 @@ onMounted(() => {
   endDateTime.value = scanStore.dateRange.endDate ?? ''
 })
 
+function formatLocalIso(val: string): string | null {
+  // Expect input format "YYYY-MM-DDTHH:mm" or "YYYY-MM-DDTHH:mm:ss"
+  const d = new Date(val)
+  if (isNaN(d.getTime())) return null
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const y = d.getFullYear()
+  const m = pad(d.getMonth() + 1)
+  const day = pad(d.getDate())
+  const hh = pad(d.getHours())
+  const mm = pad(d.getMinutes())
+  const ss = pad(d.getSeconds())
+  const offset = -d.getTimezoneOffset() // minutes east of UTC
+  const sign = offset >= 0 ? '+' : '-'
+  const absOffset = Math.abs(offset)
+  const offsetH = pad(Math.floor(absOffset / 60))
+  const offsetM = pad(absOffset % 60)
+  return `${y}-${m}-${day}T${hh}:${mm}:${ss}${sign}${offsetH}:${offsetM}`
+}
+
 function updateTimeRange() {
-  const start = startDateTime.value === '' ? null : startDateTime.value
-  const end = endDateTime.value === '' ? null : endDateTime.value
+  const start = startDateTime.value
+    ? formatLocalIso(startDateTime.value)
+    : null
+  const end = endDateTime.value
+    ? formatLocalIso(endDateTime.value)
+    : null
   setDateRange(start, end)
 }
 
