@@ -269,6 +269,24 @@ export function useMap(): MapActions {
     map = null
   }
 
+  /**
+   * Toggle a pulsing animation on the badge of a marker. The class is
+   * added/removed on the `.signal-marker-badge` element which holds the
+   * inline-styled coloured circle. The CSS pulse keyframes are defined
+   * in `app/assets/css/main.css`. Used by `MapView` to highlight the
+   * currently selected scan.
+   */
+  function setMarkerActive(id: string, active: boolean) {
+    const marker = markers.get(id)
+    if (!marker) return
+    const el = marker.getElement()
+    if (!el) return
+    const badge = el.querySelector('.signal-marker-badge')
+    if (badge) {
+      badge.classList.toggle('pulse', active)
+    }
+  }
+
   return {
     initMap,
     addMarker,
@@ -281,7 +299,8 @@ export function useMap(): MapActions {
     openPopupFor,
     closeAllPopups,
     destroy,
-    getMap: () => map
+    getMap: () => map,
+    setMarkerActive
   }
 }
 
