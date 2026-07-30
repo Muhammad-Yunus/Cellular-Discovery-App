@@ -33,19 +33,25 @@ onMounted(() => {
   endDateTime.value = scanStore.dateRange.endDate ?? ''
 })
 
-function formatLocalIso(val: string): string | null {
-  // Expect input format "YYYY-MM-DDTHH:mm" or "YYYY-MM-DDTHH:mm:ss"
+function formatUtcIso(val: string): string | null {
+  // Input is local datetime like "YYYY-MM-DDTHH:mm". Interpret as local time,
+  // then convert to UTC ISO string with seconds, e.g., "2026-07-30T10:22:00Z"
   const d = new Date(val)
   if (isNaN(d.getTime())) return null
   const pad = (n: number) => String(n).padStart(2, '0')
-  const y = d.getFullYear()
-  const m = pad(d.getMonth() + 1)
-  const day = pad(d.getDate())
-  const hh = pad(d.getHours())
-  const mm = pad(d.getMinutes())
-  const ss = pad(d.getSeconds())
-  // Return ISO without timezone offset (local time)
-  return `${y}-${m}-${day}T${hh}:${mm}:${ss}`
+  const y = d.getUTCFullYear()
+  const m = pad(d.getUTCMonth() + 1)
+  const day = pad(d.getUTCDate())
+  const hh = pad(d.getUTCHours())
+  const mm = pad(d.getUTCMinutes())
+  const ss = pad(d.getUTCSeconds())
+  return `${y}-${m}-${day}T${hh}:${mm}:${ss}Z`
+}
+
+function updateTimeRange() {
+  const start = startDateTime.value ? formatUtcIso(startDateTime.value) : null
+  const end = endDateTime.value ? formatUtcIso(endDateTime.value) : null
+  setDateRange(start, end)
 }
 
 function updateTimeRange() {
