@@ -68,24 +68,28 @@ function updateMarkerHighlight() {
   activeMarkerId.value = props.selectedScanId ?? null
 }
 
-onMounted(() => {
-  if (!mapContainer.value) return
-  mapActions.initMap(mapId, getCenter(), props.zoom)
-  props.markers.forEach(m => mapActions.addMarker(m))
-  syncSelectedPopup()
-  updateMarkerHighlight()
+  onMounted(() => {
+    if (!mapContainer.value) return
+    mapActions.initMap(mapId, getCenter(), props.zoom)
+    props.markers.forEach(m => {
+      mapActions.addMarker(m, (scan) => emit('markerClick', scan))
+    })
+    syncSelectedPopup()
+    updateMarkerHighlight()
 
-  mapActions.getMap()?.on('click', (e: { latlng: { lat: number, lng: number } }) => {
-    emit('click', e.latlng)
+    mapActions.getMap()?.on('click', (e: { latlng: { lat: number, lng: number } }) => {
+      emit('click', e.latlng)
+    })
   })
-})
 
-watch(() => props.markers, (markers) => {
-  mapActions.clearMarkers()
-  markers.forEach(m => mapActions.addMarker(m))
-  syncSelectedPopup()
-  updateMarkerHighlight()
-}, { deep: true })
+  watch(() => props.markers, (markers) => {
+    mapActions.clearMarkers()
+    markers.forEach(m => {
+      mapActions.addMarker(m, (scan) => emit('markerClick', scan))
+    })
+    syncSelectedPopup()
+    updateMarkerHighlight()
+  }, { deep: true })
 
 watch(() => props.selectedScanId, () => {
   syncSelectedPopup()

@@ -56,7 +56,7 @@ function getRatBadgeHtml(rat: string | null | undefined): string {
 
 export interface MapActions {
   initMap: (containerId: string, center: [number, number], zoom: number) => void
-  addMarker: (scan: ScanSummary) => Marker | null
+  addMarker: (scan: ScanSummary, onClick?: (scan: ScanSummary) => void) => Marker | null
   removeMarker: (id: string) => void
   clearMarkers: () => void
   flyTo: (lat: number, lon: number, zoom?: number) => void
@@ -153,7 +153,10 @@ export function useMap(): MapActions {
     }
   }
 
-  function addMarker(scan: ScanSummary): Marker | null {
+function addMarker(
+  scan: ScanSummary,
+  onClick?: (scan: ScanSummary) => void
+): Marker | null {
     if (!map) return null
 
     const L = useLeaflet()
@@ -174,9 +177,9 @@ export function useMap(): MapActions {
           --glow-color: ${markerColor};
         ">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9m2.9 2.8a6.14 6.14 0 0 0-.8 7.5"></path>
+            <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9m2.9 2.8a6.14 6.14 0 0 0 -.8 7.5"></path>
             <circle cx="12" cy="9" r="2"></circle>
-            <path d="M16.2 4.8c2 2 2.26 5.11.8 7.47M19.1 1.9a9.96 9.96 0 0 1 0 14.1m-9.6 2h5M8 22l4-11l4 11"></path>
+            <path d="M16.2 4.8c2 2 2.26 5.11.8 7.47M19.1 1.9a9.96 9.96 0 0 1 0 14.1m-9.6 2h5 M8 22l4-11l4 11"></path>
           </svg>
         </div>
       `,
@@ -198,9 +201,9 @@ export function useMap(): MapActions {
         </button>
         <div class="signal-popup-header">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9m2.9 2.8a6.14 6.14 0 0 0-.8 7.5"></path>
+            <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9m2.9 2.8a6.14 6.14 0 0 0 -.8 7.5"></path>
             <circle cx="12" cy="9" r="2"></circle>
-            <path d="M16.2 4.8c2 2 2.26 5.11.8 7.47M19.1 1.9a9.96 9.96 0 0 1 0 14.1m-9.6 2h5M8 22l4-11l4 11"></path>
+            <path d="M16.2 4.8c2 2 2.26 5.11.8 7.47M19.1 1.9a9.96 9.96 0 0 1 0 14.1m-9.6 2h5 M8 22l4-11l4 11"></path>
           </svg>
           <strong>${fmt(scan.operator) === '\u2011' ? 'Unknown' : fmt(scan.operator)}</strong>
         </div>
@@ -241,13 +244,18 @@ export function useMap(): MapActions {
         }
       })
 
+    // Optionally bind a click event to emit to the parent.
+    if (onClick) {
+      marker.on('click', () => onClick(scan))
+    }
+
     // Popups are no longer auto-opened here. The selected marker is
     // controlled centrally by `openPopupFor(id)` so clicking an item in
     // the sidebar (or marker on the map) updates exactly one popup.
 
     markers.set(scan.id, marker)
-    return marker
-  }
+  return marker
+}
 
   function removeMarker(id: string) {
     const marker = markers.get(id)

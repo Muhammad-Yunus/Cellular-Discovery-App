@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import type { MapActions } from '~/composables/useMap'
+import type { ScanSummary } from '~/types'
 
 definePageMeta({
   layout: 'home',
   title: 'Map'
 })
 
-const { scans, loading, creating, selectedScanId } = useScan()
+const { scans, loading, creating, selectedScanId, selectScan } = useScan()
 useGPS()
 useSystem()
 useSettings()
 
 const mapViewRef = ref<{ mapActions: MapActions } | null>(null)
 
-function flyToScan(scanId: string | null) {
+function flyToScan(scanId: string | null, _old: string | null) {
   if (!scanId || !mapViewRef.value) return
   const scan = scans.value.find(s => s.id === scanId)
   if (scan) {
@@ -22,21 +23,25 @@ function flyToScan(scanId: string | null) {
       // Ensure the map container size is up‑to‑date before fitting bounds.
       map.invalidateSize()
       const SIDEBAR_WIDTH = 300 // px, matches Sidebar.vue's w-[300px]
-      // fitBounds with left padding equal to half the sidebar width makes the
-      // selected marker exactly the centre of the visible map area.
+      // First fit bounds to the marker without any padding.
       map.fitBounds(
         [[scan.latitude, scan.longitude], [scan.latitude, scan.longitude]],
-        {
-          padding: [0, 0, 0, Math.floor(SIDEBAR_WIDTH / 2)], // top, right, bottom, left
-          maxZoom: 17,
-          animate: false
-        }
+        { maxZoom: 17, animate: false }
       )
+      // Then pan to the left by half the sidebar width to give the marker room.
+      map.panBy([SIDEBAR_WIDTH / 2, 0], { animate: false })
     }
   }
 }
 
-watch(() => selectedScanId, flyToScan)
+watch(selectedScanId, (scanId, _old) => flyToScan(scanId, _old))
+
+function onMarkerClick(scan: ScanSummary) {
+  if (!scan) return
+  // Selecting the scan in the store will cause the sidebar to highlight the
+  // matching item and the map to open the popup via the two‑way binding.
+  selectScan(scan.id)
+}
 </script>
 
 <template>
@@ -46,6 +51,7 @@ watch(() => selectedScanId, flyToScan)
         ref="mapViewRef"
         :markers="scans"
         :selected-scan-id="selectedScanId"
+        @marker-click="onMarkerClick"
       />
     </ClientOnly>
 
