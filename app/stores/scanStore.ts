@@ -47,29 +47,24 @@ export const useScanStore = defineStore('scan', {
           offset: this.pagination.offset,
           search: this.pagination.searchTerm || undefined
         })
-        // Transform backend response (which includes nested results array)
-        // to flat ScanSummary shape expected by UI.
-        const transformedItems = result.items.map(item => {
-          const firstResult = item.results && item.results.length > 0 ? item.results[0] : null
-          return {
-            id: item.id,
-            operator: firstResult ? firstResult.operator_name : 'Unknown',
-            mcc: firstResult ? firstResult.mcc : '',
-            mnc: firstResult ? firstResult.mnc : '',
-            rat: firstResult ? firstResult.rat : '',
-            latitude: item.latitude,
-            longitude: item.longitude,
-            scan_time: item.scan_time,
-            signal_strength: undefined // not provided in summary
-          }
-        })
-        this.scans = transformedItems
+        // Backend now returns flat items (one per scan_result). Map fields
+        // to the ScanSummary shape expected by UI (operator name -> operator).
+        this.scans = result.items.map(item => ({
+          id: item.id,
+          operator: item.operator_name,
+          mcc: item.mcc,
+          mnc: item.mnc,
+          rat: item.rat,
+          latitude: item.latitude,
+          longitude: item.longitude,
+          scan_time: item.scan_time,
+        }))
         this.pagination.totalItems = result.total
         this.pagination.totalPages = Math.ceil(result.total / this.pagination.limit)
-        // Default selection: pick the latest scan by id timestamp (scans
+        // Default selection: pick the latest entry by timestamp (scans
         // are returned newest-first by the backend). If the previously
-        // selected scan is still in the list, keep it; otherwise pick the
-        // first one (latest scan history).
+        // selected entry is still in the list, keep it; otherwise pick the
+        // first one (latest entry).
         const stillExists = this.selectedScanId
           ? this.scans.some(s => s.id === this.selectedScanId)
           : false
