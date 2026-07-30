@@ -154,7 +154,7 @@ body {
 
 /* Pulsing soft animation for active marker badge */
 .signal-marker-badge.pulse {
-  animation: pulse-soft 2s ease-in-out infinite;
+  animation: pulse-soft 1s ease-in-out infinite;
 }
 
 @keyframes pulse-soft {
@@ -174,7 +174,7 @@ body {
   background: radial-gradient(circle, var(--glow-color, transparent) 0%, transparent 70%);
   opacity: 0;
   pointer-events: none;
-  animation: pulse-ring 2s ease-out infinite;
+  animation: pulse-ring 1s ease-out infinite;
 }
 
 @keyframes pulse-ring {
