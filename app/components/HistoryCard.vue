@@ -67,24 +67,27 @@ function getRatColor(rat: string | null | undefined): string {
         class="w-8 self-stretch object-contain"
       />
 
-      <div class="flex-1 min-w-0 flex justify-between items-center">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <p class="text-sm font-medium text-default truncate leading-tight">
-              {{ scan.operator || 'Unknown Operator' }}
-            </p>
-            <UBadge
-              :label="fmt(scan.rat) === '\u2011' ? 'N/A' : fmt(scan.rat)"
-              size="xs"
-              :color="getRatColor(scan.rat)"
-              variant="subtle"
-            />
-          </div>
-          <p class="text-xs text-muted leading-tight">
-            MCC: {{ fmt(scan.mcc) }} / MNC: {{ fmt(scan.mnc) }}
+      <div class="flex-1 min-w-0 flex flex-col">
+        <!-- Row 1: operator + badge -->
+        <div class="flex items-center gap-2">
+          <p class="text-sm font-medium text-default truncate leading-tight">
+            {{ scan.operator || 'Unknown Operator' }}
           </p>
+          <UBadge
+            :label="fmt(scan.rat) === '\u2011' ? 'N/A' : fmt(scan.rat)"
+            size="xs"
+            :color="getRatColor(scan.rat)"
+            variant="subtle"
+          />
         </div>
-        <p class="ml-2 text-xs text-muted leading-tight truncate">
+
+        <!-- Row 2: MCC/MNC -->
+        <p class="text-xs text-muted leading-tight">
+          MCC: {{ fmt(scan.mcc) }} / MNC: {{ fmt(scan.mnc) }}
+        </p>
+
+        <!-- Row 3: datetime, right aligned -->
+        <p class="text-xs text-muted leading-tight mt-0.5 self-end">
           {{ formatDateTime(scan.scan_time) }}
         </p>
       </div>
