@@ -42,22 +42,22 @@ const { health, loading: healthLoading } = useSystem()
                 Reactive UI rendering maps, scans, and live telemetry
               </p>
               <div class="flex flex-wrap gap-2 mt-3">
-                <UBadge color="blue" variant="outline" size="sm">
+                <UBadge color="blue" variant="subtle" size="sm" class="border border-blue-700 bg-blue-900 text-white">
                   Vue 3
                 </UBadge>
-                <UBadge color="blue" variant="outline" size="sm">
+                <UBadge color="blue" variant="subtle" size="sm" class="border border-blue-700 bg-blue-900 text-white">
                   Nuxt
                 </UBadge>
-                <UBadge color="blue" variant="outline" size="sm">
+                <UBadge color="blue" variant="subtle" size="sm" class="border border-blue-700 bg-blue-900 text-white">
                   Vite
                 </UBadge>
-                <UBadge color="blue" variant="outline" size="sm">
+                <UBadge color="blue" variant="subtle" size="sm" class="border border-blue-700 bg-blue-900 text-white">
                   Pinia
                 </UBadge>
-                <UBadge color="blue" variant="outline" size="sm">
+                <UBadge color="blue" variant="subtle" size="sm" class="border border-blue-700 bg-blue-900 text-white">
                   Leaflet
                 </UBadge>
-                <UBadge color="blue" variant="outline" size="sm">
+                <UBadge color="blue" variant="subtle" size="sm" class="border border-blue-700 bg-blue-900 text-white">
                   Tailwind
                 </UBadge>
               </div>
@@ -77,13 +77,13 @@ const { health, loading: healthLoading } = useSystem()
                 Orchestrates CLI tools, persists data, and streams updates
               </p>
               <div class="flex flex-wrap gap-2 mt-3">
-                <UBadge color="orange" variant="solid" size="sm">
+                <UBadge color="orange" variant="subtle" size="sm" class="border border-orange-700 bg-orange-900 text-white">
                   FastAPI
                 </UBadge>
-                <UBadge color="orange" variant="solid" size="sm">
+                <UBadge color="orange" variant="subtle" size="sm" class="border border-orange-700 bg-orange-900 text-white">
                   PostgreSQL
                 </UBadge>
-                <UBadge color="orange" variant="solid" size="sm">
+                <UBadge color="orange" variant="subtle" size="sm" class="border border-orange-700 bg-orange-900 text-white">
                   WebSocket
                 </UBadge>
               </div>
@@ -103,13 +103,13 @@ const { health, loading: healthLoading } = useSystem()
                 Raw signal & modem command-line interfaces
               </p>
               <div class="flex flex-wrap gap-2 mt-3">
-                <UBadge color="green" variant="subtle" size="sm">
+                <UBadge color="green" variant="subtle" size="sm" class="border border-green-700 bg-green-900 text-white">
                   USB Modem CLI
                 </UBadge>
-                <UBadge color="green" variant="subtle" size="sm">
+                <UBadge color="green" variant="subtle" size="sm" class="border border-green-700 bg-green-900 text-white">
                   RTL-SDR CLI
                 </UBadge>
-                <UBadge color="green" variant="subtle" size="sm">
+                <UBadge color="green" variant="subtle" size="sm" class="border border-green-700 bg-green-900 text-white">
                   HackRF CLI
                 </UBadge>
               </div>
