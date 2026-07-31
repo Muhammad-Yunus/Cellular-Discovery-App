@@ -385,22 +385,28 @@ const columns: TableColumn<ScanSummary>[] = [
         <UIcon :name="scanStore.sortParam === 'scan_time' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-3 h-3" />
       </div>
     </template>
+    <template #header-scan-time>
+      <div class="flex items-center gap-1 cursor-pointer select-none" @click="scanStore.toggleSort()">
+        <span>Scan Time</span>
+        <UIcon :name="scanStore.sortParam === 'scan_time' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-3 h-3" />
+      </div>
+    </template>
     <template #operator-cell="{ row }">
-        <NuxtLink
-          :to="`/?scan=${row.original.id}`"
-          class="text-primary hover:underline font-medium"
-        >
-          {{ row.original.operator || 'Unknown' }}
-        </NuxtLink>
-      </template>
-      <template #operator-logo-cell="{ row }">
-        <img
-          v-if="getOperatorLogoPath(row.original.operator)"
-          :src="getOperatorLogoPath(row.original.operator)"
-          :alt="row.original.operator || ''"
-          class="w-5 h-5 object-contain"
-        >
-      </template>
+      <NuxtLink
+        :to="`/?scan=${row.original.id}`"
+        class="text-primary hover:underline font-medium"
+      >
+        {{ row.original.operator || 'Unknown' }}
+      </NuxtLink>
+    </template>
+    <template #operator-logo-cell="{ row }">
+      <img
+        v-if="getOperatorLogoPath(row.original.operator)"
+        :src="getOperatorLogoPath(row.original.operator)"
+        :alt="row.original.operator || ''"
+        class="w-5 h-5 object-contain"
+      >
+    </template>
     </UTable>
     </div>
 
