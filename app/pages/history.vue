@@ -124,6 +124,17 @@ function onPageChange(page: number) {
 
 const columns: TableColumn<ScanSummary>[] = [
   {
+    id: 'row-number',
+    header: '#',
+    cell: ({ row }) => pagination.value.offset + row.index + 1,
+    meta: {
+      class: {
+        th: 'w-12 text-center',
+        td: 'text-center text-muted'
+      }
+    }
+  },
+  {
     accessorKey: 'operator',
     header: 'Operator'
   },
