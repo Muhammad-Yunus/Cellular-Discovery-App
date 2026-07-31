@@ -228,7 +228,7 @@ const columns: TableColumn<ScanSummary>[] = [
     }, [
       'Operator',
       scanStore.sortColumn === 'operator' 
-        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down', class: 'w-3 h-3' })
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z', class: 'w-3 h-3' })
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
     ]),
   },
@@ -240,7 +240,7 @@ const columns: TableColumn<ScanSummary>[] = [
     }, [
       'MCC',
       scanStore.sortColumn === 'mcc' 
-        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down', class: 'w-3 h-3' })
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-arrow-up-0-9' : 'i-lucide-arrow-down-0-9', class: 'w-3 h-3' })
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
     ]),
   },
@@ -252,7 +252,7 @@ const columns: TableColumn<ScanSummary>[] = [
     }, [
       'MNC',
       scanStore.sortColumn === 'mnc' 
-        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down', class: 'w-3 h-3' })
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-arrow-up-0-9' : 'i-lucide-arrow-down-0-9', class: 'w-3 h-3' })
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
     ]),
   },
@@ -264,7 +264,7 @@ const columns: TableColumn<ScanSummary>[] = [
     }, [
       'RAT',
       scanStore.sortColumn === 'rat' 
-        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down', class: 'w-3 h-3' })
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z', class: 'w-3 h-3' })
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
     ]),
   },
@@ -277,7 +277,7 @@ const columns: TableColumn<ScanSummary>[] = [
     }, [
       'Scan Time',
       scanStore.sortColumn === 'scan_time' 
-        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down', class: 'w-3 h-3' })
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-calendar-arrow-up' : 'i-lucide-calendar-arrow-down', class: 'w-3 h-3' })
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
     ]),
     cell: ({ row }) => {
