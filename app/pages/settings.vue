@@ -92,25 +92,25 @@ function onBooleanChange(key: string, val: boolean) {
 }
 </script>
 
-  <template>
-    <div class="p-4 md:p-6 max-w-2xl mx-auto min-h-screen">
-      <!-- Inline Breadcrumb + Page Title, aligned right -->
-       <div class="flex items-center justify-between mb-6">
-         <h1 class="text-xl font-semibold text-highlighted">
-           Settings
-         </h1>
-         <!-- Breadcrumb -->
-         <div class="flex items-center gap-2 text-sm text-muted">
-           <NuxtLink to="/" class="text-primary hover:text-accented transition-colors">Home</NuxtLink>
-           <span class="text-muted">›</span>
-           <span class="text-highlighted">Settings</span>
-         </div>
-       </div>
+<template>
+  <div class="p-4 md:p-6 max-w-2xl mx-auto min-h-screen">
+    <!-- Inline Breadcrumb + Page Title, aligned right -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-xl font-semibold text-highlighted">
+        Settings
+      </h1>
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 text-sm text-muted">
+        <NuxtLink to="/" class="text-primary hover:text-accented transition-colors">Home</NuxtLink>
+        <span class="text-muted">›</span>
+        <span class="text-highlighted">Settings</span>
+      </div>
+    </div>
 
-     <div
-       v-if="loading"
-       class="space-y-4"
-     >
+    <div
+      v-if="loading"
+      class="space-y-4"
+    >
       <USkeleton
         v-for="i in 4"
         :key="i"
@@ -146,58 +146,60 @@ function onBooleanChange(key: string, val: boolean) {
     </div>
 
     <template v-else>
-      <div class="space-y-5">
-        <div
-          v-for="setting in settings"
-          :key="setting.key"
-          class="space-y-1"
-        >
-          <UFormField
-            v-if="getFieldType(setting) === 'switch'"
-            :label="setting.key"
-            :description="setting.description"
-            :error="validations[setting.key]"
-            :name="setting.key"
+      <div class="px-6 py-4 border border-muted rounded-md mb-6 bg-primary/5">
+        <div class="space-y-5">
+          <div
+            v-for="setting in settings"
+            :key="setting.key"
+            class="space-y-1"
           >
-            <USwitch
-              :model-value="booleanValue(setting.key)"
-              @update:model-value="(v: boolean) => onBooleanChange(setting.key, v)"
-            />
-          </UFormField>
+            <UFormField
+              v-if="getFieldType(setting) === 'switch'"
+              :label="setting.key"
+              :description="setting.description"
+              :error="validations[setting.key]"
+              :name="setting.key"
+            >
+              <USwitch
+                :model-value="booleanValue(setting.key)"
+                @update:model-value="(v: boolean) => onBooleanChange(setting.key, v)"
+              />
+            </UFormField>
 
-          <UFormField
-            v-else
-            :label="setting.key"
-            :description="setting.description"
-            :error="validations[setting.key]"
-            :name="setting.key"
-          >
-            <UInput
-              :model-value="setting.value"
-              :type="getFieldType(setting) === 'number' ? 'number' : 'text'"
-              :placeholder="`Enter ${setting.key}`"
-              class="w-full"
-              @update:model-value="(v: string) => onUpdateField(setting.key, v)"
-            />
-          </UFormField>
+            <UFormField
+              v-else
+              :label="setting.key"
+              :description="setting.description"
+              :error="validations[setting.key]"
+              :name="setting.key"
+            >
+              <UInput
+                :model-value="setting.value"
+                :type="getFieldType(setting) === 'number' ? 'number' : 'text'"
+                :placeholder="`Enter ${setting.key}`"
+                class="w-full"
+                @update:model-value="(v: string) => onUpdateField(setting.key, v)"
+              />
+            </UFormField>
+          </div>
         </div>
+      </div>
 
-        <div class="flex items-center gap-3 pt-2">
-          <UButton
-            label="Save"
-            color="primary"
-            :disabled="!dirty || saving"
-            :loading="saving"
-            @click="onSave"
-          />
-          <UButton
-            label="Cancel"
-            color="neutral"
-            variant="outline"
-            :disabled="saving"
-            @click="onReset"
-          />
-        </div>
+      <div class="flex items-center gap-3 pt-2">
+        <UButton
+          label="Save"
+          color="primary"
+          :disabled="!dirty || saving"
+          :loading="saving"
+          @click="onSave"
+        />
+        <UButton
+          label="Cancel"
+          color="neutral"
+          variant="outline"
+          :disabled="saving"
+          @click="onReset"
+        />
       </div>
     </template>
   </div>
