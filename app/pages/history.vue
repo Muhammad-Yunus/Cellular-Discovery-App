@@ -379,18 +379,16 @@ const columns: TableColumn<ScanSummary>[] = [
       :columns="columns"
       class="hidden lg:table w-full"
     >
-    <template #header-scan_time>
-      <div class="flex items-center gap-1 cursor-pointer select-none" @click="scanStore.toggleSort()">
-        <span>Scan Time</span>
+    <template #scan-time-header>
+      <button 
+        class="flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented"
+        @click="scanStore.toggleSort()"
+      >
+        Scan Time
         <UIcon :name="scanStore.sortParam === 'scan_time' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-3 h-3" />
-      </div>
+      </button>
     </template>
-    <template #header-scan-time>
-      <div class="flex items-center gap-1 cursor-pointer select-none" @click="scanStore.toggleSort()">
-        <span>Scan Time</span>
-        <UIcon :name="scanStore.sortParam === 'scan_time' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-3 h-3" />
-      </div>
-    </template>
+    <!-- Remove slots entirely, use header in columns definition -->
     <template #operator-cell="{ row }">
       <NuxtLink
         :to="`/?scan=${row.original.id}`"
