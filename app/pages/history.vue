@@ -3,7 +3,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { ScanSummary } from '~/types'
 import FilterPanel from '@/components/FilterPanel.vue'
 import { useCustomToast } from '@/composables/useCustomToast'
-import { nextTick } from 'vue'
+import { nextTick, watch } from 'vue'
 
 definePageMeta({ title: 'Scan Result' })
 const toast = useCustomToast()
@@ -29,6 +29,13 @@ const totalItems = computed(() => pagination.totalItems)
 // Time range filter refs
 const startDateTime = ref<string | null>(null)
 const endDateTime = ref<string | null>(null)
+
+// Show toast whenever an error occurs
+watch(error, (newErr) => {
+  if (newErr) {
+    toast.add({ title: 'Error API', description: newErr, color: 'error', icon: 'exclamation-triangle' })
+  }
+})
 
 // Helper to produce default time range: 1 month ago at 00:00 → today at 23:59 (local time)
 function getDefaultDateRange() {
@@ -93,8 +100,9 @@ async function updateTimeRange() {
         scanStore.scans = []
         scanStore.pagination.totalItems = 0
         scanStore.pagination.totalPages = 0
-        scanStore.error = '' // hide any existing error toast/error display
-        toast.add({ title: 'Waktu tidak sah', description: 'Waktu awal tidak boleh setelah waktu akhir.', color: 'error', icon: 'exclamation-triangle' })
+
+        // Set error for both UI alert and toast via watch
+        scanStore.error = 'Waktu awal tidak boleh setelah waktu akhir.'
         return
       }
     }
