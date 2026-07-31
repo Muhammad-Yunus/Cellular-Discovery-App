@@ -13,7 +13,8 @@ interface ScanState {
   ratFilter: string | null // 'ALL' or specific RAT like 'LTE'
   dateRange: { startDate: string | null; endDate: string | null } // ISO datetime strings
   pagination: PaginationMeta
-  sortParam: string | null // e.g., 'scan_time' or '-scan_time' for DESC
+  sortColumn: string | null // e.g., 'operator', 'mcc', 'mnc', 'rat', 'scan_time'
+  sortDirection: 'asc' | 'desc' | null // ASC or DESC flag
 }
 
 export const useScanStore = defineStore('scan', {
@@ -35,8 +36,9 @@ export const useScanStore = defineStore('scan', {
       totalPages: 0,
       searchTerm: ''
     },
-    sortParam: '-scan_time'
-  }),
+    sortColumn: 'scan_time',
+    sortDirection: 'desc'
+    }),
 
   getters: {
     selectedScan: (state): ScanSummary | null => {
@@ -46,6 +48,11 @@ export const useScanStore = defineStore('scan', {
   },
 
   actions: {
+    getSortParam(): string | undefined {
+      if (!this.sortColumn) return undefined;
+      return this.sortDirection === 'asc' ? `${this.sortColumn}` : `-${this.sortColumn}`;
+    },
+
     async fetchScans() {
       this.loading = true
       this.loadingMore = false
@@ -59,7 +66,7 @@ export const useScanStore = defineStore('scan', {
           rat: this.ratFilter,
           ...(this.dateRange.startDate !== null ? { startDate: this.dateRange.startDate } : {}),
           ...(this.dateRange.endDate !== null ? { endDate: this.dateRange.endDate } : {}),
-          sort: this.sortParam
+          sort: this.getSortParam()
         })
         // Backend now returns flat items (one per scan_result). Map fields
         // to the ScanSummary shape expected by UI (operator name -> operator).
@@ -184,8 +191,15 @@ export const useScanStore = defineStore('scan', {
       this.fetchScans();
     },
 
-    toggleSort() {
-      this.sortParam = this.sortParam === '-scan_time' ? 'scan_time' : '-scan_time';
+    toggleSort(column: string) {
+      if (this.sortColumn === column) {
+        // Same column: toggle direction
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        // Different column: set new column with default DESC
+        this.sortColumn = column;
+        this.sortDirection = 'desc';
+      }
       this.pagination.currentPage = 1;
       this.pagination.offset = 0;
       this.fetchScans();

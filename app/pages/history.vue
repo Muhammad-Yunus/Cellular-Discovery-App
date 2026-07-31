@@ -4,7 +4,7 @@ import type { ScanSummary } from '~/types'
 import FilterPanel from '@/components/FilterPanel.vue'
 import { useCustomToast } from '@/composables/useCustomToast'
 import { getOperatorLogoPath } from '~/utils/operatorLogoMap'
-import { nextTick, watch } from 'vue'
+import { nextTick, watch, h, resolveComponent } from 'vue'
 
 definePageMeta({ title: 'Scan History' })
 const toast = useCustomToast()
@@ -222,24 +222,64 @@ const columns: TableColumn<ScanSummary>[] = [
   },
   {
     accessorKey: 'operator',
-    header: 'Operator'
+    header: () => h('button', {
+      class: 'flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented',
+      onClick: () => scanStore.toggleSort('operator')
+    }, [
+      'Operator',
+      scanStore.sortColumn === 'operator' 
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down', class: 'w-3 h-3' })
+        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+    ]),
   },
   {
     accessorKey: 'mcc',
-    header: 'MCC'
+    header: () => h('button', {
+      class: 'flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented',
+      onClick: () => scanStore.toggleSort('mcc')
+    }, [
+      'MCC',
+      scanStore.sortColumn === 'mcc' 
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down', class: 'w-3 h-3' })
+        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+    ]),
   },
   {
     accessorKey: 'mnc',
-    header: 'MNC'
+    header: () => h('button', {
+      class: 'flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented',
+      onClick: () => scanStore.toggleSort('mnc')
+    }, [
+      'MNC',
+      scanStore.sortColumn === 'mnc' 
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down', class: 'w-3 h-3' })
+        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+    ]),
   },
   {
     accessorKey: 'rat',
-    header: 'RAT'
+    header: () => h('button', {
+      class: 'flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented',
+      onClick: () => scanStore.toggleSort('rat')
+    }, [
+      'RAT',
+      scanStore.sortColumn === 'rat' 
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down', class: 'w-3 h-3' })
+        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+    ]),
   },
   {
     id: 'scan_time',
     accessorKey: 'scan_time',
-    header: 'Scan Time',
+    header: () => h('button', {
+      class: 'flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented',
+      onClick: () => scanStore.toggleSort('scan_time')
+    }, [
+      'Scan Time',
+      scanStore.sortColumn === 'scan_time' 
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down', class: 'w-3 h-3' })
+        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+    ]),
     cell: ({ row }) => {
       const d = new Date(row.original.scan_time)
       return d.toLocaleString('en-GB', {
@@ -379,16 +419,6 @@ const columns: TableColumn<ScanSummary>[] = [
       :columns="columns"
       class="hidden lg:table w-full"
     >
-    <template #scan-time-header>
-      <button 
-        class="flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented"
-        @click="scanStore.toggleSort()"
-      >
-        Scan Time
-        <UIcon :name="scanStore.sortParam === 'scan_time' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-3 h-3" />
-      </button>
-    </template>
-    <!-- Remove slots entirely, use header in columns definition -->
     <template #operator-cell="{ row }">
       <NuxtLink
         :to="`/?scan=${row.original.id}`"
