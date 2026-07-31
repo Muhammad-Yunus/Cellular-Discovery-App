@@ -48,6 +48,8 @@ Digunakan di:
 
 ## 7. Settings Page Breadcrumb (app/pages/settings.vue)
 - Tambahkan breadcrumb inline `Home › Settings` di top right, mirip dengan history page style
+## 8. Settings Container Styling (app/pages/settings.vue)
+- Tambahkan div pembungkus dengan class `px-6 py-4 border border-muted rounded-md mb-6 bg-primary/5` mengelilingi list item settings (`class="space-y-5"`)
 
 ## 8. README.md Diperhalus
 - Badge shield.io dihapus
