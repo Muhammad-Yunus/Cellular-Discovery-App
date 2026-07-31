@@ -91,12 +91,12 @@ Cellular Discovery is a modern web application for discovering and monitoring LT
 | **Maps**         | Leaflet 1.9                         | Visual map display for cell towers   |
 | **Layout**       | NuxtLayout + NuxtPage               | Router integration                   |
 
-## Technology Stack
+## Technologies
 
 - **Frontend**: Nuxt 4, Vue 3.5+, TypeScript 5.x, Pinia 3
-- **Backend Integration**: @nuxt/ui v4, Tailwind CSS 4
-- **HTTP Client**: $fetch (ofetch), WebSocket (custom reconnecting implementation)
-- **Mapping**: Leaflet.js 1.9, @types/leaflet
+- **Integration**: @nuxt/ui v4, Tailwind CSS 4
+- **HTTP**: $fetch (ofetch), WebSocket (custom reconnecting implementation)
+- **Maps**: Leaflet.js 1.9, @types/leaflet
 - **Icons**: Iconify with Lucide and Simple Icons JSON packs
 - **Tooling**: pnpm 11+, Node.js 24+, Vite 7, Nitro 2
 - **Testing**: Playwright 1.52+, Vitest 3, ESLint, TypeScript compiler
