@@ -26,10 +26,10 @@
 - Judul diubah dari "USB Modem LTE Network Discovery Web Frontend" → "Discovering and monitoring LTE, UMTS, and GSM network"
 - Deskripsi diubah termasuk mention UMTS dan GSM
 - Hapus section Technology Stack
-- Tambahkan System Architecture 3-tier (top → bottom: FE → Service → CLI):
-  - **Tier 1 (Top - Frontend)**: Vue + Nuxt + Vite + Pinia + Leaflet + Tailwind
-  - **Tier 2 (Middle - Service)**: FastAPI + PostgreSQL + WebSocket (Cellular Discovery Service)
-  - **Tier 3 (Bottom - CLI)**: USB Modem CLI, RTL-SDR CLI, HackRF CLI
+- Tambahkan System Architecture 3-tier (top → bottom: FE → Service → CLI) dengan background warna:
+  - **Tier 1 (Top - Frontend)**: bg-blue-50 (info), icon biru, badge outlines
+  - **Tier 2 (Middle - Service)**: bg-orange-50 (warning), icon oranye, badge solid
+  - **Tier 3 (Bottom - CLI)**: bg-green-50 (success), icon hijau, badge subtle
 
 ## 5. Background on Filter & Table (app/pages/history.vue)
 - Filter container: ditambah `bg-primary/5`
