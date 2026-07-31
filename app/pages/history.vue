@@ -4,7 +4,7 @@ import type { ScanSummary } from '~/types'
 import FilterPanel from '@/components/FilterPanel.vue'
 import { useCustomToast } from '@/composables/useCustomToast'
 import { getOperatorLogoPath } from '~/utils/operatorLogoMap'
-import { nextTick, watch, h } from 'vue'
+import { nextTick, watch, h, resolveComponent } from 'vue'
 
 definePageMeta({ title: 'Scan History' })
 const toast = useCustomToast()
@@ -243,9 +243,15 @@ const columns: TableColumn<ScanSummary>[] = [
       onClick: () => scanStore.toggleSort()
     }, [
       'Scan Time',
-      scanStore.sortParam === 'scan_time'
-        ? h('span', { class: 'i-lucide-chevron-up w-3 h-3' })
-        : h('span', { class: 'i-lucide-chevron-down w-3 h-3' })
+      resolveComponent('UIcon'),
+      {
+        props: {
+          name: scanStore.sortParam === 'scan_time' 
+            ? 'i-lucide-chevron-up' 
+            : 'i-lucide-chevron-down',
+          class: 'w-3 h-3'
+        }
+      }
     ]),
     cell: ({ row }) => {
       const d = new Date(row.original.scan_time)
