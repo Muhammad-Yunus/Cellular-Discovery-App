@@ -30,59 +30,7 @@ const { health, loading: healthLoading } = useSystem()
         System Architecture
       </h2>
       <div class="grid grid-cols-1 gap-3">
-        <!-- Tier 1: CLI Tools -->
-        <UCard class="w-full bg-primary/5">
-          <div class="flex items-start gap-3">
-            <span class="iconify i-lucide-terminal size-5 shrink-0 text-primary mt-0.5" />
-            <div class="flex-1">
-              <p class="text-sm font-medium text-default">
-                CLI Tools (Data Acquisition Layer)
-              </p>
-              <p class="text-xs text-muted mt-1">
-                Raw signal & modem command-line interfaces
-              </p>
-              <div class="flex flex-wrap gap-2 mt-3">
-                <UBadge color="primary" variant="subtle" size="sm">
-                  USB Modem CLI
-                </UBadge>
-                <UBadge color="primary" variant="subtle" size="sm">
-                  RTL-SDR CLI
-                </UBadge>
-                <UBadge color="primary" variant="subtle" size="sm">
-                  HackRF CLI
-                </UBadge>
-              </div>
-            </div>
-          </div>
-        </UCard>
-
-        <!-- Tier 2: Service Backend -->
-        <UCard class="w-full bg-primary/10">
-          <div class="flex items-start gap-3">
-            <span class="iconify i-lucide-server size-5 shrink-0 text-primary mt-0.5" />
-            <div class="flex-1">
-              <p class="text-sm font-medium text-default">
-                Cellular Discovery Service
-              </p>
-              <p class="text-xs text-muted mt-1">
-                Orchestrates CLI tools, persists data, and streams updates
-              </p>
-              <div class="flex flex-wrap gap-2 mt-3">
-                <UBadge color="primary" variant="solid" size="sm">
-                  FastAPI
-                </UBadge>
-                <UBadge color="primary" variant="solid" size="sm">
-                  PostgreSQL
-                </UBadge>
-                <UBadge color="primary" variant="solid" size="sm">
-                  WebSocket
-                </UBadge>
-              </div>
-            </div>
-          </div>
-        </UCard>
-
-        <!-- Tier 3: Frontend -->
+        <!-- Tier 1: Frontend (top) -->
         <UCard class="w-full bg-primary/15">
           <div class="flex items-start gap-3">
             <span class="iconify i-lucide-monitor size-5 shrink-0 text-primary mt-0.5" />
@@ -111,6 +59,58 @@ const { health, loading: healthLoading } = useSystem()
                 </UBadge>
                 <UBadge color="primary" variant="outline" size="sm">
                   Tailwind
+                </UBadge>
+              </div>
+            </div>
+          </div>
+        </UCard>
+
+        <!-- Tier 2: Service (middle) -->
+        <UCard class="w-full bg-primary/10">
+          <div class="flex items-start gap-3">
+            <span class="iconify i-lucide-server size-5 shrink-0 text-primary mt-0.5" />
+            <div class="flex-1">
+              <p class="text-sm font-medium text-default">
+                Cellular Discovery Service
+              </p>
+              <p class="text-xs text-muted mt-1">
+                Orchestrates CLI tools, persists data, and streams updates
+              </p>
+              <div class="flex flex-wrap gap-2 mt-3">
+                <UBadge color="primary" variant="solid" size="sm">
+                  FastAPI
+                </UBadge>
+                <UBadge color="primary" variant="solid" size="sm">
+                  PostgreSQL
+                </UBadge>
+                <UBadge color="primary" variant="solid" size="sm">
+                  WebSocket
+                </UBadge>
+              </div>
+            </div>
+          </div>
+        </UCard>
+
+        <!-- Tier 3: CLI Tools (bottom) -->
+        <UCard class="w-full bg-primary/5">
+          <div class="flex items-start gap-3">
+            <span class="iconify i-lucide-terminal size-5 shrink-0 text-primary mt-0.5" />
+            <div class="flex-1">
+              <p class="text-sm font-medium text-default">
+                CLI Tools (Data Acquisition Layer)
+              </p>
+              <p class="text-xs text-muted mt-1">
+                Raw signal & modem command-line interfaces
+              </p>
+              <div class="flex flex-wrap gap-2 mt-3">
+                <UBadge color="primary" variant="subtle" size="sm">
+                  USB Modem CLI
+                </UBadge>
+                <UBadge color="primary" variant="subtle" size="sm">
+                  RTL-SDR CLI
+                </UBadge>
+                <UBadge color="primary" variant="subtle" size="sm">
+                  HackRF CLI
                 </UBadge>
               </div>
             </div>
