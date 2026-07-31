@@ -412,3 +412,7 @@ body {
   }
 }
 
+.bg-default {
+    background-color: var(--color-secondary-950);
+}
+
