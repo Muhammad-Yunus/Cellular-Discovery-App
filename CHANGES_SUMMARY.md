@@ -50,19 +50,6 @@ Digunakan di:
 - Badge shield.io dihapus
 - Diagram arsitektur disederhanakan
 - Section "Technology Stack" diganti "Technologies" (konsisten dengan about page)
-```css
-.bg-default {
-    background-color: var(--color-secondary-950);
-}
-```
-Digunakan di:
-- app/layouts/home.vue
-- app/layouts/default.vue  
-- app/components/AppNavbar.vue
-
-## 7. README.md Diperhalus
-- Badge shield.io dihapus
-- Diagram arsitektur disederhanakan
 
 ---
 
