@@ -21,10 +21,10 @@ const {
   setDateRange
 } = useScan()
 
-const search = ref(pagination.searchTerm)
-const currentPage = computed(() => pagination.offset / pagination.limit + 1)
-const totalPages = computed(() => pagination.totalPages)
-const totalItems = computed(() => pagination.totalItems)
+const search = ref(pagination.value.searchTerm)
+const currentPage = computed(() => pagination.value.offset / pagination.value.limit + 1)
+const totalPages = computed(() => pagination.value.totalPages)
+const totalItems = computed(() => pagination.value.totalItems)
 
 // Time range filter refs
 const startDateTime = ref<string | null>(null)
