@@ -49,6 +49,7 @@ export const useScanStore = defineStore('scan', {
       this.loadingMore = false
       this.error = null
       try {
+        console.log('[store] Fetching scans with dateRange:', this.dateRange)
         const result = await scanService.getScans({
           pageSize: this.pagination.limit,
           page: this.pagination.currentPage,
@@ -86,6 +87,10 @@ export const useScanStore = defineStore('scan', {
         const { parseApiError } = await import('~/types/api')
         const appError = parseApiError(e)
         this.error = appError.message
+        // Kosongkan data tabel agar user tidak bingung
+        this.scans = []
+        this.pagination.totalItems = 0
+        this.pagination.totalPages = 0
       } finally {
         this.loading = false
       }

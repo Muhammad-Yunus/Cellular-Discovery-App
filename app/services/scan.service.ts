@@ -18,6 +18,7 @@ export async function createScan(data: ScanCreate): Promise<ScanResponse> {
 }
 
 export async function getScans(params?: GetScansParams): Promise<ScanPaginated> {
+  console.log('[service] getScans called with params:', params)
   return apiRequest<ScanPaginated>('/scans', {
     method: 'GET',
     params: {
@@ -25,8 +26,8 @@ export async function getScans(params?: GetScansParams): Promise<ScanPaginated> 
       page_size: params?.pageSize ?? 10,
       search: params?.search,
       rat: params?.rat && params.rat !== 'ALL' ? params.rat : undefined,
-      start_date: params?.startDate || undefined,
-      end_date: params?.endDate || undefined
+      start_time: params?.startDate || undefined,
+      end_time: params?.endDate || undefined
     }
   })
 }

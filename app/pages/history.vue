@@ -2,8 +2,11 @@
 import type { TableColumn } from '@nuxt/ui'
 import type { ScanSummary } from '~/types'
 import FilterPanel from '@/components/FilterPanel.vue'
+import { useCustomToast } from '@/composables/useCustomToast'
+import { nextTick } from 'vue'
 
 definePageMeta({ title: 'Scan Result' })
+const toast = useCustomToast()
 
 const scanStore = useScanStore()
 
@@ -27,15 +30,33 @@ const totalItems = computed(() => pagination.totalItems)
 const startDateTime = ref<string | null>(null)
 const endDateTime = ref<string | null>(null)
 
+// Helper to produce default time range: 1 month ago at 00:00 → today at 23:59 (local time)
+function getDefaultDateRange() {
+  const now = new Date()
+  // Start: one month ago at 00:00
+  const start = new Date(now)
+  start.setMonth(now.getMonth() - 1)
+  start.setHours(0, 0, 0, 0)
+  // End: today at 23:59
+  const end = new Date(now)
+  end.setHours(23, 59, 0, 0)
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  return { start: fmt(start), end: fmt(end) }
+}
+
 onMounted(() => {
-  // Initialize from store's date range
-  startDateTime.value = scanStore.dateRange.startDate ?? ''
-  endDateTime.value = scanStore.dateRange.endDate ?? ''
+  // Set default time range (1 month ago to today) on first load
+  const defaults = getDefaultDateRange()
+  startDateTime.value = defaults.start
+  endDateTime.value = defaults.end
+  // Apply the default range to the store (this triggers fetch)
+  updateTimeRange()
 })
 
 function formatLocalIsoOffset(val: string): string | null {
   // Input is local datetime like "YYYY-MM-DDTHH:mm" or "YYYY-MM-DDTHH:mm:ss".
-  // Produce ISO string with milliseconds (always .000000) and local timezone offset, e.g., "2026-07-30T17:22:00.000000+07:00"
+  // Produce ISO string without fractional seconds, with local timezone offset, e.g., "2026-07-30T17:22:00+07:00"
   const d = new Date(val)
   if (isNaN(d.getTime())) return null
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -50,12 +71,29 @@ function formatLocalIsoOffset(val: string): string | null {
   const absOffset = Math.abs(offsetMinutes)
   const offsetH = pad(Math.floor(absOffset / 60))
   const offsetM = pad(absOffset % 60)
-  return `${y}-${m}-${day}T${hh}:${mm}:${ss}.000000${offsetSign}${offsetH}:${offsetM}`
+  return `${y}-${m}-${day}T${hh}:${mm}:${ss}${offsetSign}${offsetH}:${offsetM}`
 }
 
-function updateTimeRange() {
+async function updateTimeRange() {
+  // Wait for v-model to update startDateTime / endDateTime
+  await nextTick()
   const start = startDateTime.value ? formatLocalIsoOffset(startDateTime.value) : null
   const end = endDateTime.value ? formatLocalIsoOffset(endDateTime.value) : null
+  console.log('[History] updateTimeRange called:', { start, end })
+
+  // Validation: if both dates provided, ensure start <= end
+  if (start && end) {
+    const dStart = new Date(start)
+    const dEnd = new Date(end)
+    if (!isNaN(dStart.getTime()) && !isNaN(dEnd.getTime())) {
+      if (dStart > dEnd) {
+        // Error: show toast and do not send request
+        console.error('Invalid time range: Start time is after end time')
+        toast.add({ title: 'Waktu tidak sah', description: 'Waktu awal tidak boleh setelah waktu akhir.', color: 'error', icon: 'exclamation-triangle' })
+        return
+      }
+    }
+  }
   setDateRange(start, end)
 }
 
@@ -121,26 +159,26 @@ const columns: TableColumn<ScanSummary>[] = [
           class="w-full"
         />
       </div>
-      <!-- From datetime -->
-      <div class="flex-1">
-        <label class="block text-sm font-medium text-muted mb-1">From</label>
-        <UInput
-          type="datetime-local"
-          v-model="startDateTime"
-          @input="updateTimeRange"
-          class="w-full"
-        />
-      </div>
-      <!-- To datetime -->
-      <div class="flex-1">
-        <label class="block text-sm font-medium text-muted mb-1">To</label>
-        <UInput
-          type="datetime-local"
-          v-model="endDateTime"
-          @input="updateTimeRange"
-          class="w-full"
-        />
-      </div>
+        <!-- From datetime -->
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-muted mb-1">From</label>
+          <UInput
+            type="datetime-local"
+            v-model="startDateTime"
+            @change="updateTimeRange"
+            class="w-full"
+          />
+        </div>
+        <!-- To datetime -->
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-muted mb-1">To</label>
+          <UInput
+            type="datetime-local"
+            v-model="endDateTime"
+            @change="updateTimeRange"
+            class="w-full"
+          />
+        </div>
       <!-- RAT filter -->
       <div class="min-w-[150px]">
         <label class="block text-sm font-medium text-muted mb-1">RAT Filter</label>
