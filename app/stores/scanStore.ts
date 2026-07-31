@@ -38,7 +38,7 @@ export const useScanStore = defineStore('scan', {
     },
     sortColumn: 'scan_time',
     sortDirection: 'desc'
-    }),
+  }),
 
   getters: {
     selectedScan: (state): ScanSummary | null => {
