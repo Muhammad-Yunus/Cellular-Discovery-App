@@ -92,16 +92,25 @@ function onBooleanChange(key: string, val: boolean) {
 }
 </script>
 
-<template>
-  <div class="p-4 md:p-6 max-w-2xl mx-auto">
-    <h1 class="text-xl font-semibold text-highlighted mb-6">
-      Settings
-    </h1>
+  <template>
+    <div class="p-4 md:p-6 max-w-2xl mx-auto min-h-screen">
+      <!-- Inline Breadcrumb + Page Title, aligned right -->
+       <div class="flex items-center justify-between mb-6">
+         <h1 class="text-xl font-semibold text-highlighted">
+           Settings
+         </h1>
+         <!-- Breadcrumb -->
+         <div class="flex items-center gap-2 text-sm text-muted">
+           <NuxtLink to="/" class="text-primary hover:text-accented transition-colors">Home</NuxtLink>
+           <span class="text-muted">›</span>
+           <span class="text-highlighted">Settings</span>
+         </div>
+       </div>
 
-    <div
-      v-if="loading"
-      class="space-y-4"
-    >
+     <div
+       v-if="loading"
+       class="space-y-4"
+     >
       <USkeleton
         v-for="i in 4"
         :key="i"
