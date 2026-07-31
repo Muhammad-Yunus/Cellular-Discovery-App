@@ -142,7 +142,18 @@ const columns: TableColumn<ScanSummary>[] = [
   {
     accessorKey: 'scan_time',
     header: 'Scan Time',
-    cell: ({ row }) => new Date(row.original.scan_time).toLocaleString()
+    cell: ({ row }) => {
+      const d = new Date(row.original.scan_time)
+      return d.toLocaleString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      })
+    }
   },
   {
     accessorKey: 'latitude',
