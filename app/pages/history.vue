@@ -303,16 +303,17 @@ const columns: TableColumn<ScanSummary>[] = [
 
 <template>
   <div class="p-4 md:p-6 max-w-5xl mx-auto min-h-screen">
-    <!-- Breadcrumb -->
-    <div class="flex items-center gap-2 text-sm text-muted mb-4">
-      <NuxtLink to="/" class="text-primary hover:text-accented transition-colors">Home</NuxtLink>
-      <span class="text-muted">›</span>
-      <span class="text-highlighted">Scan History</span>
-    </div>
+    <!-- Inline Breadcrumb + Page Title, aligned right -->
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-xl font-semibold text-highlighted">
         Scan History
       </h1>
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 text-sm text-muted">
+        <NuxtLink to="/" class="text-primary hover:text-accented transition-colors">Home</NuxtLink>
+        <span class="text-muted">›</span>
+        <span class="text-highlighted">Scan History</span>
+      </div>
     </div>
 
     <!-- Combined Filters: Search, Time Range, RAT -->
