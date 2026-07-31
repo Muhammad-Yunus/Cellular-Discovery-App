@@ -258,9 +258,8 @@ const columns: TableColumn<ScanSummary>[] = [
       </p>
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto" v-else>
       <UTable
-        v-else
         :key="scans.length"
         :data="scans"
         :columns="columns"
