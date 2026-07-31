@@ -33,7 +33,7 @@ const endDateTime = ref<string | null>(null)
 // Show toast whenever an error occurs
 watch(error, (newErr) => {
   if (newErr) {
-    toast.add({ title: 'Error API', description: newErr, color: 'error', icon: 'exclamation-triangle' })
+    toast.add({ title: 'Error', description: newErr, color: 'error', icon: 'exclamation-triangle' })
   }
 })
 
@@ -102,7 +102,7 @@ async function updateTimeRange() {
         scanStore.pagination.totalPages = 0
 
         // Set error for both UI alert and toast via watch
-        scanStore.error = 'Waktu awal tidak boleh setelah waktu akhir.'
+        scanStore.error = 'Start time cannot be after end time.'
         return
       }
     }
