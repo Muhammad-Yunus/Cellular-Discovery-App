@@ -164,7 +164,7 @@ const columns: TableColumn<ScanSummary>[] = [
 </script>
 
 <template>
-  <div class="p-4 md:p-6 max-w-5xl mx-auto">
+  <div class="p-4 md:p-6 max-w-5xl mx-auto min-h-screen">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-xl font-semibold text-highlighted">
         Scan History
