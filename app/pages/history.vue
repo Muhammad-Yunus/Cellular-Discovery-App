@@ -141,7 +141,7 @@ const columns: TableColumn<ScanSummary>[] = [
     meta: {
       class: {
         th: 'w-8',
-        td: 'w-8 flex items-center justify-center py-4'
+        td: 'w-8 flex items-center justify-center px-0 py-4'
       }
     }
   },
