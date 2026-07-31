@@ -269,8 +269,8 @@ const columns: TableColumn<ScanSummary>[] = [
     </div>
 
     <!-- Combined Filters: Search, Time Range, RAT -->
-    <div class="px-6 py-2 border border-muted rounded-md">
-      <div class="flex flex-col md:flex-row gap-4 mb-4 items-center">
+     <div class="px-6 py-4 border border-muted rounded-md mb-6">
+      <div class="flex items-center gap-4 flex-wrap">
         <!-- Search input -->
       <div class="flex-1 min-w-[200px]">
         <label class="block text-sm font-medium text-muted mb-1">Search</label>
@@ -311,7 +311,7 @@ const columns: TableColumn<ScanSummary>[] = [
         />
       </div>
       <!-- Export button -->
-      <div class="flex items-end mt-4">
+      <div class="flex items-end mt-2 ml-auto">
         <UButton
           variant="soft"
           :disabled="isExporting"
@@ -371,7 +371,7 @@ const columns: TableColumn<ScanSummary>[] = [
       </p>
     </div>
 
-    <div class="overflow-x-auto" v-else>
+    <div class="overflow-x-auto border border-muted rounded-md" v-else>
       <UTable
         :key="scans.length"
         :data="scans"
