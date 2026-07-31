@@ -59,7 +59,7 @@ function onMarkerClick(scan: ScanSummary) {
       v-if="!loading && scans.length === 0"
       class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
     >
-      <div class="i-lucide-radio-tower size-24 text-primary mb-6" />
+      <div class="iconify i-lucide-radio-tower size-24 text-primary mb-6" />
       <p class="text-2xl font-bold text-default">
         Cellular Discovery
       </p>
