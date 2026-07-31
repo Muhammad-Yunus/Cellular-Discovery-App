@@ -317,8 +317,8 @@ const columns: TableColumn<ScanSummary>[] = [
           @click="exportScans"
         >
           <div class="flex items-center gap-2">
-            <span v-if="!isExporting" class="i-lucide-download w-4 h-4"></span>
-            <span v-else class="i-lucide-loader animate-spin w-4 h-4"></span>
+            <span v-if="!isExporting" class="iconify i-lucide:download w-4 h-4"></span>
+            <span v-else class="iconify i-lucide:loader animate-spin w-4 h-4"></span>
             Export
           </div>
         </UButton>
