@@ -31,7 +31,7 @@ const { health, loading: healthLoading } = useSystem()
       </h2>
       <div class="grid grid-cols-1 gap-3">
         <!-- Tier 1: Frontend (top) - info/blue -->
-        <UCard class="w-full bg-blue-50">
+        <UCard class="w-full bg-blue-100">
           <div class="flex items-start gap-3">
             <span class="iconify i-lucide-monitor size-5 shrink-0 text-blue-600 mt-0.5" />
             <div class="flex-1">
