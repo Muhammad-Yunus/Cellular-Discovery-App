@@ -1,27 +1,22 @@
-# LTE Scanner
+# Cellular Discovery
 
-> USB Modem LTE Network Discovery Web Frontend
+> Cellular Network Discovery Web Frontend
 
 [![Nuxt 4](https://img.shields.io/badge/Nuxt-4-00DC82?style=for-the-badge&logo=nuxt&logoColor=white)](https://nuxt.com)
 [![Vue 3](https://img.shields.io/badge/Vue-3-42B88C?style=for-the-badge&logo=vuedotjs&logoColor=white)](https://vuejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Pinia](https://img.shields.io/badge/Pinia-3.x-FCD34D?style=for-the-badge&logo=pinia&logoColor=black)](https://pinia.vuejs.org)
-
 [![Playwright](https://img.shields.io/badge/Playwright-E2E-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev)
 [![Vitest](https://img.shields.io/badge/Vitest-Unit-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev)
 [![pnpm](https://img.shields.io/badge/pnpm-11.x-F69220?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io)
 
-[![Tests](https://github.com/Muhammad-Yunus/Cellular-Discovery-App/actions/workflows/test.yml/badge.svg)](https://github.com/Muhammad-Yunus/Cellular-Discovery-App/actions/workflows/test.yml)
-[![Lint & Typecheck](https://github.com/Muhammad-Yunus/Cellular-Discovery-App/actions/workflows/test.yml/badge.svg?job=unit)](https://github.com/Muhammad-Yunus/Cellular-Discovery-App/actions/workflows/test.yml)
-[![License](https://img.shields.io/github/license/Muhammad-Yunus/Cellular-Discovery-App?style=flat-square)](LICENSE)
-
 ## Project Overview
 
-LTE Scanner is a modern web application for discovering and monitoring LTE network information via USB modems on Linux systems. It provides a real-time interface to scan LTE devices, monitor signal strength, view cell tower details, and manage system health. Built with Nuxt 4 and Vue 3, it features a custom toast notification system, WebSocket-based live updates, and end-to-end testing with Playwright.
+Cellular Discovery is a modern web application for discovering and monitoring LTE, UMTS, and GSM network information via USB modems on Linux systems. It provides a real-time interface to scan these networks, monitor signal strength, view cell tower details, and manage system health. Built with Nuxt 4 and Vue 3, it features a custom toast notification system, WebSocket-based live updates, and end-to-end testing with Playwright.
 
 ## Features
 
-- **LTE Device Scanning**: Discover and list connected USB LTE modems
+- **LTE/UMTS/GSM Device Scanning**: Discover and list connected USB modems
 - **Signal Monitoring**: Real-time RSSI, RSRP, SINR metrics (via backend connection)
 - **Cell Tower Details**: View PLMN, TAC, PCI, frequency, band information
 - **System Health Monitor**: Track backend service status and response time
@@ -36,48 +31,47 @@ LTE Scanner is a modern web application for discovering and monitoring LTE netwo
 +-----------------------------------------------------------------+
 |                   Frontend (Nuxt 4 + Vue 3)                     |
 |                                                                 |
-|  +-----------+     +-----------+     +-------------+             |
-|  |  Nuxt App | --> |  Nitro    | --> |   Browser   |             |
-|  |  (SSR)    |     |  Server   |     |   (ARM64)   |             |
-|  +-----+-----+     +-----------+     +-------------+             |
-|        |                                                       |
-|        v                                                       |
+|  +-----------+     +-----------+     +-------------+            |
+|  |  Nuxt App | --> |  Nitro    | --> |   Browser   |            |
+|  |  (SSR)    |     |  Server   |     |             |
+|  +-----+-----+     +-----------+     +-------------+            |
+|        |                                                        |
+|        v                                                        |
 |  +----------------------------------------------------------+   |
 |  |                  Application State                       |   |
 |  |                                                          |   |
-|  |  +----------+   +-----------+   +--------------+          |   |
-|  |  | scanStore|   |systemStore|   |settingsStore |          |   |
-|  |  +----+-----+   +-----+-----+   +------+-------+          |   |
-|  |       |               |                |                  |   |
-|  |       v               v                v                  |   |
-|  |  +----------+   +-----------+   +--------------+          |   |
-|  |  | useScan  |   | useSystem |   | useSettings  |          |   |
-|  |  +----+-----+   +-----+-----+   +------+-------+          |   |
-|  |       |               |                |                  |   |
-|  |       +-------+-------+--------+-------+                  |   |
-|  |               |                |                          |   |
-|  |               v                v                          |   |
-|  |        +-------------+   +-------------+                  |   |
-|  |        | CustomToaster|  |   UApp/UIcon |                 |   |
-|  |        +-------------+   +-------------+                  |   |
+|  |  +----------+   +-----------+   +--------------+         |   |
+|  |  | scanStore|   |systemStore|   |settingsStore |         |   |
+|  |  +----+-----+   +-----+-----+   +------+-------+         |   |
+|  |       |               |                |                 |   |
+|  |       v               v                v                 |   |
+|  |  +----------+   +-----------+   +--------------+         |   |
+|  |  | useScan  |   | useSystem |   | useSettings  |         |   |
+|  |  +----+-----+   +-----+-----+   +------+-------+         |   |
+|  |       |               |                |                 |   |
+|  |       +-------+-------+--------+-------+                 |   |
+|  |               |                |                         |   |
+|  |               v                v                         |   |
+|  |        +-------------+   +-------------+                 |   |
+|  |        |CustomToaster|   |  UApp/UIcon |                 |   |
+|  |        +-------------+   +-------------+                 |   |
 |  +----------------------------------------------------------+   |
-|        |                                                       |
-|        v                                                       |
-|   Backend API (REST + WebSocket) <------------------------------+
-|                                                                 |
+|                           |                                     |
+|                           v                                     |
+|           Backend API (REST + WebSocket)                        |
 |  +----------------------------------------------------------+   |
-|  |              Backend Service (FastAPI / Flask)           |   |
+|  |         Backend Service (FastAPI / Flask)                |   |
 |  |                                                          |   |
-|  |   +---------------+         +---------------+             |   |
-|  |   |  USB Modem    |         |   Signal      |             |   |
-|  |   |  Scanner      |         |   Decoder     |             |   |
-|  |   +-------+-------+         +-------+-------+             |   |
-|  |           |                         |                     |   |
-|  |           v                         v                     |   |
-|  |   +---------------+         +---------------+             |   |
-|  |   | CLI Wrapper   |         |   Database    |             |   |
-|  |   | (lsusb, mmcli)|        |   (SQLite)    |             |   |
-|  |   +---------------+         +---------------+             |   |
+|  |     +---------------+         +---------------+          |   |
+|  |     |  USB Modem    |         |   Signal      |          |   |
+|  |     |  Scanner      |         |   Decoder     |          |   |
+|  |     +-------+-------+         +-------+-------+          |   |
+|  |             |                         |                  |   |
+|  |             v                         v                  |   |
+|  |     +---------------+         +---------------+          |   |
+|  |     | CLI Wrapper   |         |   Database    |          |   |
+|  |     | (lsusb, mmcli)|         |    (PSQL)     |          |   |
+|  |     +---------------+         +---------------+          |   |
 |  +----------------------------------------------------------+   |
 +-----------------------------------------------------------------+
 ```
@@ -266,43 +260,6 @@ const results = await useScan().getScans({
   rat: 'NR'   // Only show New Radio scans matching the search
 })
 ```
-
-## Known Issues & Workarounds
-
-| Issue                                             | Status             | Solution                                                                                  |
-|---------------------------------------------------|--------------------|-------------------------------------------------------------------------------------------|
-| `ce` property crash during SSR on initial load    | **FIXED**          | Removed `@nuxt/ui` toaster from `App.vue`; added `toaster="null"` prop; toast in `CustomToaster` (client-only) |
-| Toast not rendering / hydration error             | **FIXED**          | `CustomToaster` wrapped in `<ClientOnly>`; Vue-native ref-based state instead of `useToast()` |
-| Multiple toast notifications stacking             | Working            | Custom toasts auto-dismiss after delay; removed duplicate `setTimeout` cleanup issue      |
-| Slow build/startup on ARM64                       | **PERFORMANCE**    | Larger node_modules; consider Docker with arm64 image for consistency                     |
-| Playwright test stability on ARM64                | **WORKING**        | Slower Chromium launch on Pi; increased timeout to 60s; single worker mode enabled       |
-| System panel "Backend is not responding" on /api/v1 | **FIXED**          | Health probe decoupled to `NUXT_PUBLIC_HEALTH_BASE` (`/health` at backend root)           |
-
-## Roadmap
-
-- [x] Fix SSR toast crash
-- [x] Implement custom toast component
-- [x] Migrate all toast usage to custom system
-- [x] Decouple health probe from versioned apiBase
-- [ ] Add toast persistence/local storage
-- [ ] Improve map visualization performance on ARM
-- [ ] Add dark/light theme toggle
-- [ ] Implement user authentication
-- [ ] Export scan data as CSV/PDF
-- [ ] Add mobile-responsive layout enhancements
-
-## Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-1. Fork the repository
-2. Create a feature branch (`feat/your-feature-name`)
-3. Commit your changes (`git commit -m 'Add new feature'`)
-4. Push to the branch (`git push origin feat/your-feature-name`)
-5. Open a Pull Request
-
-Please ensure your code passes linting (`pnpm lint`) and type checking (`pnpm typecheck`).
-
 ---
 
 *Built with care on Raspberry Pi ARM64*
