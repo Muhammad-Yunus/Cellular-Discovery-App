@@ -147,7 +147,7 @@ async function exportScans() {
 
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase || 'http://192.168.1.108:8000'
-    const url = `${apiBase}/api/v1/scans/export?${params.toString()}`
+    const url = `${apiBase}/scans/export?${params.toString()}`
 
     const response = await fetch(url, {
       method: 'GET',
