@@ -258,13 +258,14 @@ const columns: TableColumn<ScanSummary>[] = [
       </p>
     </div>
 
-    <UTable
-      v-else
-      :key="scans.length"
-      :data="scans"
-      :columns="columns"
-      class="hidden lg:table"
-    >
+    <div class="overflow-x-auto">
+      <UTable
+        v-else
+        :key="scans.length"
+        :data="scans"
+        :columns="columns"
+        class="hidden lg:table w-full"
+      >
       <template #operator-cell="{ row }">
         <NuxtLink
           :to="`/?scan=${row.original.id}`"
@@ -274,6 +275,7 @@ const columns: TableColumn<ScanSummary>[] = [
         </NuxtLink>
       </template>
     </UTable>
+    </div>
 
     <div
       v-if="scans.length > 0"
