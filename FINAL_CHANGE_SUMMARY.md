@@ -23,7 +23,7 @@
 - Description: *A web-based interface for discovering and monitoring LTE, UMTS and GSM networks...*
 
 **New architecture (3 tiers, top→bottom with colored backgrounds):**
-1. **Frontend (blue/info)**: bg-blue-50, Vue + Nuxt + Vite + Pinia + Leaflet + Tailwind
+1. **Frontend (blue/info)**: bg-blue-100 (lebih gelap dari bg-blue-50), Vue + Nuxt + Vite + Pinia + Leaflet + Tailwind
 2. **Service (orange/warning)**: bg-orange-50, FastAPI + PostgreSQL + WebSocket (Cellular Discovery Service)
 3. **CLI (green/success)**: bg-green-50, USB Modem CLI, RTL-SDR CLI, HackRF CLI
 
