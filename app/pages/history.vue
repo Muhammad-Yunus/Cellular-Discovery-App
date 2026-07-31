@@ -310,7 +310,7 @@ const columns: TableColumn<ScanSummary>[] = [
         />
       </div>
       <!-- Export button -->
-      <div class="flex items-end">
+      <div class="flex items-end mt-4">
         <UButton
           variant="soft"
           :disabled="isExporting"
