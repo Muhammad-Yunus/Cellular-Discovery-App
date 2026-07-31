@@ -66,9 +66,9 @@ const { health, loading: healthLoading } = useSystem()
         </UCard>
 
         <!-- Tier 2: Service (middle) - warning/orange -->
-        <UCard class="w-full bg-orange-50">
+        <UCard class="w-full bg-orange-800">
           <div class="flex items-start gap-3">
-            <span class="iconify i-lucide-server size-5 shrink-0 text-orange-600 mt-0.5" />
+            <span class="iconify i-lucide-server size-5 shrink-0 text-white mt-0.5" />
             <div class="flex-1">
               <p class="text-sm font-medium text-default">
                 Cellular Discovery Service
@@ -92,9 +92,9 @@ const { health, loading: healthLoading } = useSystem()
         </UCard>
 
         <!-- Tier 3: CLI Tools (bottom) - success/green -->
-        <UCard class="w-full bg-green-50">
+        <UCard class="w-full bg-green-800">
           <div class="flex items-start gap-3">
-            <span class="iconify i-lucide-terminal size-5 shrink-0 text-green-600 mt-0.5" />
+            <span class="iconify i-lucide-terminal size-5 shrink-0 text-white mt-0.5" />
             <div class="flex-1">
               <p class="text-sm font-medium text-default">
                 CLI Tools (Data Acquisition Layer)
