@@ -269,8 +269,9 @@ const columns: TableColumn<ScanSummary>[] = [
     </div>
 
     <!-- Combined Filters: Search, Time Range, RAT -->
-    <div class="flex flex-col md:flex-row gap-4 mb-4 items-center">
-      <!-- Search input -->
+    <div class="px-6 py-2 border border-muted rounded-md">
+      <div class="flex flex-col md:flex-row gap-4 mb-4 items-center">
+        <!-- Search input -->
       <div class="flex-1 min-w-[200px]">
         <label class="block text-sm font-medium text-muted mb-1">Search</label>
         <UInput
@@ -323,7 +324,8 @@ const columns: TableColumn<ScanSummary>[] = [
           </div>
         </UButton>
       </div>
-    </div>
+    </div> <!-- close inner flex -->
+  </div> <!-- close outer container -->
 
     <template v-if="loading">
       <div class="space-y-3">
