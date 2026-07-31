@@ -87,8 +87,13 @@ async function updateTimeRange() {
     const dEnd = new Date(end)
     if (!isNaN(dStart.getTime()) && !isNaN(dEnd.getTime())) {
       if (dStart > dEnd) {
-        // Error: show toast and do not send request
+        // Error: show toast, do not send request, clear table and error state
         console.error('Invalid time range: Start time is after end time')
+        // Clear table data
+        scanStore.scans = []
+        scanStore.pagination.totalItems = 0
+        scanStore.pagination.totalPages = 0
+        scanStore.error = '' // hide any existing error toast/error display
         toast.add({ title: 'Waktu tidak sah', description: 'Waktu awal tidak boleh setelah waktu akhir.', color: 'error', icon: 'exclamation-triangle' })
         return
       }
