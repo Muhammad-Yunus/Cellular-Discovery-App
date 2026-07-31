@@ -16,12 +16,10 @@ const {
   loading,
   error,
   pagination,
-  sortParam,
   fetchScans,
   setPage,
   setSearch,
-  setDateRange,
-  toggleSort
+  setDateRange
 } = useScan()
 
 const search = ref(pagination.value.searchTerm)
@@ -381,10 +379,10 @@ const columns: TableColumn<ScanSummary>[] = [
       class="hidden lg:table w-full"
     >
     <template #header-scan-time="{ column }">
-      <button @click="toggleSort()" class="flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented">
+      <button @click="scanStore.toggleSort()" class="flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented">
         Scan Time
         <UIcon
-          v-if="sortParam === 'scan_time'"
+          v-if="scanStore.sortParam === 'scan_time'"
           name="i-lucide-chevron-up"
           class="w-3 h-3"
         />
