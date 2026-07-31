@@ -4,10 +4,11 @@ import type { ScanResponse, ScanPaginated, ScanCreate } from '~/types'
 export interface GetScansParams {
   page?: number
   pageSize?: number
-  search?: string
+  search?:string
   rat?: string // Filter by RAT (e.g., 'LTE', 'NR'); if null or 'ALL', no filter applied
   startDate?: string // ISO datetime string (inclusive lower bound)
   endDate?: string // ISO datetime string (inclusive upper bound)
+  sort?: string // e.g., 'scan_time' or '-scan_time' for DESC
 }
 
 export async function createScan(data: ScanCreate): Promise<ScanResponse> {
@@ -27,7 +28,8 @@ export async function getScans(params?: GetScansParams): Promise<ScanPaginated> 
       search: params?.search,
       rat: params?.rat && params.rat !== 'ALL' ? params.rat : undefined,
       start_time: params?.startDate || undefined,
-      end_time: params?.endDate || undefined
+      end_time: params?.endDate || undefined,
+      sort: params?.sort || undefined
     }
   })
 }

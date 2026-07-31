@@ -13,6 +13,7 @@ interface ScanState {
   ratFilter: string | null // 'ALL' or specific RAT like 'LTE'
   dateRange: { startDate: string | null; endDate: string | null } // ISO datetime strings
   pagination: PaginationMeta
+  sortParam: string | null // e.g., 'scan_time' or '-scan_time' for DESC
 }
 
 export const useScanStore = defineStore('scan', {
@@ -33,7 +34,8 @@ export const useScanStore = defineStore('scan', {
       offset: 0,
       totalPages: 0,
       searchTerm: ''
-    }
+    },
+    sortParam: '-scan_time'
   }),
 
   getters: {
@@ -56,7 +58,8 @@ export const useScanStore = defineStore('scan', {
           search: this.pagination.searchTerm || undefined,
           rat: this.ratFilter,
           ...(this.dateRange.startDate !== null ? { startDate: this.dateRange.startDate } : {}),
-          ...(this.dateRange.endDate !== null ? { endDate: this.dateRange.endDate } : {})
+          ...(this.dateRange.endDate !== null ? { endDate: this.dateRange.endDate } : {}),
+          sort: this.sortParam
         })
         // Backend now returns flat items (one per scan_result). Map fields
         // to the ScanSummary shape expected by UI (operator name -> operator).
@@ -175,10 +178,17 @@ export const useScanStore = defineStore('scan', {
     },
 
     setLimit(limit: number) {
-      this.pagination.limit = limit
-      this.pagination.currentPage = 1
-      this.pagination.offset = 0
-      this.fetchScans()
+      this.pagination.limit = limit;
+      this.pagination.currentPage = 1;
+      this.pagination.offset = 0;
+      this.fetchScans();
+    },
+
+    toggleSort() {
+      this.sortParam = this.sortParam === '-scan_time' ? 'scan_time' : '-scan_time';
+      this.pagination.currentPage = 1;
+      this.pagination.offset = 0;
+      this.fetchScans();
     },
 
     /**

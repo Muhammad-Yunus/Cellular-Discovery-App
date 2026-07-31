@@ -7,7 +7,7 @@ import { useCustomToast } from '@/composables/useCustomToast'
 export function useScan() {
   const toast = useCustomToast()
   const scanStore = useScanStore()
-  const { scans, selectedScan, loading, creating, error, pagination, selectedScanId, wsConnected } = storeToRefs(scanStore)
+  const { scans, selectedScan, loading, creating, error, pagination, selectedScanId, wsConnected, sortParam } = storeToRefs(scanStore)
 
   let ws: ReconnectingWebSocket | null = null
 
@@ -98,12 +98,14 @@ export function useScan() {
     error,
     pagination,
     wsConnected,
+    sortParam,
     fetchScans,
     startScan,
     selectScan,
     removeScan,
     setPage,
     setSearch,
-    setDateRange
+    setDateRange,
+    toggleSort: () => scanStore.toggleSort()
   }
 }
