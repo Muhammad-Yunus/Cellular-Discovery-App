@@ -30,6 +30,8 @@ const totalItems = computed(() => pagination.value.totalItems)
 // Time range filter refs
 const startDateTime = ref<string | null>(null)
 const endDateTime = ref<string | null>(null)
+// Export state
+const isExporting = ref(false)
 
 // Show toast whenever an error occurs
 watch(error, (newErr) => {
@@ -121,6 +123,79 @@ watch(search, (val) => {
 
 function onPageChange(page: number) {
   setPage(page)
+}
+
+async function exportScans() {
+  if (isExporting.value) return
+  isExporting.value = true
+  try {
+    const params = new URLSearchParams()
+    // Search filter
+    if (search.value) params.append('search', search.value)
+    // Always sort by scan_time descending
+    params.append('sort', '-scan_time')
+    // RAT filter - only if not 'ALL'
+    const ratFilter = scanStore.ratFilter
+    if (ratFilter && ratFilter !== 'ALL') {
+      params.append('rat', ratFilter)
+    }
+    // Time range
+    const start = startDateTime.value ? formatLocalIsoOffset(startDateTime.value) : null
+    const end = endDateTime.value ? formatLocalIsoOffset(endDateTime.value) : null
+    if (start) params.append('start_time', start)
+    if (end) params.append('end_time', end)
+
+    const config = useRuntimeConfig()
+    const apiBase = config.public.apiBase || 'http://192.168.1.108:8000'
+    const url = `${apiBase}/api/v1/scans/export?${params.toString()}`
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        accept: 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Export failed with status ${response.status}`)
+    }
+
+    // Extract filename from Content-Disposition header
+    let filename = 'scan_export.csv'
+    const disposition = response.headers.get('content-disposition')
+    if (disposition && disposition.includes('filename=')) {
+      const match = disposition.match(/filename="?([^"]+)"?/)
+      if (match && match[1]) filename = match[1]
+    }
+
+    // Create blob and trigger download
+    const blob = await response.blob()
+    const objectUrl = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objectUrl
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(objectUrl)
+
+    toast.add({
+      title: 'Export success',
+      description: `File downloaded: ${filename}`,
+      color: 'success',
+      icon: 'i-lucide-check-circle'
+    })
+  } catch (err: any) {
+    console.error('Export error:', err)
+    toast.add({
+      title: 'Export failed',
+      description: err?.message || 'Failed to export data',
+      color: 'error',
+      icon: 'i-lucide-exclamation-triangle'
+    })
+  } finally {
+    isExporting.value = false
+  }
 }
 
 const columns: TableColumn<ScanSummary>[] = [
@@ -233,6 +308,20 @@ const columns: TableColumn<ScanSummary>[] = [
           @update:selected-rat="scanStore.setRat"
           class="w-full"
         />
+      </div>
+      <!-- Export button -->
+      <div class="flex items-end">
+        <UButton
+          variant="soft"
+          :disabled="isExporting"
+          @click="exportScans"
+        >
+          <div class="flex items-center gap-2">
+            <span v-if="!isExporting" class="i-lucide-download w-4 h-4"></span>
+            <span v-else class="i-lucide-spinner animate-spin w-4 h-4"></span>
+            Export
+          </div>
+        </UButton>
       </div>
     </div>
 
