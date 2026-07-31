@@ -23,9 +23,9 @@
 - Description: *A web-based interface for discovering and monitoring LTE, UMTS and GSM networks...*
 
 **New architecture (3 tiers, top→bottom with dark colored backgrounds):**
-1. **Frontend (blue/info)**: bg-blue-800 (gelap), Vue + Nuxt + Vite + Pinia + Leaflet + Tailwind
-2. **Service (orange/warning)**: bg-orange-800 (gelap), FastAPI + PostgreSQL + WebSocket (Cellular Discovery Service)
-3. **CLI (green/success)**: bg-green-800 (gelap), USB Modem CLI, RTL-SDR CLI, HackRF CLI
+1. **Frontend (blue/info)**: bg-blue-800 (gelap), icon putih, badge dengan border dan fill bg-blue-900
+2. **Service (orange/warning)**: bg-orange-800 (gelap), icon putih, badge dengan border dan fill bg-orange-900
+3. **CLI (green/success)**: bg-green-800 (gelap), icon putih, badge dengan border dan fill bg-green-900
 
 ### 5. Filter & Table Background (app/pages/history.vue)
 Both containers got `bg-primary/5`

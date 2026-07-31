@@ -27,9 +27,9 @@
 - Deskripsi diubah termasuk mention UMTS dan GSM
 - Hapus section Technology Stack
 - Tambahkan System Architecture 3-tier (top → bottom: FE → Service → CLI) dengan background warna:
-  - **Tier 1 (Top - Frontend)**: bg-blue-800 (info, gelap), icon putih, badge outlines
-  - **Tier 2 (Middle - Service)**: bg-orange-800 (warning, gelap), icon putih, badge solid
-  - **Tier 3 (Bottom - CLI)**: bg-green-800 (success, gelap), icon putih, badge subtle
+  - **Tier 1 (Top - Frontend)**: bg-blue-800 (info, gelap), icon putih, badge dengan border dan fill bg-blue-900
+  - **Tier 2 (Middle - Service)**: bg-orange-800 (warning, gelap), icon putih, badge dengan border dan fill bg-orange-900
+  - **Tier 3 (Bottom - CLI)**: bg-green-800 (success, gelap), icon putih, badge dengan border dan fill bg-green-900
 
 ## 5. Background on Filter & Table (app/pages/history.vue)
 - Filter container: ditambah `bg-primary/5`
