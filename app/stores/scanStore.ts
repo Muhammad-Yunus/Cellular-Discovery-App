@@ -28,7 +28,7 @@ export const useScanStore = defineStore('scan', {
     dateRange: { startDate: null, endDate: null },
     pagination: {
       currentPage: 1,
-      limit: 20,
+      limit: 10,
       totalItems: 0,
       offset: 0,
       totalPages: 0,
