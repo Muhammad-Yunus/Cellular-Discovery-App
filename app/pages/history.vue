@@ -5,7 +5,7 @@ import FilterPanel from '@/components/FilterPanel.vue'
 import { useCustomToast } from '@/composables/useCustomToast'
 import { nextTick, watch } from 'vue'
 
-definePageMeta({ title: 'Scan Result' })
+definePageMeta({ title: 'Scan History' })
 const toast = useCustomToast()
 
 const scanStore = useScanStore()
@@ -167,7 +167,7 @@ const columns: TableColumn<ScanSummary>[] = [
   <div class="p-4 md:p-6 max-w-5xl mx-auto">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-xl font-semibold text-highlighted">
-        Scan Result
+        Scan History
       </h1>
     </div>
 
@@ -205,7 +205,7 @@ const columns: TableColumn<ScanSummary>[] = [
         </div>
       <!-- RAT filter -->
       <div class="min-w-[150px]">
-        <label class="block text-sm font-medium text-muted mb-1">RAT Filter</label>
+        <label class="block text-sm font-medium text-muted mb-1">RAT</label>
         <FilterPanel
           :selected-rat="scanStore.ratFilter"
           @update:selected-rat="scanStore.setRat"

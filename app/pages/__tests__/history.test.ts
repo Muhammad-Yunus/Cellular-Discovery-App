@@ -90,7 +90,7 @@ describe('HistoryPage', () => {
 
     const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
-    expect(wrapper.text()).toContain('Scan Result')
+    expect(wrapper.text()).toContain('Scan History')
   }, 15000)
 
   it('shows loading skeleton when loading', async () => {

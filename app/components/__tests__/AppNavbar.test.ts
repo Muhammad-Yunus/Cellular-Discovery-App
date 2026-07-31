@@ -58,7 +58,7 @@ describe('AppNavbar', () => {
     })
 
     expect(wrapper.text()).toContain('Home')
-    expect(wrapper.text()).toContain('Scan Result')
+    expect(wrapper.text()).toContain('Scan History')
     expect(wrapper.text()).toContain('Settings')
     expect(wrapper.text()).toContain('About')
   })
