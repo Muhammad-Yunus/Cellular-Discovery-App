@@ -22,11 +22,20 @@
 - Title: **Cellular Discovery**
 - Subtitle: *Discovering and monitoring LTE, UMTS, and GSM network*
 
-## 4. README.md Diperhalus
-- Badge shield.io dihapus
-- Diagram arsitektur disederhanakan
+## 4. About Page Reword & Architecture (app/pages/about.vue)
+- Judul diubah dari "USB Modem LTE Network Discovery Web Frontend" → "Discovering and monitoring LTE, UMTS, and GSM network"
+- Deskripsi diubah termasuk mention UMTS dan GSM
+- Hapus section Technology Stack
+- Tambahkan System Architecture 3-tier (top → bottom: FE → Service → CLI):
+  - **Tier 1 (Top - Frontend)**: Vue + Nuxt + Vite + Pinia + Leaflet + Tailwind
+  - **Tier 2 (Middle - Service)**: FastAPI + PostgreSQL + WebSocket (Cellular Discovery Service)
+  - **Tier 3 (Bottom - CLI)**: USB Modem CLI, RTL-SDR CLI, HackRF CLI
 
-## 5. Class CSS .bg-default (app/assets/css/main.css)
+## 5. Background on Filter & Table (app/pages/history.vue)
+- Filter container: ditambah `bg-primary/5`
+- Table container: ditambah `bg-primary/5`
+
+## 6. Class CSS .bg-default (app/assets/css/main.css)
 ```css
 .bg-default {
     background-color: var(--color-secondary-950);
@@ -36,6 +45,24 @@ Digunakan di:
 - app/layouts/home.vue
 - app/layouts/default.vue  
 - app/components/AppNavbar.vue
+
+## 7. README.md Diperhalus
+- Badge shield.io dihapus
+- Diagram arsitektur disederhanakan
+- Section "Technology Stack" diganti "Technologies" (konsisten dengan about page)
+```css
+.bg-default {
+    background-color: var(--color-secondary-950);
+}
+```
+Digunakan di:
+- app/layouts/home.vue
+- app/layouts/default.vue  
+- app/components/AppNavbar.vue
+
+## 7. README.md Diperhalus
+- Badge shield.io dihapus
+- Diagram arsitektur disederhanakan
 
 ---
 
