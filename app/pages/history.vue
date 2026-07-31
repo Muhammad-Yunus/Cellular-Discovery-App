@@ -240,7 +240,7 @@ const columns: TableColumn<ScanSummary>[] = [
     }, [
       'MCC',
       scanStore.sortColumn === 'mcc' 
-        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-arrow-up-0-9' : 'i-lucide-arrow-down-0-9', class: 'w-3 h-3' })
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-arrow-up-0-1' : 'i-lucide-arrow-down-0-1', class: 'w-3 h-3' })
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
     ]),
   },
@@ -252,7 +252,7 @@ const columns: TableColumn<ScanSummary>[] = [
     }, [
       'MNC',
       scanStore.sortColumn === 'mnc' 
-        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-arrow-up-0-9' : 'i-lucide-arrow-down-0-9', class: 'w-3 h-3' })
+        ? h(resolveComponent('UIcon'), { name: scanStore.sortDirection === 'asc' ? 'i-lucide-arrow-up-0-1' : 'i-lucide-arrow-down-0-1', class: 'w-3 h-3' })
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
     ]),
   },
