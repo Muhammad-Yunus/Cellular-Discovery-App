@@ -35,7 +35,10 @@ Both containers got `bg-primary/5`
 .bg-default { background-color: var(--color-secondary-950); }
 ```
 
-### 7. README Update (renamed section)
+### 7. Settings Page Breadcrumb (app/pages/settings.vue)
+- Tambahkan breadcrumb inline `Home › Settings` di top right, mirip dengan history page style
+
+### 8. README Update (renamed section)
 "Technology Stack" → "Technologies"
 
 ---

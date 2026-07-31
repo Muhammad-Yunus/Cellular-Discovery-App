@@ -46,7 +46,10 @@ Digunakan di:
 - app/layouts/default.vue  
 - app/components/AppNavbar.vue
 
-## 7. README.md Diperhalus
+## 7. Settings Page Breadcrumb (app/pages/settings.vue)
+- Tambahkan breadcrumb inline `Home › Settings` di top right, mirip dengan history page style
+
+## 8. README.md Diperhalus
 - Badge shield.io dihapus
 - Diagram arsitektur disederhanakan
 - Section "Technology Stack" diganti "Technologies" (konsisten dengan about page)
