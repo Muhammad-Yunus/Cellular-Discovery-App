@@ -4,7 +4,7 @@ import type { ScanSummary } from '~/types'
 import FilterPanel from '@/components/FilterPanel.vue'
 import { useCustomToast } from '@/composables/useCustomToast'
 import { getOperatorLogoPath } from '~/utils/operatorLogoMap'
-import { nextTick, watch, h, resolveComponent } from 'vue'
+import { nextTick, watch } from 'vue'
 
 definePageMeta({ title: 'Scan History' })
 const toast = useCustomToast()
@@ -237,22 +237,9 @@ const columns: TableColumn<ScanSummary>[] = [
     header: 'RAT'
   },
   {
+    id: 'scan_time',
     accessorKey: 'scan_time',
-    header: () => h('button', {
-      class: 'flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented',
-      onClick: () => scanStore.toggleSort()
-    }, [
-      'Scan Time',
-      resolveComponent('UIcon'),
-      {
-        props: {
-          name: scanStore.sortParam === 'scan_time' 
-            ? 'i-lucide-chevron-up' 
-            : 'i-lucide-chevron-down',
-          class: 'w-3 h-3'
-        }
-      }
-    ]),
+    header: 'Scan Time',
     cell: ({ row }) => {
       const d = new Date(row.original.scan_time)
       return d.toLocaleString('en-GB', {
@@ -392,6 +379,12 @@ const columns: TableColumn<ScanSummary>[] = [
       :columns="columns"
       class="hidden lg:table w-full"
     >
+    <template #header-scan_time>
+      <div class="flex items-center gap-1 cursor-pointer select-none" @click="scanStore.toggleSort()">
+        <span>Scan Time</span>
+        <UIcon :name="scanStore.sortParam === 'scan_time' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="w-3 h-3" />
+      </div>
+    </template>
     <template #operator-cell="{ row }">
         <NuxtLink
           :to="`/?scan=${row.original.id}`"
