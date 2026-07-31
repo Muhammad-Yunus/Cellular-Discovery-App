@@ -316,9 +316,9 @@ const columns: TableColumn<ScanSummary>[] = [
       </div>
     </div>
 
-    <!-- Combined Filters: Search, Time Range, RAT -->
-     <div class="px-6 py-4 border border-muted rounded-md mb-6">
-      <div class="flex items-center gap-4 flex-wrap">
+     <!-- Combined Filters: Search, Time Range, RAT -->
+      <div class="px-6 py-4 border border-muted rounded-md mb-6 bg-primary/5">
+       <div class="flex items-center gap-4 flex-wrap">
         <!-- Search input -->
       <div class="flex-1 min-w-[200px]">
         <label class="block text-sm font-medium text-muted mb-1">Search</label>
@@ -419,7 +419,7 @@ const columns: TableColumn<ScanSummary>[] = [
       </p>
     </div>
 
-    <div class="overflow-x-auto border border-muted rounded-md" v-else>
+     <div class="overflow-x-auto border border-muted rounded-md bg-primary/5" v-else>
     <UTable
       :key="scans.length"
       :data="scans"
