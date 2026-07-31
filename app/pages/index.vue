@@ -59,12 +59,12 @@ function onMarkerClick(scan: ScanSummary) {
       v-if="!loading && scans.length === 0"
       class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
     >
-      <div class="i-lucide-map-pin size-12 text-muted mb-3" />
-      <p class="text-lg font-medium text-default">
-        No Scan Available
+      <div class="i-lucide-radio-tower size-24 text-primary mb-6" />
+      <p class="text-2xl font-bold text-default">
+        Cellular Discovery
       </p>
-      <p class="text-sm text-muted mt-1">
-        Start a new scan using the button in the sidebar
+      <p class="text-base text-muted mt-2">
+        Discovering and monitoring LTE, UMTS, and GSM network
       </p>
     </div>
 
