@@ -3,6 +3,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { ScanSummary } from '~/types'
 import FilterPanel from '@/components/FilterPanel.vue'
 import { useCustomToast } from '@/composables/useCustomToast'
+import { getOperatorLogoPath } from '~/utils/operatorLogoMap'
 import { nextTick, watch } from 'vue'
 
 definePageMeta({ title: 'Scan History' })
@@ -131,6 +132,16 @@ const columns: TableColumn<ScanSummary>[] = [
       class: {
         th: 'w-12 text-center',
         td: 'text-center text-muted'
+      }
+    }
+  },
+  {
+    id: 'operator-logo',
+    header: '',
+    meta: {
+      class: {
+        th: 'w-8',
+        td: 'w-8 flex items-center justify-center py-4'
       }
     }
   },
@@ -283,6 +294,14 @@ const columns: TableColumn<ScanSummary>[] = [
         >
           {{ row.original.operator || 'Unknown' }}
         </NuxtLink>
+      </template>
+      <template #operator-logo-cell="{ row }">
+        <img
+          v-if="getOperatorLogoPath(row.original.operator)"
+          :src="getOperatorLogoPath(row.original.operator)"
+          :alt="row.original.operator || ''"
+          class="w-5 h-5 object-contain"
+        >
       </template>
     </UTable>
     </div>
