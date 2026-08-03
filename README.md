@@ -221,7 +221,7 @@ ls .output/
 
 #### 2. Create Systemd Service
 
-Create a systemd service file at `/etc/systemd/system/cellular-discovery.service`:
+Create a systemd service file at `/etc/systemd/system/cellular-discovery-app.service`:
 
 ```ini
 [Unit]
@@ -230,10 +230,10 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
-Group=www-data
-WorkingDirectory=/path/to/Cellular-Discovery-App/.output
-ExecStart=/usr/bin/node server/index.mjs
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/production-app/Cellular-Discovery-App/.output
+ExecStart=/home/pi/.nvm/versions/node/v24.18.0/bin/node server/index.mjs
 Restart=always
 RestartSec=10
 
@@ -245,8 +245,6 @@ Environment=NUXT_PUBLIC_HEALTH_BASE=http://192.168.1.108:8000
 WantedBy=multi-user.target
 ```
 
-**Replace** `/path/to/Cellular-Discovery-App` with your actual installation path.
-
 #### 3. Enable and Start the Service
 
 ```bash
@@ -254,21 +252,21 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 
 # Enable service to start on boot
-sudo systemctl enable cellular-discovery
+sudo systemctl enable cellular-discovery-app
 
 # Start the service
-sudo systemctl start cellular-discovery
+sudo systemctl start cellular-discovery-app
 
 # Check status
-sudo systemctl status cellular-discovery
+sudo systemctl status cellular-discovery-app
 
 # View logs
-sudo journalctl -u cellular-discovery -f
+sudo journalctl -u cellular-discovery-app -f
 ```
 
 #### 4. Configure nginx Reverse Proxy
 
-Create nginx configuration at `/etc/nginx/sites-available/cellular-discovery`:
+Create nginx configuration at `/etc/nginx/sites-available/cellular-discovery-app`:
 
 ```nginx
 server {
@@ -293,7 +291,7 @@ server {
 
 ```bash
 # Create symlink
-sudo ln -s /etc/nginx/sites-available/cellular-discovery /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/cellular-discovery-app /etc/nginx/sites-enabled/
 
 # Test nginx configuration
 sudo nginx -t
@@ -319,7 +317,7 @@ sudo systemctl status certbot.timer
 
 ```bash
 # Check service status
-sudo systemctl status cellular-discovery
+sudo systemctl status cellular-discovery-app
 
 # Check nginx status
 sudo systemctl status nginx
