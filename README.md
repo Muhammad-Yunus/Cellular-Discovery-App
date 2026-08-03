@@ -205,6 +205,131 @@ pnpm build
 pnpm preview
 ```
 
+### Production Deployment (systemd + nginx)
+
+For production deployment on Linux servers, use systemd service with nginx as reverse proxy.
+
+#### 1. Build for Production
+
+```bash
+# Build the Nuxt application
+pnpm build
+
+# The output will be in .output/ directory
+ls .output/
+```
+
+#### 2. Create Systemd Service
+
+Create a systemd service file at `/etc/systemd/system/cellular-discovery.service`:
+
+```ini
+[Unit]
+Description=Cellular Discovery Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/Cellular-Discovery-App/.output
+ExecStart=/usr/bin/node server/index.mjs
+Restart=always
+RestartSec=10
+
+# Environment variables (optional)
+Environment=NUXT_PUBLIC_API_BASE=http://192.168.1.108:8000/api/v1
+Environment=NUXT_PUBLIC_HEALTH_BASE=http://192.168.1.108:8000
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Replace** `/path/to/Cellular-Discovery-App` with your actual installation path.
+
+#### 3. Enable and Start the Service
+
+```bash
+# Reload systemd daemon
+sudo systemctl daemon-reload
+
+# Enable service to start on boot
+sudo systemctl enable cellular-discovery
+
+# Start the service
+sudo systemctl start cellular-discovery
+
+# Check status
+sudo systemctl status cellular-discovery
+
+# View logs
+sudo journalctl -u cellular-discovery -f
+```
+
+#### 4. Configure nginx Reverse Proxy
+
+Create nginx configuration at `/etc/nginx/sites-available/cellular-discovery`:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;  # Replace with your domain or IP
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;  # Nuxt default port
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+#### 5. Enable nginx Site
+
+```bash
+# Create symlink
+sudo ln -s /etc/nginx/sites-available/cellular-discovery /etc/nginx/sites-enabled/
+
+# Test nginx configuration
+sudo nginx -t
+
+# Reload nginx
+sudo systemctl reload nginx
+```
+
+#### 6. (Optional) Enable HTTPS with Let's Encrypt
+
+```bash
+# Install Certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Obtain SSL certificate
+sudo certbot --nginx -d your-domain.com
+
+# Auto-renewal is handled by systemd timer
+sudo systemctl status certbot.timer
+```
+
+#### 7. Verify Deployment
+
+```bash
+# Check service status
+sudo systemctl status cellular-discovery
+
+# Check nginx status
+sudo systemctl status nginx
+
+# Test from browser
+curl -I http://localhost
+```
+
+---
+
 ## Environment Variables
 
 Create a `.env.local` file in the project root:
