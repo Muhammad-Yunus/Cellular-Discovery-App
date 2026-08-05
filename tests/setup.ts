@@ -157,3 +157,27 @@ vi.stubGlobal('useMissionStore', () => ({
   setWsConnected: vi.fn(),
   setWsStatus: vi.fn()
 }))
+
+vi.stubGlobal('useCustomToast', () => {
+  const toasts = { value: [] as Array<{ id: number, title: string, description?: string, color: string, icon?: string, timeout?: number }> }
+  let nextId = 1
+  return {
+    toasts,
+    add: (props: { title: string, description?: string, color: string, icon?: string, timeout?: number }) => {
+      toasts.value.push({ id: nextId++, ...props })
+    },
+    remove: (id: number) => {
+      const idx = toasts.value.findIndex(t => t.id === id)
+      if (idx >= 0) toasts.value.splice(idx, 1)
+    },
+    colorClass: (color: string) => {
+      const map: Record<string, string> = {
+        success: 'bg-green-600 text-white',
+        error: 'bg-red-600 text-white',
+        info: 'blue-600 text-white',
+        warning: 'amber-600 text-white'
+      }
+      return map[color] || 'bg-gray-600 text-white'
+    }
+  }
+})
