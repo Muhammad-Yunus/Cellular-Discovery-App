@@ -149,3 +149,11 @@ vi.stubGlobal('useUiStore', () => ({
   toggleBottomPanel: vi.fn(),
   setActiveTab: vi.fn()
 }))
+
+vi.stubGlobal('useMissionStore', () => ({
+  wsConnected: false,
+  wsStatus: 'disconnected',
+  fetchMissions: vi.fn(),
+  setWsConnected: vi.fn(),
+  setWsStatus: vi.fn()
+}))
