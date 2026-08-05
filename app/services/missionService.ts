@@ -152,9 +152,9 @@ export async function deleteWaypoint(
 
 /** List drones with optional filtering and pagination. */
 export async function listDrones(
-  params?: { page?: number; pageSize?: number; search?: string; status?: string }
-): Promise<{ items: Drone[]; total: number; limit: number; offset: number }> {
-  return missionApiRequest<{ items: Drone[]; total: number; limit: number; offset: number }>(
+  params?: { page?: number, pageSize?: number, search?: string, status?: string }
+): Promise<{ items: Drone[], total: number, limit: number, offset: number }> {
+  return missionApiRequest<{ items: Drone[], total: number, limit: number, offset: number }>(
     '/drones',
     {
       params: {
@@ -178,9 +178,9 @@ export async function getDroneById(id: string): Promise<Drone> {
 
 /** List survey areas with optional filtering. */
 export async function listSurveyAreas(
-  params?: { page?: number; pageSize?: number; search?: string }
-): Promise<{ items: SurveyArea[]; total: number; limit: number; offset: number }> {
-  return missionApiRequest<{ items: SurveyArea[]; total: number; limit: number; offset: number }>(
+  params?: { page?: number, pageSize?: number, search?: string }
+): Promise<{ items: SurveyArea[], total: number, limit: number, offset: number }> {
+  return missionApiRequest<{ items: SurveyArea[], total: number, limit: number, offset: number }>(
     '/survey-areas',
     {
       params: {
@@ -241,7 +241,6 @@ export async function runMissionCommand(
   commandType: 'GET' | 'SET',
   payload?: unknown
 ): Promise<MissionCommandResult> {
-  const body = commandType === 'SET' ? payload : undefined
   return missionApiRequest<MissionCommandResult>(
     `/missions/${missionId}/command`,
     {
