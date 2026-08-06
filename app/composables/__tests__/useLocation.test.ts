@@ -12,22 +12,13 @@ vi.mock('~/services/missionService', () => ({
 vi.mock('@/composables/useCustomToast', () => ({
   useCustomToast: () => ({
     toasts: ref([]),
-    add: vi.fn(),
+    add: (...args: unknown[]) => toastAddSpy(...args),
     remove: vi.fn(),
     colorClass: vi.fn()
   })
 }))
 
 const toastAddSpy = vi.fn()
-
-vi.mock('@/composables/useCustomToast', () => ({
-  useCustomToast: () => ({
-    toasts: ref([]),
-    add: (...args: unknown[]) => toastAddSpy(...args),
-    remove: vi.fn(),
-    colorClass: vi.fn()
-  })
-}))
 
 describe('useLocation', () => {
   beforeEach(() => {
@@ -179,8 +170,9 @@ describe('useLocation', () => {
   it('uploads CSV and refreshes locations', async () => {
     const { uploadLocationsCSV } = await import('~/services/missionService')
     vi.mocked(uploadLocationsCSV).mockResolvedValue({
-      successful: 5,
-      failed: 0,
+      total_rows: 5,
+      success_rows: 5,
+      failed_rows: 0,
       errors: []
     })
 
@@ -199,9 +191,10 @@ describe('useLocation', () => {
   it('shows warning toast when CSV upload has failures', async () => {
     const { uploadLocationsCSV } = await import('~/services/missionService')
     vi.mocked(uploadLocationsCSV).mockResolvedValue({
-      successful: 5,
-      failed: 2,
-      errors: ['Invalid row 3']
+      total_rows: 7,
+      success_rows: 5,
+      failed_rows: 2,
+      errors: [{ row: 3, message: 'Invalid row 3' }]
     })
 
     const { useLocation } = await import('../useLocation')

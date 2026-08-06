@@ -76,10 +76,11 @@ export function useLocation(missionId: string) {
     error.value = null
     try {
       const result = await locationService.uploadLocationsCSV(missionId, file)
+      const failed = result.failed_rows
       toast.add({
         title: 'Upload complete',
-        description: `${result.successful} succeeded, ${result.failed} failed`,
-        color: result.failed > 0 ? 'warning' : 'success'
+        description: `${result.success_rows} succeeded, ${failed} failed`,
+        color: failed > 0 ? 'warning' : 'success'
       })
       await fetchLocations()
     } catch (e) {
