@@ -4,7 +4,7 @@ import { formatDateTime } from '~/utils/dateFormat'
 
 const systemStore = useSystemStore()
 
-function statusColor(status: string): string {
+function statusColor(status: string): 'success' | 'warning' | 'error' | 'neutral' {
   switch (status) {
     case 'ok': return 'success'
     case 'warning': return 'warning'

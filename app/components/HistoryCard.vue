@@ -29,7 +29,7 @@ function fmt(value: unknown): string {
  * The supported colors come from Nuxt UI v4's built-in palette:
  *   primary | secondary | success | info | warning | error | neutral
  */
-function getRatColor(rat: string | null | undefined): string {
+function getRatColor(rat: string | null | undefined): 'success' | 'warning' | 'info' | 'primary' | 'neutral' {
   if (!rat) return 'neutral' // unknown/neutral
   const normalized = rat.trim().toUpperCase()
   switch (normalized) {

@@ -20,7 +20,7 @@ function fmt(value: unknown): string {
  * Assigns a Nuxt UI semantic color based on the RAT technology.
  * Used directly by UBadge `color` prop with variant="subtle".
  */
-function getRatColor(rat: string | null | undefined): string {
+function getRatColor(rat: string | null | undefined): 'success' | 'warning' | 'info' | 'primary' | 'neutral' {
   if (!rat) return 'neutral' // unknown/neutral
   const normalized = rat.trim().toUpperCase()
   switch (normalized) {
