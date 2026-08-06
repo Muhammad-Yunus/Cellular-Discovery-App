@@ -262,24 +262,24 @@ export async function runMissionCommand(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Collector backend (Feature 02+) — MissionRecord / MissionLocation
+// MissionRecord / MissionLocation — location-based mission planner
 // ─────────────────────────────────────────────────────────────────────────────
 //
 // These endpoints power the **location-based** mission planner UI described
 // in `NewEpic/NEW_FEATURE_*`. They live alongside the legacy drone-driven
 // endpoints above so both the existing pages/missions/* UI and the future
-// NewEpic UI can coexist. The collector backend uses a simplified 5-state
-// lifecycle (`MissionStatus5`) and exposes locations as first-class rows
-// rather than embedded waypoints.
+// NewEpic UI can coexist. The backend uses a simplified 5-state lifecycle
+// (`MissionStatus5`) and exposes locations as first-class rows rather than
+// embedded waypoints.
 
 /**
- * List missions from the collector backend (`/collector/missions`) with
- * optional pagination, search, status filter, and sort.
+ * List missions (`/missions`) with optional pagination, search, status
+ * filter, and sort.
  */
 export async function listCollectorMissions(
   params: ListMissionsParams = {}
 ): Promise<MissionPaginated> {
-  return missionApiRequest<MissionPaginated>('/collector/missions', {
+  return missionApiRequest<MissionPaginated>('/missions', {
     params: {
       page: params.page ?? 1,
       page_size: params.page_size ?? 10,
@@ -290,73 +290,73 @@ export async function listCollectorMissions(
   })
 }
 
-/** Fetch a single collector mission by UUID. */
+/** Fetch a single mission by UUID. */
 export async function getCollectorMission(id: string): Promise<MissionRecord> {
-  return missionApiRequest<MissionRecord>(`/collector/missions/${id}`)
+  return missionApiRequest<MissionRecord>(`/missions/${id}`)
 }
 
 /**
- * Create a new mission against the collector backend. The backend assigns
- * the id and timestamps; the response mirrors `MissionRecord`.
+ * Create a new mission. The backend assigns the id and timestamps; the
+ * response mirrors `MissionRecord`.
  */
 export async function createCollectorMission(
   data: MissionRecordCreate
 ): Promise<MissionRecord> {
-  return missionApiRequest<MissionRecord>('/collector/missions', {
+  return missionApiRequest<MissionRecord>('/missions', {
     method: 'POST',
     body: data
   })
 }
 
-/** Patch an existing collector mission. */
+/** Patch an existing mission. */
 export async function updateCollectorMission(
   id: string,
   data: MissionRecordUpdate
 ): Promise<MissionRecord> {
-  return missionApiRequest<MissionRecord>(`/collector/missions/${id}`, {
+  return missionApiRequest<MissionRecord>(`/missions/${id}`, {
     method: 'PATCH',
     body: data
   })
 }
 
-/** Delete a collector mission. Returns `undefined`. */
+/** Delete a mission. Returns `undefined`. */
 export async function deleteCollectorMission(id: string): Promise<undefined> {
-  return missionApiRequest<undefined>(`/collector/missions/${id}`, {
+  return missionApiRequest<undefined>(`/missions/${id}`, {
     method: 'DELETE'
   })
 }
 
 /**
- * Lifecycle actions on a collector mission. Maps to dedicated endpoints:
- *   PATCH /collector/missions/{id}/start
- *   PATCH /collector/missions/{id}/pause
- *   PATCH /collector/missions/{id}/resume
- *   PATCH /collector/missions/{id}/complete
+ * Lifecycle actions on a mission. Maps to dedicated endpoints:
+ *   PATCH /missions/{id}/start
+ *   PATCH /missions/{id}/pause
+ *   PATCH /missions/{id}/resume
+ *   PATCH /missions/{id}/complete
  */
 export async function startCollectorMission(id: string): Promise<MissionRecord> {
   return missionApiRequest<MissionRecord>(
-    `/collector/missions/${id}/start`,
+    `/missions/${id}/start`,
     { method: 'PATCH' }
   )
 }
 
 export async function pauseCollectorMission(id: string): Promise<MissionRecord> {
   return missionApiRequest<MissionRecord>(
-    `/collector/missions/${id}/pause`,
+    `/missions/${id}/pause`,
     { method: 'PATCH' }
   )
 }
 
 export async function resumeCollectorMission(id: string): Promise<MissionRecord> {
   return missionApiRequest<MissionRecord>(
-    `/collector/missions/${id}/resume`,
+    `/missions/${id}/resume`,
     { method: 'PATCH' }
   )
 }
 
 export async function completeCollectorMission(id: string): Promise<MissionRecord> {
   return missionApiRequest<MissionRecord>(
-    `/collector/missions/${id}/complete`,
+    `/missions/${id}/complete`,
     { method: 'PATCH' }
   )
 }
@@ -392,7 +392,7 @@ export async function listLocations(
   params: ListLocationsParams = {}
 ): Promise<LocationPaginated> {
   return missionApiRequest<LocationPaginated>(
-    `/collector/missions/${missionId}/locations`,
+    `/missions/${missionId}/locations`,
     {
       params: {
         page: params.page ?? 1,
@@ -409,7 +409,7 @@ export async function createLocation(
   data: MissionLocationCreate
 ): Promise<MissionLocation> {
   return missionApiRequest<MissionLocation>(
-    `/collector/missions/${missionId}/locations`,
+    `/missions/${missionId}/locations`,
     { method: 'POST', body: data }
   )
 }
@@ -420,7 +420,7 @@ export async function deleteLocation(
   locationId: string
 ): Promise<undefined> {
   return missionApiRequest<undefined>(
-    `/collector/missions/${missionId}/locations/${locationId}`,
+    `/missions/${missionId}/locations/${locationId}`,
     { method: 'DELETE' }
   )
 }
@@ -436,7 +436,7 @@ export async function uploadLocationsCSV(
   const form = new FormData()
   form.append('file', file)
   return missionApiRequest<CSVUploadResult>(
-    `/collector/missions/${missionId}/locations/upload`,
+    `/missions/${missionId}/locations/upload`,
     { method: 'POST', body: form }
   )
 }

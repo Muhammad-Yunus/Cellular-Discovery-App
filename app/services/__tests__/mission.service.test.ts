@@ -524,7 +524,7 @@ describe('missionService', () => {
   })
 
   // ────────────────────────────────────────────────────────────────────────
-  // Collector backend (Feature 02+)
+  // MissionRecord / MissionLocation (Feature 02+)
   // ────────────────────────────────────────────────────────────────────────
 
   describe('listCollectorMissions', () => {
@@ -535,12 +535,12 @@ describe('missionService', () => {
       offset: 0
     }
 
-    it('calls GET /collector/missions with defaults', async () => {
+    it('calls GET /missions with defaults', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
 
       const result = await listCollectorMissions()
 
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions', {
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions', {
         params: { page: 1, page_size: 10 }
       })
       expect(result).toEqual(mockResponse)
@@ -557,7 +557,7 @@ describe('missionService', () => {
         sort: '-created_at'
       })
 
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions', {
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions', {
         params: {
           page: 2,
           page_size: 5,
@@ -573,7 +573,7 @@ describe('missionService', () => {
 
       await listCollectorMissions({ status: 'all' })
 
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions', {
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions', {
         params: { page: 1, page_size: 10 }
       })
     })
@@ -588,12 +588,12 @@ describe('missionService', () => {
       updated_at: '2025-01-15T10:00:00Z'
     }
 
-    it('calls GET /collector/missions/{id}', async () => {
+    it('calls GET /missions/{id}', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockMission)
 
       const result = await getCollectorMission('cm-001')
 
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001')
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001')
       expect(result).toEqual(mockMission)
     })
   })
@@ -602,12 +602,12 @@ describe('missionService', () => {
     const mockData = { name: 'New Mission' }
     const mockResponse = { id: 'cm-002', ...mockData, status: 'draft', created_at: '2025-01-15T10:00:00Z', updated_at: '2025-01-15T10:00:00Z' }
 
-    it('calls POST /collector/missions with body', async () => {
+    it('calls POST /missions with body', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
 
       const result = await createCollectorMission(mockData)
 
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions', {
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions', {
         method: 'POST',
         body: mockData
       })
@@ -619,12 +619,12 @@ describe('missionService', () => {
     const mockUpdate = { status: 'active' as const }
     const mockResponse = { id: 'cm-001', name: 'Test', ...mockUpdate, created_at: '2025-01-15T10:00:00Z', updated_at: '2025-01-15T11:00:00Z' }
 
-    it('calls PATCH /collector/missions/{id} with data', async () => {
+    it('calls PATCH /missions/{id} with data', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
 
       const result = await updateCollectorMission('cm-001', mockUpdate)
 
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001', {
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001', {
         method: 'PATCH',
         body: mockUpdate
       })
@@ -633,12 +633,12 @@ describe('missionService', () => {
   })
 
   describe('deleteCollectorMission', () => {
-    it('calls DELETE /collector/missions/{id}', async () => {
+    it('calls DELETE /missions/{id}', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(undefined)
 
       const result = await deleteCollectorMission('cm-001')
 
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001', {
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001', {
         method: 'DELETE'
       })
       expect(result).toBeUndefined()
@@ -654,29 +654,29 @@ describe('missionService', () => {
       updated_at: '2025-01-15T11:00:00Z'
     }
 
-    it('startCollectorMission calls PATCH /collector/missions/{id}/start', async () => {
+    it('startCollectorMission calls PATCH /missions/{id}/start', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
       const result = await startCollectorMission('cm-001')
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/start', { method: 'PATCH' })
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/start', { method: 'PATCH' })
       expect(result.status).toBe('active')
     })
 
-    it('pauseCollectorMission calls PATCH /collector/missions/{id}/pause', async () => {
+    it('pauseCollectorMission calls PATCH /missions/{id}/pause', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
       await pauseCollectorMission('cm-001')
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/pause', { method: 'PATCH' })
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/pause', { method: 'PATCH' })
     })
 
-    it('resumeCollectorMission calls PATCH /collector/missions/{id}/resume', async () => {
+    it('resumeCollectorMission calls PATCH /missions/{id}/resume', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
       await resumeCollectorMission('cm-001')
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/resume', { method: 'PATCH' })
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/resume', { method: 'PATCH' })
     })
 
-    it('completeCollectorMission calls PATCH /collector/missions/{id}/complete', async () => {
+    it('completeCollectorMission calls PATCH /missions/{id}/complete', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
       await completeCollectorMission('cm-001')
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/complete', { method: 'PATCH' })
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/complete', { method: 'PATCH' })
     })
   })
 
@@ -692,26 +692,26 @@ describe('missionService', () => {
     it('delegates start to startCollectorMission', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
       const result = await collectorMissionAction('cm-001', 'start')
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/start', { method: 'PATCH' })
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/start', { method: 'PATCH' })
       expect(result.status).toBe('active')
     })
 
     it('delegates pause to pauseCollectorMission', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
       await collectorMissionAction('cm-001', 'pause')
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/pause', { method: 'PATCH' })
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/pause', { method: 'PATCH' })
     })
 
     it('delegates resume to resumeCollectorMission', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
       await collectorMissionAction('cm-001', 'resume')
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/resume', { method: 'PATCH' })
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/resume', { method: 'PATCH' })
     })
 
     it('delegates complete to completeCollectorMission', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
       await collectorMissionAction('cm-001', 'complete')
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/complete', { method: 'PATCH' })
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/complete', { method: 'PATCH' })
     })
   })
 
@@ -723,12 +723,12 @@ describe('missionService', () => {
       offset: 0
     }
 
-    it('calls GET /collector/missions/{id}/locations with defaults', async () => {
+    it('calls GET /missions/{id}/locations with defaults', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
 
       const result = await listLocations('cm-001')
 
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/locations', {
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/locations', {
         params: { page: 1, page_size: 20 }
       })
       expect(result).toEqual(mockResponse)
@@ -737,7 +737,7 @@ describe('missionService', () => {
     it('passes sort param', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
       await listLocations('cm-001', { sort: '-order_index' })
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/locations', {
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/locations', {
         params: { page: 1, page_size: 20, sort: '-order_index' }
       })
     })
@@ -747,10 +747,10 @@ describe('missionService', () => {
     const mockData = { latitude: -6.2088, longitude: 106.8456, order_index: 0 }
     const mockResponse = { id: 'loc-001', mission_id: 'cm-001', ...mockData, created_at: '2025-01-15T10:00:00Z', updated_at: '2025-01-15T10:00:00Z' }
 
-    it('calls POST /collector/missions/{id}/locations', async () => {
+    it('calls POST /missions/{id}/locations', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResponse)
       const result = await createLocation('cm-001', mockData)
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/locations', {
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/locations', {
         method: 'POST',
         body: mockData
       })
@@ -759,10 +759,10 @@ describe('missionService', () => {
   })
 
   describe('deleteLocation', () => {
-    it('calls DELETE /collector/missions/{id}/locations/{locationId}', async () => {
+    it('calls DELETE /missions/{id}/locations/{locationId}', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(undefined)
       const result = await deleteLocation('cm-001', 'loc-001')
-      expect(mockMissionApiRequest).toHaveBeenCalledWith('/collector/missions/cm-001/locations/loc-001', {
+      expect(mockMissionApiRequest).toHaveBeenCalledWith('/missions/cm-001/locations/loc-001', {
         method: 'DELETE'
       })
       expect(result).toBeUndefined()
@@ -772,14 +772,14 @@ describe('missionService', () => {
   describe('uploadLocationsCSV', () => {
     const mockResult = { total_rows: 5, success_rows: 4, failed_rows: 1, errors: [] }
 
-    it('calls POST /collector/missions/{id}/locations/upload with FormData', async () => {
+    it('calls POST /missions/{id}/locations/upload with FormData', async () => {
       mockMissionApiRequest.mockResolvedValueOnce(mockResult)
 
       const file = new File(['lat,lon\n-6.2,106.8'], 'locations.csv', { type: 'text/csv' })
       const result = await uploadLocationsCSV('cm-001', file)
 
       expect(mockMissionApiRequest).toHaveBeenCalledWith(
-        '/collector/missions/cm-001/locations/upload',
+        '/missions/cm-001/locations/upload',
         expect.objectContaining({ method: 'POST' })
       )
       expect(result).toEqual(mockResult)
