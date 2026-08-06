@@ -18,13 +18,13 @@
 
 import { storeToRefs } from 'pinia'
 import { ReconnectingWebSocket, buildWsUrl } from '~/utils/websocket'
-import { useMissionStore } from '~/stores/mission'
+import { useCollectorMissionStore } from '~/stores/mission'
 import { useCustomToast } from '@/composables/useCustomToast'
 import type { MissionWSEvent, MissionWSAction } from '~/types/mission'
 
 export function useMissionWebSocket() {
   const toast = useCustomToast()
-  const missionStore = useMissionStore()
+  const missionStore = useCollectorMissionStore()
   const { wsConnected, wsStatus } = storeToRefs(missionStore)
 
   let ws: ReconnectingWebSocket | null = null

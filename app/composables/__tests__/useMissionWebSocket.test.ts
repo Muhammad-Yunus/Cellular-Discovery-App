@@ -24,7 +24,7 @@ vi.mock('#app/nuxt', () => ({
 }))
 
 vi.mock('~/stores/mission', () => ({
-  useMissionStore: vi.fn()
+  useCollectorMissionStore: vi.fn()
 }))
 
 vi.mock('~/utils/websocket', () => ({
@@ -57,8 +57,8 @@ describe('useMissionWebSocket', () => {
       onStatusChange: vi.fn()
     } as any))
 
-    const { useMissionStore } = await import('~/stores/mission')
-    vi.mocked(useMissionStore).mockReturnValue(createMockStore() as any)
+    const { useCollectorMissionStore } = await import('~/stores/mission')
+    vi.mocked(useCollectorMissionStore).mockReturnValue(createMockStore() as any)
 
     const { useMissionWebSocket } = await import('../useMissionWebSocket')
     const result = useMissionWebSocket()
@@ -70,7 +70,7 @@ describe('useMissionWebSocket', () => {
   })
 
   it('calls setWsConnected and setWsStatus on status change', async () => {
-    const onStatusChangeMock = vi.fn()
+    const onStatusChangeMock = vi.fn() as any
 
     const { ReconnectingWebSocket } = await import('~/utils/websocket')
     vi.mocked(ReconnectingWebSocket).mockImplementation(vi.fn().mockReturnValue({
@@ -80,9 +80,9 @@ describe('useMissionWebSocket', () => {
       onStatusChange: onStatusChangeMock
     } as any))
 
-    const { useMissionStore } = await import('~/stores/mission')
+    const { useCollectorMissionStore } = await import('~/stores/mission')
     const mockStore = createMockStore()
-    vi.mocked(useMissionStore).mockReturnValue(mockStore as any)
+    vi.mocked(useCollectorMissionStore).mockReturnValue(mockStore as any)
 
     const { useMissionWebSocket } = await import('../useMissionWebSocket')
     const { connect } = useMissionWebSocket()
@@ -90,7 +90,7 @@ describe('useMissionWebSocket', () => {
 
     // Get the status callback that was registered
     expect(onStatusChangeMock).toHaveBeenCalledOnce()
-    const setStatusCb = onStatusChangeMock.mock.calls[0][0]
+    const setStatusCb = onStatusChangeMock.mock.calls[0]?.[0] as (status: string) => void
     setStatusCb('connected')
 
     expect(mockStore.setWsConnected).toHaveBeenCalledWith(true)
@@ -102,7 +102,7 @@ describe('useMissionWebSocket', () => {
   })
 
   it('refreshes mission list on status_changed event', async () => {
-    const onMessageMock = vi.fn()
+    const onMessageMock = vi.fn() as any
 
     const { ReconnectingWebSocket } = await import('~/utils/websocket')
     vi.mocked(ReconnectingWebSocket).mockImplementation(vi.fn().mockReturnValue({
@@ -112,15 +112,15 @@ describe('useMissionWebSocket', () => {
       onStatusChange: vi.fn()
     } as any))
 
-    const { useMissionStore } = await import('~/stores/mission')
+    const { useCollectorMissionStore } = await import('~/stores/mission')
     const mockStore = createMockStore()
-    vi.mocked(useMissionStore).mockReturnValue(mockStore as any)
+    vi.mocked(useCollectorMissionStore).mockReturnValue(mockStore as any)
 
     const { useMissionWebSocket } = await import('../useMissionWebSocket')
     const { connect } = useMissionWebSocket()
     connect()
 
-    const onMsgCb = onMessageMock.mock.calls[0][0]
+    const onMsgCb = onMessageMock.mock.calls[0]?.[0] as (msg: unknown) => void
     onMsgCb({
       action: 'mission.status_changed',
       mission_id: 'cm-001',
@@ -132,7 +132,7 @@ describe('useMissionWebSocket', () => {
   })
 
   it('refreshes mission list on location_uploaded event', async () => {
-    const onMessageMock = vi.fn()
+    const onMessageMock = vi.fn() as any
 
     const { ReconnectingWebSocket } = await import('~/utils/websocket')
     vi.mocked(ReconnectingWebSocket).mockImplementation(vi.fn().mockReturnValue({
@@ -142,15 +142,15 @@ describe('useMissionWebSocket', () => {
       onStatusChange: vi.fn()
     } as any))
 
-    const { useMissionStore } = await import('~/stores/mission')
+    const { useCollectorMissionStore } = await import('~/stores/mission')
     const mockStore = createMockStore()
-    vi.mocked(useMissionStore).mockReturnValue(mockStore as any)
+    vi.mocked(useCollectorMissionStore).mockReturnValue(mockStore as any)
 
     const { useMissionWebSocket } = await import('../useMissionWebSocket')
     const { connect } = useMissionWebSocket()
     connect()
 
-    const onMsgCb = onMessageMock.mock.calls[0][0]
+    const onMsgCb = onMessageMock.mock.calls[0]?.[0] as (msg: unknown) => void
     onMsgCb({
       action: 'mission.location_uploaded',
       mission_id: 'cm-001',
@@ -162,7 +162,7 @@ describe('useMissionWebSocket', () => {
   })
 
   it('refreshes mission list on scan_collected event', async () => {
-    const onMessageMock = vi.fn()
+    const onMessageMock = vi.fn() as any
 
     const { ReconnectingWebSocket } = await import('~/utils/websocket')
     vi.mocked(ReconnectingWebSocket).mockImplementation(vi.fn().mockReturnValue({
@@ -172,15 +172,15 @@ describe('useMissionWebSocket', () => {
       onStatusChange: vi.fn()
     } as any))
 
-    const { useMissionStore } = await import('~/stores/mission')
+    const { useCollectorMissionStore } = await import('~/stores/mission')
     const mockStore = createMockStore()
-    vi.mocked(useMissionStore).mockReturnValue(mockStore as any)
+    vi.mocked(useCollectorMissionStore).mockReturnValue(mockStore as any)
 
     const { useMissionWebSocket } = await import('../useMissionWebSocket')
     const { connect } = useMissionWebSocket()
     connect()
 
-    const onMsgCb = onMessageMock.mock.calls[0][0]
+    const onMsgCb = onMessageMock.mock.calls[0]?.[0] as (msg: unknown) => void
     onMsgCb({
       action: 'mission.scan_collected',
       mission_id: 'cm-001',
@@ -192,7 +192,7 @@ describe('useMissionWebSocket', () => {
   })
 
   it('does not refresh on gps_update or log_entry events', async () => {
-    const onMessageMock = vi.fn()
+    const onMessageMock = vi.fn() as any
 
     const { ReconnectingWebSocket } = await import('~/utils/websocket')
     vi.mocked(ReconnectingWebSocket).mockImplementation(vi.fn().mockReturnValue({
@@ -202,15 +202,15 @@ describe('useMissionWebSocket', () => {
       onStatusChange: vi.fn()
     } as any))
 
-    const { useMissionStore } = await import('~/stores/mission')
+    const { useCollectorMissionStore } = await import('~/stores/mission')
     const mockStore = createMockStore()
-    vi.mocked(useMissionStore).mockReturnValue(mockStore as any)
+    vi.mocked(useCollectorMissionStore).mockReturnValue(mockStore as any)
 
     const { useMissionWebSocket } = await import('../useMissionWebSocket')
     const { connect } = useMissionWebSocket()
     connect()
 
-    const onMsgCb = onMessageMock.mock.calls[0][0]
+    const onMsgCb = onMessageMock.mock.calls[0]?.[0] as (msg: unknown) => void
     onMsgCb({
       action: 'mission.gps_update',
       mission_id: 'cm-001',
@@ -228,8 +228,8 @@ describe('useMissionWebSocket', () => {
   })
 
   it('disconnects when disconnect is called', async () => {
-    const disconnectMock = vi.fn()
-    const connectMock = vi.fn()
+    const disconnectMock = vi.fn() as any
+    const connectMock = vi.fn() as any
 
     const { ReconnectingWebSocket } = await import('~/utils/websocket')
     vi.mocked(ReconnectingWebSocket).mockImplementation(vi.fn().mockReturnValue({
@@ -239,8 +239,8 @@ describe('useMissionWebSocket', () => {
       onStatusChange: vi.fn()
     } as any))
 
-    const { useMissionStore } = await import('~/stores/mission')
-    vi.mocked(useMissionStore).mockReturnValue(createMockStore() as any)
+    const { useCollectorMissionStore } = await import('~/stores/mission')
+    vi.mocked(useCollectorMissionStore).mockReturnValue(createMockStore() as any)
 
     const { useMissionWebSocket } = await import('../useMissionWebSocket')
     const { connect, disconnect } = useMissionWebSocket()
@@ -252,8 +252,8 @@ describe('useMissionWebSocket', () => {
   })
 
   it('reconnects when connect is called again', async () => {
-    const connectMock = vi.fn()
-    const disconnectMock = vi.fn()
+    const connectMock = vi.fn() as any
+    const disconnectMock = vi.fn() as any
 
     const { ReconnectingWebSocket } = await import('~/utils/websocket')
     vi.mocked(ReconnectingWebSocket).mockImplementation(vi.fn().mockReturnValue({
@@ -263,8 +263,8 @@ describe('useMissionWebSocket', () => {
       onStatusChange: vi.fn()
     } as any))
 
-    const { useMissionStore } = await import('~/stores/mission')
-    vi.mocked(useMissionStore).mockReturnValue(createMockStore() as any)
+    const { useCollectorMissionStore } = await import('~/stores/mission')
+    vi.mocked(useCollectorMissionStore).mockReturnValue(createMockStore() as any)
 
     const { useMissionWebSocket } = await import('../useMissionWebSocket')
     const { connect } = useMissionWebSocket()
