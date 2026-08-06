@@ -21,9 +21,8 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css', 'leaflet/dist/leaflet.css'],
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1',
-      healthBase: process.env.NUXT_PUBLIC_HEALTH_BASE || 'http://localhost:8000',
-      missionApiBase: process.env.NUXT_PUBLIC_MISSION_API_BASE || 'http://localhost:8000/api/v1',
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8001/api/v1',
+      healthBase: process.env.NUXT_PUBLIC_HEALTH_BASE || 'http://localhost:8001',
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'Cellular Discovery',
       defaultLat: process.env.NUXT_PUBLIC_DEFAULT_LAT || '-6.150676643667096',
       defaultLon: process.env.NUXT_PUBLIC_DEFAULT_LON || '106.89665223346297'

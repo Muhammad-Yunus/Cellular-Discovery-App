@@ -10,7 +10,7 @@ vi.mock('#app/composables/router', () => ({
 
 vi.mock('#app/nuxt', () => ({
   useRuntimeConfig: vi.fn(() => ({
-    public: { appName: 'LTE Scanner', apiBase: 'http://localhost:8000/api/v1', defaultLat: '-6.15', defaultLon: '106.89' }
+    public: { appName: 'LTE Scanner', apiBase: 'http://localhost:8001/api/v1', defaultLat: '-6.15', defaultLon: '106.89' }
   })),
   useNuxtApp: vi.fn(() => ({ vueApp: { use: vi.fn() }, $config: { public: {} }, _route: { path: '/' } })),
   defineNuxtPlugin: vi.fn(),

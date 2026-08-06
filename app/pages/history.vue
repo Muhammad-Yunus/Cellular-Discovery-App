@@ -146,7 +146,7 @@ async function exportScans() {
     if (end) params.append('end_time', end)
 
     const config = useRuntimeConfig()
-    const apiBase = config.public.apiBase || 'http://192.168.1.108:8000'
+    const apiBase = config.public.apiBase as string || ''
     const url = `${apiBase}/scans/export?${params.toString()}`
 
     const response = await fetch(url, {

@@ -1,6 +1,8 @@
 // Module-level override (set via setApiBaseURL). Falls back to runtime config apiBase,
-// which resolves from NUXT_PUBLIC_API_BASE at build/dev time. NEVER hardcode localhost
-// here — that breaks remote backends configured via env vars.
+// which resolves from NUXT_PUBLIC_API_BASE at build/dev time. NEVER hardcode host/port
+// here — all URLs flow from env vars. Outside Nuxt context we return an empty string
+// so callers surface a clear "missing configuration" error rather than silently
+// pointing at a developer-localhost URL.
 let _baseURLOverride: string | null = null
 
 export function setApiBaseURL(url: string) {
@@ -13,8 +15,7 @@ export function getBaseURL(): string {
     const config = useRuntimeConfig()
     return config.public.apiBase as string
   } catch {
-    // Outside Nuxt context (e.g. unit tests)
-    return 'http://localhost:8000/api/v1'
+    return ''
   }
 }
 
@@ -24,7 +25,7 @@ function resolveBaseURL(): string {
     const config = useRuntimeConfig()
     return config.public.apiBase as string
   } catch {
-    return 'http://localhost:8000/api/v1'
+    return ''
   }
 }
 
@@ -43,7 +44,7 @@ export function resolveHealthBaseURL(): string {
     if (healthBase) return healthBase
     return resolveBaseURL()
   } catch {
-    return 'http://localhost:8000'
+    return ''
   }
 }
 

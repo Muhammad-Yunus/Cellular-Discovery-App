@@ -8,7 +8,7 @@ vi.mock('#app/nuxt', () => ({
   useRuntimeConfig: vi.fn(() => ({
     public: {
       appName: 'LTE Scanner',
-      apiBase: 'http://localhost:8000/api/v1',
+      apiBase: 'http://localhost:8001/api/v1',
       defaultLat: '-6.150676643667096',
       defaultLon: '106.89665223346297'
     }
@@ -31,7 +31,7 @@ vi.mock('~/composables/useSettings', () => ({
 const mockSettings = [
   { key: 'polling_interval', value: '30', description: 'Polling interval in seconds' },
   { key: 'notification_enabled', value: 'true', description: 'Enable notifications' },
-  { key: 'api_endpoint', value: 'http://localhost:8000', description: 'API endpoint URL' },
+  { key: 'api_endpoint', value: 'http://localhost:8001', description: 'API endpoint URL' },
   { key: 'map_zoom', value: '17', description: 'Default map zoom level' }
 ]
 

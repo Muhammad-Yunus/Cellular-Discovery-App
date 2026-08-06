@@ -1,9 +1,8 @@
 // app/services/missionApi.ts
 //
-// Thin HTTP helper dedicated to the Mission Planner endpoints. It mirrors the
-// shape of `app/services/api.ts` but resolves the base URL through the dedicated
-// `NUXT_PUBLIC_MISSION_API_BASE` runtime config so the mission backend can be
-// deployed on a different origin (or path) than the legacy scan API.
+// Thin HTTP helper for all backend endpoints (missions, scans, etc).
+// Resolves the base URL through the universal `NUXT_PUBLIC_API_BASE`
+// runtime config.
 //
 // Returns parsed JSON unless `response` is explicitly set to `'blob'` (or
 // other non-JSON hints). Throws `AppError` so callers can rely on a single
@@ -24,11 +23,11 @@ export function getMissionApiBaseURL(): string {
   if (_baseURLOverride) return _baseURLOverride
   try {
     const config = useRuntimeConfig()
-    return (config.public.missionApiBase as string) || ''
+    return (config.public.apiBase as string) || ''
   } catch {
-    // Outside Nuxt context (unit tests). Falling back to the same default
-    // as the main API keeps `missionApiRequest` usable in isolation.
-    return 'http://localhost:8000/api/v1'
+    // Outside Nuxt context (e.g. unit tests). No hardcoded fallback —
+    // callers must configure the runtime config or set an override.
+    return ''
   }
 }
 

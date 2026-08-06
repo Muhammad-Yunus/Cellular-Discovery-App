@@ -6,7 +6,7 @@ vi.mock('#app/nuxt', () => ({
   useRuntimeConfig: vi.fn(() => ({
     public: {
       appName: 'LTE Scanner',
-      apiBase: 'http://localhost:8000/api/v1',
+      apiBase: 'http://localhost:8001/api/v1',
       defaultLat: '-6.150676643667096',
       defaultLon: '106.89665223346297'
     }
