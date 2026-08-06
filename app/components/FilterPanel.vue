@@ -22,7 +22,7 @@ function selectRat(rat: string) {
       v-for="rat in RAT_OPTIONS"
       :key="rat"
       :label="rat === 'ALL' ? 'All' : rat"
-      size="2xs"
+      size="xs"
       :color="selectedRat === rat ? 'primary' : 'neutral'"
       :variant="selectedRat === rat ? 'solid' : 'ghost'"
       class="px-3"

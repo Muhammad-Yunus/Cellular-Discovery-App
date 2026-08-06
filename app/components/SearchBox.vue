@@ -46,7 +46,7 @@ watch(() => props.modelValue, (val) => {
       v-if="localValue"
       color="neutral"
       variant="ghost"
-      size="2xs"
+      size="xs"
       icon="i-lucide-x"
       class="absolute right-1 top-1/2 -translate-y-1/2"
       @click="clearSearch"
