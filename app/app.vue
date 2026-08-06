@@ -17,5 +17,6 @@ useSeoMeta({
       <NuxtPage />
     </NuxtLayout>
     <CustomToaster />
+    <MissionsWebSocket />
   </div>
 </template>

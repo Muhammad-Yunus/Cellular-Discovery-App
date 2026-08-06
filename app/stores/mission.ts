@@ -48,7 +48,7 @@ interface MissionState {
   wsStatus: 'connected' | 'disconnected' | 'reconnecting'
 }
 
-export const useMissionStore = defineStore('collectorMission', {
+export const useCollectorMissionStore = defineStore('collectorMission', {
   state: (): MissionState => ({
     missions: [],
     selectedMissionId: null,

@@ -5,6 +5,7 @@ const appName = useRuntimeConfig().public.appName
 const navLinks = [
   { label: 'Home', to: '/', icon: 'lucide:home' },
   { label: 'Scan History', to: '/history', icon: 'lucide:history' },
+  { label: 'Missions', to: '/missions', icon: 'lucide:rocket' },
   { label: 'Settings', to: '/settings', icon: 'lucide:settings' },
   { label: 'About', to: '/about', icon: 'lucide:info' }
 ]
