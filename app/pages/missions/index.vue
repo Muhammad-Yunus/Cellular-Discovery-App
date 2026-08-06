@@ -166,6 +166,7 @@ function getStatusBadgeProps(status: MissionStatus5) {
         <USelect
           :options="statusOptions"
           option-attribute="label"
+          value-attribute="value"
           :value="missionStore.statusFilter"
           @update:model-value="(val) => missionStore.setStatusFilter(val as MissionStatus5 | 'all')"
           class="w-full"
