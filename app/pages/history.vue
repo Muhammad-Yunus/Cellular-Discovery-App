@@ -331,8 +331,9 @@ const columns: TableColumn<ScanSummary>[] = [
       </div>
         <!-- From datetime -->
         <div class="flex-1">
-          <label class="block text-sm font-medium text-muted mb-1">From</label>
+          <label for="start-datetime" class="block text-sm font-medium text-muted mb-1">From</label>
           <UInput
+            id="start-datetime"
             type="datetime-local"
             v-model="startDateTime"
             @change="updateTimeRange"
@@ -341,8 +342,9 @@ const columns: TableColumn<ScanSummary>[] = [
         </div>
         <!-- To datetime -->
         <div class="flex-1">
-          <label class="block text-sm font-medium text-muted mb-1">To</label>
+          <label for="end-datetime" class="block text-sm font-medium text-muted mb-1">To</label>
           <UInput
+            id="end-datetime"
             type="datetime-local"
             v-model="endDateTime"
             @change="updateTimeRange"

@@ -4,7 +4,7 @@ definePageMeta({ title: 'About' })
 const config = useRuntimeConfig()
 const appName = config.public.appName as string
 
-const { health, loading: healthLoading } = useSystem()
+const { backendStatus, error } = useSystem()
 </script>
 
 <template>
@@ -120,7 +120,7 @@ const { health, loading: healthLoading } = useSystem()
     </div>
 
     <UCard
-      v-if="health && !healthLoading"
+      v-if="backendStatus"
       class="w-full"
     >
       <template #header>
@@ -132,18 +132,18 @@ const { health, loading: healthLoading } = useSystem()
       <div class="space-y-1 text-sm">
         <div class="flex justify-between">
           <span class="text-muted">Version</span>
-          <span class="text-default">{{ health.version || '-' }}</span>
+          <span class="text-default">-</span>
         </div>
         <div class="flex justify-between">
           <span class="text-muted">Status</span>
           <StatusBadge
-            :status="health.status === 'ok' ? 'ok' : 'error'"
-            :label="health.status === 'ok' ? 'Online' : 'Offline'"
+            :status="backendStatus === 'ok' ? 'ok' : 'error'"
+            :label="backendStatus === 'ok' ? 'Online' : 'Offline'"
           />
         </div>
         <div class="flex justify-between">
           <span class="text-muted">Uptime</span>
-          <span class="text-default">{{ health.uptime ? `${health.uptime}s` : '-' }}</span>
+          <span class="text-default">-</span>
         </div>
       </div>
     </UCard>
