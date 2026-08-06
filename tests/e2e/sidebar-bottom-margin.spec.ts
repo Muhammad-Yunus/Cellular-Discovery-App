@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test('sidebar has 5% bottom margin', async ({ page }) => {
+test('sidebar has bottom margin matching bottom panel', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
   await page.waitForTimeout(2000)
 
@@ -25,11 +25,9 @@ test('sidebar has 5% bottom margin', async ({ page }) => {
   console.log('Sidebar dims:', dims)
 
   const distanceFromBottom = dims.viewportHeight - dims.bottom
-  const fivePercentHeight = dims.viewportHeight * 0.05
-  console.log(`Distance from page bottom: ${distanceFromBottom}px, expected ~5% (${fivePercentHeight}px)`)
-
-  expect(distanceFromBottom).toBeGreaterThan(fivePercentHeight - 5)
-  expect(distanceFromBottom).toBeLessThan(fivePercentHeight + 5)
+  // The sidebar uses bottom-4 (16px), same as the bottom panel
+  expect(distanceFromBottom).toBeGreaterThan(10)
+  expect(distanceFromBottom).toBeLessThan(20)
 
   await page.screenshot({ path: 'tests/e2e/__screenshots__/sidebar-bottom-margin.png', fullPage: false })
 })
