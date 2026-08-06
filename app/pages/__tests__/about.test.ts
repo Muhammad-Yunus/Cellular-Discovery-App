@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
+import { mount, type Component } from '@vue/test-utils'
 import { ref } from 'vue'
 
 vi.mock('#app/composables/router', () => ({
@@ -51,6 +51,12 @@ describe('AboutPage', () => {
     vi.clearAllMocks()
   })
 
+  // Hoist the dynamic import out of each it() block.
+  let Page: Component
+  beforeAll(async () => {
+    Page = (await import('../about.vue')).default
+  }, 60000)
+
   it('renders app name', async () => {
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('unavailable'),
@@ -60,10 +66,9 @@ describe('AboutPage', () => {
       stopPolling: vi.fn()
     } as any)
 
-    const Page = (await import('../about.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('LTE Scanner')
-  }, 30000)
+  })
 
   it('renders description', async () => {
     vi.mocked(useSystem).mockReturnValue({
@@ -74,7 +79,6 @@ describe('AboutPage', () => {
       stopPolling: vi.fn()
     } as any)
 
-    const Page = (await import('../about.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Discovering and monitoring LTE, UMTS, and GSM network')
   })
@@ -88,7 +92,6 @@ describe('AboutPage', () => {
       stopPolling: vi.fn()
     } as any)
 
-    const Page = (await import('../about.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Nuxt')
     expect(wrapper.text()).toContain('Vue 3')
@@ -107,7 +110,6 @@ describe('AboutPage', () => {
       stopPolling: vi.fn()
     } as any)
 
-    const Page = (await import('../about.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Online')
   })

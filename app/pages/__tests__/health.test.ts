@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
+import { mount, type Component } from '@vue/test-utils'
 import { ref } from 'vue'
 
 vi.mock('#app/composables/router', () => ({
@@ -57,8 +57,13 @@ describe('HealthPage', () => {
     vi.clearAllMocks()
   })
 
+  // Hoist the dynamic import out of each it() block.
+  let Page: Component
+  beforeAll(async () => {
+    Page = (await import('../health.vue')).default
+  }, 60000)
+
   it('renders page title', async () => {
-    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('ok'),
       cliStatus: ref('ok'),
@@ -70,13 +75,11 @@ describe('HealthPage', () => {
       stopPolling: vi.fn()
     } as any)
 
-    const Page = (await import('../health.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
-    await vi.waitFor(() => expect(wrapper.text()).toContain('System Health'))
-  }, 30000)
+    expect(wrapper.text()).toContain('System Health')
+  })
 
   it('shows backend status as Online when ok', async () => {
-    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('ok'),
       cliStatus: ref('ok'),
@@ -88,13 +91,11 @@ describe('HealthPage', () => {
       stopPolling: vi.fn()
     } as any)
 
-    const Page = (await import('../health.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Online')
   })
 
   it('shows backend status as Offline when unavailable', async () => {
-    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('unavailable'),
       cliStatus: ref('unknown'),
@@ -106,13 +107,11 @@ describe('HealthPage', () => {
       stopPolling: vi.fn()
     } as any)
 
-    const Page = (await import('../health.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Offline')
   })
 
   it('shows error alert when error exists', async () => {
-    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('unavailable'),
       cliStatus: ref('unknown'),
@@ -124,13 +123,11 @@ describe('HealthPage', () => {
       stopPolling: vi.fn()
     } as any)
 
-    const Page = (await import('../health.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Backend is not responding')
   })
 
   it('shows response time', async () => {
-    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('ok'),
       cliStatus: ref('ok'),
@@ -142,13 +139,11 @@ describe('HealthPage', () => {
       stopPolling: vi.fn()
     } as any)
 
-    const Page = (await import('../health.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('120ms')
   })
 
   it('has Check Now button', async () => {
-    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('ok'),
       cliStatus: ref('ok'),
@@ -160,7 +155,6 @@ describe('HealthPage', () => {
       stopPolling: vi.fn()
     } as any)
 
-    const Page = (await import('../health.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Check Now')
   })
