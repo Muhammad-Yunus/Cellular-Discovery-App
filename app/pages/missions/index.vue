@@ -1,24 +1,21 @@
 <script setup lang="ts">
-import type { MissionStatus } from '~/types/mission'
-import { useMissionStore } from '~/stores/missionStore'
+import type { MissionStatus5 } from '~/types/mission'
+import { useCollectorMissionStore } from '~/stores/mission'
 import { useCustomToast } from '~/composables/useCustomToast'
 
 definePageMeta({ title: 'Mission Planner' })
 
 const toast = useCustomToast()
-const missionStore = useMissionStore()
+const missionStore = useCollectorMissionStore()
 const router = useRouter()
 const route = useRoute()
 
-const statusOptions: { label: string; value: MissionStatus | 'all' }[] = [
+const statusOptions: { label: string; value: MissionStatus5 | 'all' }[] = [
   { label: 'All', value: 'all' },
   { label: 'Draft', value: 'draft' },
-  { label: 'Planned', value: 'planned' },
-  { label: 'Approved', value: 'approved' },
-  { label: 'In Progress', value: 'in_progress' },
+  { label: 'Active', value: 'active' },
   { label: 'Paused', value: 'paused' },
   { label: 'Completed', value: 'completed' },
-  { label: 'Failed', value: 'failed' },
   { label: 'Cancelled', value: 'cancelled' }
 ]
 
@@ -26,7 +23,6 @@ const statusOptions: { label: string; value: MissionStatus | 'all' }[] = [
 const currentPage = computed(() => missionStore.pagination.currentPage)
 const totalPages = computed(() => missionStore.pagination.totalPages)
 const totalItems = computed(() => missionStore.pagination.totalItems)
-const isExporting = ref(false)
 
 // Search with debounce
 let searchDebounce: ReturnType<typeof setTimeout> | null = null
@@ -46,7 +42,7 @@ onMounted(async () => {
     missionStore.setSearch(route.query.search as string)
   }
   if (route.query.status) {
-    missionStore.setStatusFilter(route.query.status as MissionStatus | 'all')
+    missionStore.setStatusFilter(route.query.status as MissionStatus5 | 'all')
   }
   await missionStore.fetchMissions()
 })
@@ -104,10 +100,6 @@ async function onDeleteMission(id: string) {
   }
 }
 
-function onStatusChange(missionId: string, status: MissionStatus) {
-  missionStore.updateMission(missionId, { status }).catch(() => {})
-}
-
 function onPageChange(page: number) {
   missionStore.setPage(page)
 }
@@ -124,50 +116,15 @@ function formatDate(isoStr: string): string {
   })
 }
 
-function getStatusBadgeProps(status: MissionStatus) {
-  const map: Record<MissionStatus, { color: 'success' | 'warning' | 'error' | 'info' | 'primary' | 'secondary' | 'neutral'; label: string }> = {
+function getStatusBadgeProps(status: MissionStatus5) {
+  const map: Record<MissionStatus5, { color: 'success' | 'warning' | 'error' | 'info' | 'primary' | 'neutral' | 'default'; label: string }> = {
     draft: { color: 'neutral', label: 'Draft' },
-    planned: { color: 'info', label: 'Planned' },
-    approved: { color: 'warning', label: 'Approved' },
-    in_progress: { color: 'primary', label: 'In Progress' },
+    active: { color: 'success', label: 'Active' },
     paused: { color: 'warning', label: 'Paused' },
-    completed: { color: 'success', label: 'Completed' },
-    failed: { color: 'error', label: 'Failed' },
-    cancelled: { color: 'neutral', label: 'Cancelled' }
+    completed: { color: 'info', label: 'Completed' },
+    cancelled: { color: 'error', label: 'Cancelled' }
   }
   return map[status] ?? { color: 'neutral', label: status }
-}
-
-// Export handler
-async function exportTelemetry(missionId: string) {
-  isExporting.value = true
-  try {
-    const { exportTelemetryCsv } = await import('~/services/missionService')
-    const blob = await exportTelemetryCsv(missionId)
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `telemetry-${missionId}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    window.URL.revokeObjectURL(url)
-    toast.add({
-      title: 'Exported',
-      description: 'Telemetry CSV downloaded.',
-      color: 'success',
-      icon: 'i-lucide-check-circle'
-    })
-  } catch (e: any) {
-    toast.add({
-      title: 'Export failed',
-      description: e?.message || 'Could not export telemetry.',
-      color: 'error',
-      icon: 'i-lucide-alert-circle'
-    })
-  } finally {
-    isExporting.value = false
-  }
 }
 </script>
 
@@ -210,7 +167,7 @@ async function exportTelemetry(missionId: string) {
           :options="statusOptions"
           option-attribute="label"
           :value="missionStore.statusFilter"
-          @update:model-value="(val) => missionStore.setStatusFilter(val as MissionStatus | 'all')"
+          @update:model-value="(val) => missionStore.setStatusFilter(val as MissionStatus5 | 'all')"
           class="w-full"
         />
       </div>
@@ -278,7 +235,7 @@ async function exportTelemetry(missionId: string) {
               {{ mission.name }}
             </h3>
             <p class="text-xs text-muted mt-0.5">
-              {{ mission.waypoints.length }} waypoint{{ mission.waypoints.length !== 1 ? 's' : '' }}
+              {{ mission.location_count ?? 0 }} locations
             </p>
           </div>
           <UBadge
@@ -298,23 +255,9 @@ async function exportTelemetry(missionId: string) {
           {{ mission.description }}
         </p>
 
-        <!-- Drone -->
-        <div
-          v-if="mission.drone"
-          class="flex items-center gap-2 text-xs text-muted mb-3"
-        >
-          <span class="i-lucide-plane text-[10px]" />
-          <span>{{ mission.drone.callsign }} ({{ mission.drone.model }})</span>
-        </div>
-
-        <!-- Planned times -->
+        <!-- Timestamps -->
         <div class="flex items-center gap-4 text-xs text-muted mb-3">
-          <span v-if="mission.planned_start_at">
-            Start: {{ formatDate(mission.planned_start_at) }}
-          </span>
-          <span v-if="mission.planned_end_at">
-            End: {{ formatDate(mission.planned_end_at) }}
-          </span>
+          <span>Created: {{ formatDate(mission.created_at) }}</span>
         </div>
 
         <!-- Actions -->
@@ -339,7 +282,7 @@ async function exportTelemetry(missionId: string) {
             variant="ghost"
             icon="i-lucide-pause"
             label="Pause"
-            :disabled="mission.status !== 'in_progress'"
+            :disabled="mission.status !== 'active'"
             @click="missionStore.patchMissionStatus(mission.id, 'pause')"
           />
           <UButton
@@ -347,7 +290,7 @@ async function exportTelemetry(missionId: string) {
             variant="ghost"
             icon="i-lucide-check"
             label="Complete"
-            :disabled="mission.status !== 'in_progress'"
+            :disabled="mission.status !== 'active' && mission.status !== 'paused'"
             @click="missionStore.patchMissionStatus(mission.id, 'complete')"
           />
           <UButton
@@ -359,13 +302,6 @@ async function exportTelemetry(missionId: string) {
             @click="missionStore.patchMissionStatus(mission.id, 'cancel')"
           />
           <div class="ml-auto flex items-center gap-1">
-            <UButton
-              size="xs"
-              variant="ghost"
-              icon="i-lucide-download"
-              :disabled="isExporting"
-              @click="exportTelemetry(mission.id)"
-            />
             <UButton
               size="xs"
               variant="ghost"

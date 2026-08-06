@@ -197,14 +197,21 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
 
     /**
      * Execute a lifecycle action on a collector mission (START / PAUSE /
-     * RESUME / COMPLETE). The backend validates the transition and returns
-     * the updated mission.
+     * RESUME / COMPLETE / CANCEL). The backend validates the transition and
+     * returns the updated mission.
      */
-    async patchMissionStatus(id: string, action: 'start' | 'pause' | 'resume' | 'complete') {
+    async patchMissionStatus(
+      id: string,
+      action: 'start' | 'pause' | 'resume' | 'complete' | 'cancel'
+    ) {
       this.saving = true
       this.error = null
       try {
-        await missionService.collectorMissionAction(id, action)
+        if (action === 'cancel') {
+          await missionService.updateCollectorMission(id, { status: 'cancelled' })
+        } else {
+          await missionService.collectorMissionAction(id, action)
+        }
         // Refresh the full list
         await this.fetchMissions()
       } catch (e) {
