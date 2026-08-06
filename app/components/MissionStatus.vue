@@ -17,32 +17,34 @@ const props = withDefaults(defineProps<Props>(), {
 
 const statusType = computed(() => {
   const type = props.status
-  if (type === 'ACTIVE') return 'active'
-  if (type === 'COMPLETED') return 'completed'
-  if (type === 'FAILED') return 'failed'
-  return 'pending'
+  const upper = type.toUpperCase()
+  if (upper === 'RUNNING' || upper === 'ACTIVE') return 'RUNNING'
+  if (upper === 'COMPLETED') return 'COMPLETED'
+  if (upper === 'FAILED' || upper === 'STOPPED') return 'FAILED'
+  return 'IDLE'
 })
 
 const statusColor = computed(() => {
   switch (statusType.value) {
-    case 'active': return 'text-green-600 dark:text-green-400'
-    case 'completed': return 'text-blue-600 dark:text-blue-400'
-    case 'failed': return 'text-red-600 dark:text-red-400'
+    case 'RUNNING': return 'text-green-600 dark:text-green-400'
+    case 'COMPLETED': return 'text-blue-600 dark:text-blue-400'
+    case 'FAILED': return 'text-red-600 dark:text-red-400'
     default: return 'text-gray-500 dark:text-gray-400'
   }
 })
 
 const statusLabel = computed(() => {
-  switch (statusType.value) {
-    case 'active': return 'ACTIVE'
-    case 'completed': return 'COMPLETED'
-    case 'failed': return 'FAILED'
-    default: return 'PENDING'
+  const s = statusType.value
+  const labels: Record<string, string> = {
+    IDLE: 'IDLE', PLANNING: 'PLANNING', READY: 'READY',
+    STARTING: 'STARTING', RUNNING: 'RUNNING', PAUSED: 'PAUSED',
+    COMPLETED: 'COMPLETED', STOPPED: 'STOPPED', FAILED: 'FAILED'
   }
+  return labels[s] ?? s
 })
 
 const elapsedText = computed(() => {
-  if (statusType.value !== 'active' || !props.startTime) return null
+  if (statusType.value !== 'RUNNING' || !props.startTime) return null
 
   const start = props.startTime * 1000
   const now = Date.now()

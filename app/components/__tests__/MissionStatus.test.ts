@@ -5,14 +5,14 @@ import MissionStatus from '~/components/MissionStatus.vue'
 describe('MissionStatus', () => {
   it('renders pending status by default', () => {
     const wrapper = mount(MissionStatus)
-    expect(wrapper.text()).toContain('PENDING')
+    expect(wrapper.text()).toContain('IDLE')
   })
 
-  it('renders ACTIVE status with green color', () => {
+  it('renders RUNNING status with green color', () => {
     const wrapper = mount(MissionStatus, {
-      props: { status: 'ACTIVE' }
+      props: { status: 'RUNNING' }
     })
-    expect(wrapper.text()).toContain('ACTIVE')
+    expect(wrapper.text()).toContain('RUNNING')
     expect(wrapper.find('span').classes().join(' ')).toContain('text-green-600')
   })
 
@@ -32,10 +32,10 @@ describe('MissionStatus', () => {
     expect(wrapper.find('span').classes().join(' ')).toContain('text-red-600')
   })
 
-  it('renders elapsed time when active and startTime provided', () => {
+  it('renders elapsed time when running and startTime provided', () => {
     const fiveMinutesAgo = Math.floor(Date.now() / 1000) - 300
     const wrapper = mount(MissionStatus, {
-      props: { status: 'ACTIVE', startTime: fiveMinutesAgo }
+      props: { status: 'RUNNING', startTime: fiveMinutesAgo }
     })
     expect(wrapper.text()).toContain('5m elapsed')
   })
@@ -43,15 +43,15 @@ describe('MissionStatus', () => {
   it('renders elapsed time in hours for long durations', () => {
     const twoHoursAgo = Math.floor(Date.now() / 1000) - 7200
     const wrapper = mount(MissionStatus, {
-      props: { status: 'ACTIVE', startTime: twoHoursAgo }
+      props: { status: 'RUNNING', startTime: twoHoursAgo }
     })
     expect(wrapper.text()).toContain('elapsed')
     expect(wrapper.text()).toContain('2h')
   })
 
-  it('does not render elapsed time for non-active', () => {
+  it('does not render elapsed time for non-running', () => {
     const wrapper = mount(MissionStatus, {
-      props: { status: 'PENDING', startTime: Math.floor(Date.now() / 1000) }
+      props: { status: 'IDLE', startTime: Math.floor(Date.now() / 1000) }
     })
     expect(wrapper.text()).not.toContain('elapsed')
   })

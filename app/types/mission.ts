@@ -16,21 +16,42 @@
 // Feature 02 — Mission domain types (location-based mission collector)
 // ---------------------------------------------------------------------------
 
-/** Simplified 5-state mission lifecycle (collector backend). */
+/**
+ * 9-state mission lifecycle (collector backend).
+ * Values are UPPERCASE — both API payload and display use the same format.
+ *
+ * IDLE      → Default saat mission dibuat, belum direncanakan
+ * PLANNING  → Sedang dalam proses perencanaan route
+ * READY     → Route sudah direncanakan, siap untuk dimulai
+ * STARTING  → Mission baru saja dimulai (transisi)
+ * RUNNING   → Mission sedang berjalan aktif
+ * PAUSED    → Mission dihentikan sementara (pause)
+ * COMPLETED → Mission selesai (semua lokasi dikunjungi)
+ * STOPPED   → Mission dihentikan secara manual
+ * FAILED   → Mission gagal (GPS error, scan error, dll)
+ */
 export type MissionStatus5
-  = | 'draft'
-    | 'active'
-    | 'paused'
-    | 'completed'
-    | 'cancelled'
+  = | 'IDLE'
+    | 'PLANNING'
+    | 'READY'
+    | 'STARTING'
+    | 'RUNNING'
+    | 'PAUSED'
+    | 'COMPLETED'
+    | 'STOPPED'
+    | 'FAILED'
 
-/** Human-readable label for each status. */
+/** Human-readable label for each status (same as value — already UPPERCASE). */
 export const MISSION_STATUS_LABELS: Record<MissionStatus5, string> = {
-  draft: 'Draft',
-  active: 'Active',
-  paused: 'Paused',
-  completed: 'Completed',
-  cancelled: 'Cancelled'
+  IDLE: 'IDLE',
+  PLANNING: 'PLANNING',
+  READY: 'READY',
+  STARTING: 'STARTING',
+  RUNNING: 'RUNNING',
+  PAUSED: 'PAUSED',
+  COMPLETED: 'COMPLETED',
+  STOPPED: 'STOPPED',
+  FAILED: 'FAILED'
 }
 
 /** HTTP-style colour for each status badge. */
@@ -38,11 +59,15 @@ export const MISSION_STATUS_COLOR: Record<
   MissionStatus5,
   'default' | 'success' | 'warning' | 'info' | 'error'
 > = {
-  draft: 'default',
-  active: 'success',
-  paused: 'warning',
-  completed: 'info',
-  cancelled: 'error'
+  IDLE: 'default',
+  PLANNING: 'info',
+  READY: 'info',
+  STARTING: 'warning',
+  RUNNING: 'success',
+  PAUSED: 'warning',
+  COMPLETED: 'info',
+  STOPPED: 'error',
+  FAILED: 'error'
 }
 
 // ---------------------------------------------------------------------------

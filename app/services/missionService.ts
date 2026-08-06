@@ -93,20 +93,6 @@ export async function deleteMission(id: string): Promise<undefined> {
   })
 }
 
-/**
- * Execute a state transition on a mission (START / RESUME / PAUSE /
- * COMPLETE / CANCEL). The backend validates the transition and returns the
- * updated mission.
- */
-export async function patchMissionStatus(
-  id: string,
-  action: 'start' | 'resume' | 'pause' | 'complete' | 'cancel'
-): Promise<Mission> {
-  return missionApiRequest<Mission>(`/missions/${id}/actions/${action}`, {
-    method: 'PATCH'
-  })
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Waypoints
 // ───────────────────────────────────────────────��─────────────────────────────
@@ -328,43 +314,43 @@ export async function deleteCollectorMission(id: string): Promise<undefined> {
 
 /**
  * Lifecycle actions on a mission. Maps to dedicated endpoints:
- *   PATCH /missions/{id}/start
- *   PATCH /missions/{id}/pause
- *   PATCH /missions/{id}/resume
- *   PATCH /missions/{id}/complete
+ *   POST /missions/{id}/start    (allowed from IDLE, READY, STOPPED, FAILED)
+ *   POST /missions/{id}/pause    (allowed from RUNNING)
+ *   POST /missions/{id}/resume   (allowed from PAUSED)
+ *   POST /missions/{id}/stop     (allowed from STARTING, RUNNING, PAUSED)
  */
 export async function startCollectorMission(id: string): Promise<MissionRecord> {
   return missionApiRequest<MissionRecord>(
     `/missions/${id}/start`,
-    { method: 'PATCH' }
+    { method: 'POST' }
   )
 }
 
 export async function pauseCollectorMission(id: string): Promise<MissionRecord> {
   return missionApiRequest<MissionRecord>(
     `/missions/${id}/pause`,
-    { method: 'PATCH' }
+    { method: 'POST' }
   )
 }
 
 export async function resumeCollectorMission(id: string): Promise<MissionRecord> {
   return missionApiRequest<MissionRecord>(
     `/missions/${id}/resume`,
-    { method: 'PATCH' }
+    { method: 'POST' }
   )
 }
 
-export async function completeCollectorMission(id: string): Promise<MissionRecord> {
+export async function stopCollectorMission(id: string): Promise<MissionRecord> {
   return missionApiRequest<MissionRecord>(
-    `/missions/${id}/complete`,
-    { method: 'PATCH' }
+    `/missions/${id}/stop`,
+    { method: 'POST' }
   )
 }
 
 /** Map an action name to its dedicated endpoint. Helper used by the store. */
 export async function collectorMissionAction(
   id: string,
-  action: 'start' | 'pause' | 'resume' | 'complete'
+  action: 'start' | 'pause' | 'resume' | 'stop'
 ): Promise<MissionRecord> {
   switch (action) {
     case 'start':
@@ -373,8 +359,8 @@ export async function collectorMissionAction(
       return pauseCollectorMission(id)
     case 'resume':
       return resumeCollectorMission(id)
-    case 'complete':
-      return completeCollectorMission(id)
+    case 'stop':
+      return stopCollectorMission(id)
     default: {
       const exhaustive: never = action
       throw new Error(`Unknown collector mission action: ${exhaustive as string}`)

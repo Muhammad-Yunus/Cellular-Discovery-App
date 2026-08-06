@@ -28,8 +28,46 @@ onMounted(async () => {
   await missionStore.fetchLocations(missionId)
 })
 
-function onStatusChange(action: 'start' | 'pause' | 'resume' | 'complete') {
-  missionStore.patchMissionStatus(missionId, action).catch(() => {})
+// ── Lifecycle button rules (same as list page) ───────────────────────────
+function canStart(status: string): boolean {
+  return status === 'IDLE' || status === 'READY' || status === 'STOPPED' || status === 'FAILED'
+}
+function canPause(status: string): boolean {
+  return status === 'RUNNING'
+}
+function canResume(status: string): boolean {
+  return status === 'PAUSED'
+}
+function canStop(status: string): boolean {
+  return status === 'STARTING' || status === 'RUNNING' || status === 'PAUSED'
+}
+function isTerminal(status: string): boolean {
+  return status === 'COMPLETED'
+}
+
+const pendingActionFor = ref<string | null>(null)
+function isActionPending(): boolean {
+  if (!missionStore.saving || pendingActionFor.value === null) return false
+  return pendingActionFor.value.startsWith(missionId + ':')
+}
+
+async function onStatusChange(action: 'start' | 'pause' | 'resume' | 'stop') {
+  const key = `${missionId}:${action}`
+  pendingActionFor.value = key
+  try {
+    await missionStore.patchMissionStatus(missionId, action)
+    // Status badge will auto-update via fetchMissions() inside the store.
+  } catch (e: any) {
+    const status = e?.status ?? e?.response?.status
+    const isConflict = status === 409
+    // eslint-disable-next-line no-alert
+    alert(isConflict
+      ? 'Action not allowed — the mission is not in a state that supports this action.'
+      : `Action failed: ${e?.message ?? 'Unknown error'}`
+    )
+  } finally {
+    if (pendingActionFor.value === key) pendingActionFor.value = null
+  }
 }
 </script>
 
@@ -71,7 +109,7 @@ function onStatusChange(action: 'start' | 'pause' | 'resume' | 'complete') {
     <template v-if="missionStore.selectedMission">
       <div class="flex flex-wrap items-center gap-3 rounded border border-default/10 bg-default p-3">
         <UBadge
-          :color="missionStore.selectedMission.status === 'active' ? 'success' : missionStore.selectedMission.status === 'paused' ? 'warning' : missionStore.selectedMission.status === 'completed' ? 'info' : 'default'"
+          :color="missionStore.selectedMission.status === 'RUNNING' ? 'success' : missionStore.selectedMission.status === 'PAUSED' ? 'warning' : missionStore.selectedMission.status === 'COMPLETED' ? 'info' : missionStore.selectedMission.status === 'FAILED' || missionStore.selectedMission.status === 'STOPPED' ? 'error' : 'default'"
           variant="subtle"
         >
           {{ missionStore.selectedMission.status }}
@@ -84,34 +122,52 @@ function onStatusChange(action: 'start' | 'pause' | 'resume' | 'complete') {
         </span>
 
         <div class="ml-auto flex items-center gap-1">
+          <!-- Start: IDLE, READY, STOPPED, FAILED -->
           <UButton
+            v-if="canStart(missionStore.selectedMission.status)"
             size="xs"
             variant="ghost"
             icon="i-lucide-play"
-            :disabled="missionStore.selectedMission.status !== 'draft' && missionStore.selectedMission.status !== 'paused'"
+            :loading="isActionPending()"
+            :disabled="isActionPending()"
             @click="onStatusChange('start')"
           >Start</UButton>
+          <!-- Pause: RUNNING only -->
           <UButton
+            v-if="canPause(missionStore.selectedMission.status)"
             size="xs"
             variant="ghost"
             icon="i-lucide-pause"
-            :disabled="missionStore.selectedMission.status !== 'active'"
+            :loading="isActionPending()"
+            :disabled="isActionPending()"
             @click="onStatusChange('pause')"
           >Pause</UButton>
+          <!-- Resume: PAUSED only -->
           <UButton
+            v-if="canResume(missionStore.selectedMission.status)"
             size="xs"
             variant="ghost"
-            icon="i-lucide-resume"
-            :disabled="missionStore.selectedMission.status !== 'paused'"
+            icon="i-lucide-play"
+            :loading="isActionPending()"
+            :disabled="isActionPending()"
             @click="onStatusChange('resume')"
           >Resume</UButton>
+          <!-- Stop: STARTING, RUNNING, PAUSED -->
           <UButton
+            v-if="canStop(missionStore.selectedMission.status)"
             size="xs"
             variant="ghost"
-            icon="i-lucide-check"
-            :disabled="missionStore.selectedMission.status !== 'active'"
-            @click="onStatusChange('complete')"
-          >Complete</UButton>
+            color="error"
+            icon="i-lucide-square"
+            :loading="isActionPending()"
+            :disabled="isActionPending()"
+            @click="onStatusChange('stop')"
+          >Stop</UButton>
+          <!-- Terminal: no action buttons -->
+          <span
+            v-if="isTerminal(missionStore.selectedMission.status)"
+            class="text-xs text-muted italic"
+          >Terminal — no actions</span>
         </div>
       </div>
     </template>

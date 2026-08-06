@@ -42,9 +42,9 @@ describe('Mission Types', () => {
         'planned',
         'approved',
         'in_progress',
-        'paused',
-        'completed',
-        'failed',
+        'PAUSED',
+        'COMPLETED',
+        'FAILED',
         'cancelled'
       ]
       statuses.forEach(status => expect(typeof status).toBe('string'))
@@ -257,9 +257,9 @@ describe('Mission Types', () => {
 
     it('allows updating status', () => {
       const update: MissionUpdateInput = {
-        status: 'completed'
+        status: 'COMPLETED'
       }
-      expect(update.status).toBe('completed')
+      expect(update.status).toBe('COMPLETED')
     })
   })
 
@@ -292,26 +292,34 @@ describe('Mission Types', () => {
   // ===================================================================
 
   describe('MISSION_STATUS_LABELS', () => {
-    it('contains all 5 status values', () => {
+    it('contains all 9 status values', () => {
       const keys = Object.keys(MISSION_STATUS_LABELS)
-      expect(keys).toHaveLength(5)
-      expect(keys).toContain('draft')
-      expect(keys).toContain('active')
-      expect(keys).toContain('paused')
-      expect(keys).toContain('completed')
-      expect(keys).toContain('cancelled')
+      expect(keys).toHaveLength(9)
+      expect(keys).toContain('IDLE')
+      expect(keys).toContain('PLANNING')
+      expect(keys).toContain('READY')
+      expect(keys).toContain('STARTING')
+      expect(keys).toContain('RUNNING')
+      expect(keys).toContain('PAUSED')
+      expect(keys).toContain('COMPLETED')
+      expect(keys).toContain('STOPPED')
+      expect(keys).toContain('FAILED')
     })
   })
 
   describe('MISSION_STATUS_COLOR', () => {
-    it('contains all 5 status values with valid colors', () => {
+    it('contains all 9 status values with valid colors', () => {
       const keys = Object.keys(MISSION_STATUS_COLOR)
-      expect(keys).toHaveLength(5)
-      expect(keys).toContain('draft')
-      expect(keys).toContain('active')
-      expect(keys).toContain('paused')
-      expect(keys).toContain('completed')
-      expect(keys).toContain('cancelled')
+      expect(keys).toHaveLength(9)
+      expect(keys).toContain('IDLE')
+      expect(keys).toContain('PLANNING')
+      expect(keys).toContain('READY')
+      expect(keys).toContain('STARTING')
+      expect(keys).toContain('RUNNING')
+      expect(keys).toContain('PAUSED')
+      expect(keys).toContain('COMPLETED')
+      expect(keys).toContain('STOPPED')
+      expect(keys).toContain('FAILED')
     })
 
     it('assigns valid color values', () => {
@@ -324,7 +332,10 @@ describe('Mission Types', () => {
 
   describe('MissionStatus5', () => {
     it('accepts all valid status values', () => {
-      const statuses: MissionStatus5[] = ['draft', 'active', 'paused', 'completed', 'cancelled']
+      const statuses: MissionStatus5[] = [
+        'IDLE', 'PLANNING', 'READY', 'STARTING', 'RUNNING',
+        'PAUSED', 'COMPLETED', 'STOPPED', 'FAILED'
+      ]
       statuses.forEach(s => expect(typeof s).toBe('string'))
     })
   })

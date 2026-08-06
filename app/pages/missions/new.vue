@@ -107,7 +107,7 @@ async function onSubmit() {
     const input: MissionCreateInput = {
       name: name.value.trim(),
       description: description.value.trim() || undefined,
-      status: 'draft',
+      status: 'IDLE',
       coordinate_frame: coordinateFrame.value,
       planned_start_at: plannedStartAt.value || null,
       planned_end_at: plannedEndAt.value || null,
@@ -197,12 +197,12 @@ function onCancel() {
             </label>
             <USelect
               v-model="coordinateFrame"
-              :options="[
+              :items="[
                 { label: 'WGS84 (lat/lon)', value: 'wgs84' },
                 { label: 'UTM', value: 'utm' }
               ]"
-              option-attribute="label"
-              value-attribute="value"
+              label-key="label"
+              value-key="value"
             />
           </div>
           <div>
@@ -324,7 +324,7 @@ function onCancel() {
                 <label class="block text-xs text-muted mb-1">Action</label>
                 <USelect
                   v-model="wp.action"
-                  :options="['survey', 'scan', 'hover', 'photo', 'video', 'sensor_read']"
+                  :items="['survey', 'scan', 'hover', 'photo', 'video', 'sensor_read']"
                   placeholder="None"
                 />
               </div>

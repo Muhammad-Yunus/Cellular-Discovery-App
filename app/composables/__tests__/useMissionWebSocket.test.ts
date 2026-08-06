@@ -124,7 +124,7 @@ describe('useMissionWebSocket', () => {
     onMsgCb({
       action: 'mission.status_changed',
       mission_id: 'cm-001',
-      data: { status: 'active' },
+      data: { status: 'RUNNING' },
       timestamp: '2025-01-15T10:00:00Z'
     })
 

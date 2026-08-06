@@ -235,7 +235,7 @@ async function saveWaypoints() {
           <label class="block text-xs text-muted mb-1">Action</label>
           <USelect
             v-model="wp.action"
-            :options="['survey', 'scan', 'hover', 'photo', 'video', 'sensor_read']"
+            :items="['survey', 'scan', 'hover', 'photo', 'video', 'sensor_read']"
             placeholder="None"
           />
         </div>

@@ -20,7 +20,7 @@ function makeMission(overrides: Partial<MissionRecord> = {}): MissionRecord {
   return {
     id: 'test-mission-id',
     name: 'Alpha mission',
-    status: 'draft',
+    status: 'IDLE',
     description: 'A test mission',
     location_count: 5,
     scan_count: 12,
@@ -60,10 +60,10 @@ describe('MissionCard', () => {
   })
 
   test('renders the status badge with the correct label', () => {
-    const mission = makeMission({ status: 'active' })
+    const mission = makeMission({ status: 'RUNNING' })
     const wrapper = wrap(mission)
     expect(wrapper.find('[data-testid="mission-card-status"]').text()).toBe(
-      'Active'
+      'RUNNING'
     )
   })
 
@@ -92,16 +92,16 @@ describe('MissionCard', () => {
     expect(wrapper.emitted('view')).toBeTruthy()
   })
 
-  test('Start button is disabled when status is not draft/paused', () => {
-    const mission = makeMission({ status: 'active' })
+  test('Start button is disabled when status is not idle/ready/paused', () => {
+    const mission = makeMission({ status: 'RUNNING' })
     const wrapper = wrap(mission)
     const buttons = wrapper.findAll('.u-button')
     const startBtn = buttons.find((b) => b.attributes('data-label') === 'Start')
     expect(startBtn).toBeDefined()
   })
 
-  test('Pause button is disabled when status is not active', () => {
-    const mission = makeMission({ status: 'draft' })
+  test('Pause button is disabled when status is not running', () => {
+    const mission = makeMission({ status: 'IDLE' })
     const wrapper = wrap(mission)
     const buttons = wrapper.findAll('.u-button')
     const pauseBtn = buttons.find((b) => b.attributes('data-label') === 'Pause')

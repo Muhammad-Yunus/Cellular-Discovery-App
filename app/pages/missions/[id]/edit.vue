@@ -13,7 +13,7 @@ const missionId = route.params.id as string
 const form = reactive({
   name: '',
   description: '',
-  status: 'draft' as any
+  status: 'IDLE' as any
 })
 
 const error = ref<string | null>(null)
@@ -73,7 +73,7 @@ async function onSubmit() {
         <div>
           <label class="mb-1 block text-sm font-medium text-default">Status</label>
           <USelect
-            :options="['draft','active','paused','completed','cancelled']"
+            :items="['IDLE','PLANNING','READY','STARTING','RUNNING','PAUSED','COMPLETED','STOPPED','FAILED']"
             v-model="form.status"
           />
         </div>

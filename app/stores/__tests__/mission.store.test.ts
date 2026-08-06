@@ -32,7 +32,7 @@ vi.mock('~/types/api', () => ({
 const mockMission = (overrides: Partial<import('~/types/mission').Mission> = {}) => ({
   id: 'm-001',
   name: 'Test Mission',
-  status: 'draft' as const,
+  status: 'IDLE' as const,
   coordinate_frame: 'wgs84' as const,
   waypoints: [],
   created_at: '2025-01-15T10:00:00Z',
@@ -176,7 +176,7 @@ describe('missionStore', () => {
       const store = useMissionStore()
       await store.createMission({
         name: 'New Mission',
-        status: 'draft',
+        status: 'IDLE',
         coordinate_frame: 'wgs84'
       })
 
@@ -192,7 +192,7 @@ describe('missionStore', () => {
       await expect(
         store.createMission({
           name: 'Fail',
-          status: 'draft',
+          status: 'IDLE',
           coordinate_frame: 'wgs84'
         })
       ).rejects.toThrow('Backend error')
@@ -256,12 +256,12 @@ describe('missionStore', () => {
       mockListMissions.mockResolvedValueOnce({ items: [], total: 0, limit: 25, offset: 0 })
 
       const store = useMissionStore()
-      store.setStatusFilter('completed')
+      store.setStatusFilter('COMPLETED')
 
-      expect(store.statusFilter).toBe('completed')
+      expect(store.statusFilter).toBe('COMPLETED')
       expect(store.pagination.currentPage).toBe(1)
       expect(mockListMissions).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'completed', page: 1 })
+        expect.objectContaining({ status: 'COMPLETED', page: 1 })
       )
     })
 

@@ -82,6 +82,10 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
     selectedMission: (state): MissionRecord | null => {
       if (!state.selectedMissionId) return null
       return state.missions.find(m => m.id === state.selectedMissionId) ?? null
+    },
+    /** Return the mission record matching the given id, or null. */
+    findMission: (state) => (id: string): MissionRecord | undefined => {
+      return state.missions.find(m => m.id === id)
     }
   },
 
@@ -197,30 +201,63 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
 
     /**
      * Execute a lifecycle action on a collector mission (START / PAUSE /
-     * RESUME / COMPLETE / CANCEL). The backend validates the transition and
-     * returns the updated mission.
+     * RESUME / STOP). The backend validates the transition and returns the
+     * updated mission.
+     *
+     * The store optimistically updates the local mission status so the UI
+     * reacts instantly. On failure (e.g. backend returns 409 because the
+     * mission is in a different status), the optimistic change is rolled
+     * back and the underlying error is re-thrown for the caller to surface.
      */
     async patchMissionStatus(
       id: string,
-      action: 'start' | 'pause' | 'resume' | 'complete' | 'cancel'
+      action: 'start' | 'pause' | 'resume' | 'stop'
     ) {
       this.saving = true
       this.error = null
-      try {
-        if (action === 'cancel') {
-          await missionService.updateCollectorMission(id, { status: 'cancelled' })
-        } else {
-          await missionService.collectorMissionAction(id, action)
+
+      // Optimistic UI update: pick the expected post-action status.
+      const expectedNext: MissionStatus5 | null = (() => {
+        switch (action) {
+          case 'start': return 'RUNNING'
+          case 'pause': return 'PAUSED'
+          case 'resume': return 'RUNNING'
+          case 'stop': return 'STOPPED'
         }
-        // Refresh the full list
+      })()
+
+      const previousStatus = this.findMission(id)?.status
+      if (expectedNext && previousStatus) {
+        this.optimisticStatus(id, expectedNext)
+      }
+
+      try {
+        await missionService.collectorMissionAction(id, action)
+        // Refresh the full list so any backend-driven fields sync up.
         await this.fetchMissions()
       } catch (e) {
+        // Roll back optimistic change if we made one.
+        if (expectedNext && previousStatus) {
+          this.optimisticStatus(id, previousStatus)
+        }
         const { parseApiError } = await import('~/types/api')
         const appError = parseApiError(e)
         this.error = appError.message
         throw appError
       } finally {
         this.saving = false
+      }
+    },
+
+    /**
+     * Optimistically set a mission's status in local state. Does not call
+     * the backend. Used by patchMissionStatus to give the user immediate
+     * feedback while the request is in flight.
+     */
+    optimisticStatus(id: string, status: MissionStatus5) {
+      const mission = this.findMission(id)
+      if (mission) {
+        mission.status = status
       }
     },
 

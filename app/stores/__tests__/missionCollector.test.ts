@@ -34,7 +34,7 @@ vi.mock('~/types/api', () => ({
 const mockRecord = (overrides: Partial<import('~/types/mission').MissionRecord> = {}) => ({
   id: 'cm-001',
   name: 'Test Mission',
-  status: 'draft' as const,
+  status: 'IDLE' as const,
   created_at: '2025-01-15T10:00:00Z',
   updated_at: '2025-01-15T10:00:00Z',
   ...overrides
@@ -250,19 +250,19 @@ describe('collectorMission store', () => {
 
   describe('updateMission', () => {
     it('calls updateCollectorMission and refreshes', async () => {
-      mockUpdateCollectorMission.mockResolvedValueOnce(mockRecord({ id: 'cm-001', status: 'active' }))
+      mockUpdateCollectorMission.mockResolvedValueOnce(mockRecord({ id: 'cm-001', status: 'RUNNING' }))
       mockListCollectorMissions.mockResolvedValueOnce({
-        items: [mockRecord({ id: 'cm-001', status: 'active' })],
+        items: [mockRecord({ id: 'cm-001', status: 'RUNNING' })],
         total: 1,
         limit: 10,
         offset: 0
       })
 
       const store = useCollectorMissionStore()
-      await store.updateMission('cm-001', { name: 'Updated', status: 'active' })
+      await store.updateMission('cm-001', { name: 'Updated', status: 'RUNNING' })
 
       expect(mockUpdateCollectorMission).toHaveBeenCalledWith('cm-001', expect.objectContaining({ name: 'Updated' }))
-      expect(store.missions[0]!.status).toBe('active')
+      expect(store.missions[0]!.status).toBe('RUNNING')
     })
   })
 
@@ -287,9 +287,9 @@ describe('collectorMission store', () => {
 
   describe('patchMissionStatus', () => {
     it('calls collectorMissionAction and refreshes', async () => {
-      mockCollectorMissionAction.mockResolvedValueOnce(mockRecord({ id: 'cm-001', status: 'active' }))
+      mockCollectorMissionAction.mockResolvedValueOnce(mockRecord({ id: 'cm-001', status: 'RUNNING' }))
       mockListCollectorMissions.mockResolvedValueOnce({
-        items: [mockRecord({ id: 'cm-001', status: 'active' })],
+        items: [mockRecord({ id: 'cm-001', status: 'RUNNING' })],
         total: 1,
         limit: 10,
         offset: 0
@@ -299,13 +299,13 @@ describe('collectorMission store', () => {
       await store.patchMissionStatus('cm-001', 'start')
 
       expect(mockCollectorMissionAction).toHaveBeenCalledWith('cm-001', 'start')
-      expect(store.missions[0]!.status).toBe('active')
+      expect(store.missions[0]!.status).toBe('RUNNING')
     })
 
     it('handles pause action', async () => {
-      mockCollectorMissionAction.mockResolvedValueOnce(mockRecord({ id: 'cm-001', status: 'paused' }))
+      mockCollectorMissionAction.mockResolvedValueOnce(mockRecord({ id: 'cm-001', status: 'PAUSED' }))
       mockListCollectorMissions.mockResolvedValueOnce({
-        items: [mockRecord({ id: 'cm-001', status: 'paused' })],
+        items: [mockRecord({ id: 'cm-001', status: 'PAUSED' })],
         total: 1,
         limit: 10,
         offset: 0
@@ -314,13 +314,13 @@ describe('collectorMission store', () => {
       const store = useCollectorMissionStore()
       await store.patchMissionStatus('cm-001', 'pause')
       expect(mockCollectorMissionAction).toHaveBeenCalledWith('cm-001', 'pause')
-      expect(store.missions[0]!.status).toBe('paused')
+      expect(store.missions[0]!.status).toBe('PAUSED')
     })
 
     it('handles resume action', async () => {
-      mockCollectorMissionAction.mockResolvedValueOnce(mockRecord({ id: 'cm-001', status: 'active' }))
+      mockCollectorMissionAction.mockResolvedValueOnce(mockRecord({ id: 'cm-001', status: 'RUNNING' }))
       mockListCollectorMissions.mockResolvedValueOnce({
-        items: [mockRecord({ id: 'cm-001', status: 'active' })],
+        items: [mockRecord({ id: 'cm-001', status: 'RUNNING' })],
         total: 1,
         limit: 10,
         offset: 0
@@ -331,18 +331,38 @@ describe('collectorMission store', () => {
       expect(mockCollectorMissionAction).toHaveBeenCalledWith('cm-001', 'resume')
     })
 
-    it('handles complete action', async () => {
-      mockCollectorMissionAction.mockResolvedValueOnce(mockRecord({ id: 'cm-001', status: 'completed' }))
+    it('handles stop action', async () => {
+      mockCollectorMissionAction.mockResolvedValueOnce(mockRecord({ id: 'cm-001', status: 'STOPPED' }))
       mockListCollectorMissions.mockResolvedValueOnce({
-        items: [mockRecord({ id: 'cm-001', status: 'completed' })],
+        items: [mockRecord({ id: 'cm-001', status: 'STOPPED' })],
         total: 1,
         limit: 10,
         offset: 0
       })
 
       const store = useCollectorMissionStore()
-      await store.patchMissionStatus('cm-001', 'complete')
-      expect(mockCollectorMissionAction).toHaveBeenCalledWith('cm-001', 'complete')
+      await store.patchMissionStatus('cm-001', 'stop')
+      expect(mockCollectorMissionAction).toHaveBeenCalledWith('cm-001', 'stop')
+      expect(store.missions[0]!.status).toBe('STOPPED')
+    })
+
+    it('rolls back optimistic update on error', async () => {
+      // Initial state: RUNNING
+      mockListCollectorMissions.mockResolvedValueOnce({
+        items: [mockRecord({ id: 'cm-001', status: 'RUNNING' })],
+        total: 1,
+        limit: 10,
+        offset: 0
+      })
+      mockCollectorMissionAction.mockRejectedValueOnce(new Error('Backend 409 conflict'))
+
+      const store = useCollectorMissionStore()
+      await store.fetchMissions()
+      expect(store.missions[0]!.status).toBe('RUNNING')
+
+      await expect(store.patchMissionStatus('cm-001', 'pause')).rejects.toThrow()
+      // Rollback: should still be RUNNING (not PAUSED)
+      expect(store.missions[0]!.status).toBe('RUNNING')
     })
   })
 
@@ -365,12 +385,12 @@ describe('collectorMission store', () => {
       mockListCollectorMissions.mockResolvedValueOnce({ items: [], total: 0, limit: 10, offset: 0 })
 
       const store = useCollectorMissionStore()
-      store.setStatusFilter('active')
+      store.setStatusFilter('RUNNING')
 
-      expect(store.statusFilter).toBe('active')
+      expect(store.statusFilter).toBe('RUNNING')
       expect(store.pagination.currentPage).toBe(1)
       expect(mockListCollectorMissions).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'active', page: 1 })
+        expect.objectContaining({ status: 'RUNNING', page: 1 })
       )
     })
 

@@ -154,12 +154,12 @@ function getStatusLabel(status: Mission['status']): string {
           <USelect
             v-else
             v-model="coordinateFrame"
-            :options="[
+            :items="[
               { label: 'WGS84 (lat/lon)', value: 'wgs84' },
               { label: 'UTM', value: 'utm' }
             ]"
-            option-attribute="label"
-            value-attribute="value"
+            label-key="label"
+            value-key="value"
           />
         </div>
         <div>

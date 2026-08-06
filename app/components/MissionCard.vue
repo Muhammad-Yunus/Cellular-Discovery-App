@@ -74,17 +74,21 @@ const statusColor = computed(
 // ---- Lifecycle helpers --------------------------------------------------------
 /** True when the "Start" button should be enabled. */
 const canStart = computed(
-  () => missionStatus.value === 'draft' || missionStatus.value === 'paused'
+  () =>
+    missionStatus.value === 'IDLE' ||
+    missionStatus.value === 'READY' ||
+    missionStatus.value === 'PAUSED'
 )
 /** True when the "Pause" button should be enabled. */
-const canPause = computed(() => missionStatus.value === 'active')
+const canPause = computed(() => missionStatus.value === 'RUNNING')
 /** True when the "Complete" button should be enabled. */
-const canComplete = computed(() => missionStatus.value === 'active')
+const canComplete = computed(() => missionStatus.value === 'RUNNING')
 /** True when the "Cancel" button should be enabled. */
 const canCancel = computed(
   () =>
-    missionStatus.value !== 'completed' &&
-    missionStatus.value !== 'cancelled'
+    missionStatus.value !== 'COMPLETED' &&
+    missionStatus.value !== 'STOPPED' &&
+    missionStatus.value !== 'FAILED'
 )
 
 // ---- Date display -------------------------------------------------------------
