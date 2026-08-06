@@ -3,6 +3,14 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import type { ScanSummary } from '~/types'
 
+// Static imports: vi.mock() above is hoisted so the resolved components
+// already have mocks applied. This avoids re-transform inside each it() block.
+import Sidebar from '../Sidebar.vue'
+import HistoryCard from '../HistoryCard.vue'
+import HistoryList from '../HistoryList.vue'
+import FilterPanel from '../FilterPanel.vue'
+import SearchBox from '../SearchBox.vue'
+
 interface MockScanStore {
   scans: ScanSummary[]
   selectedScanId: string | null
@@ -128,97 +136,83 @@ describe('Sidebar', () => {
     currentUiStore = mockUiStore()
   })
 
-  it('renders when sidebarOpen is true', async () => {
+  it('renders when sidebarOpen is true', () => {
     currentUiStore.sidebarOpen = true
-    const Sidebar = await import('../Sidebar.vue')
-    const wrapper = mountWithStubs(Sidebar.default)
+    const wrapper = mountWithStubs(Sidebar)
     expect(wrapper.find('aside').exists()).toBe(true)
   }, 30000)
 
-  it('does not render when sidebarOpen is false', async () => {
+  it('does not render when sidebarOpen is false', () => {
     currentUiStore.sidebarOpen = false
-    const Sidebar = await import('../Sidebar.vue')
-    const wrapper = mountWithStubs(Sidebar.default)
+    const wrapper = mountWithStubs(Sidebar)
     expect(wrapper.find('aside').exists()).toBe(false)
   })
 
-  it('renders Scan History title', async () => {
-    const Sidebar = await import('../Sidebar.vue')
-    const wrapper = mountWithStubs(Sidebar.default)
+  it('renders Scan History title', () => {
+    const wrapper = mountWithStubs(Sidebar)
     expect(wrapper.text()).toContain('Scan History')
   })
 
-  it('renders SearchBox subcomponent', async () => {
-    const Sidebar = await import('../Sidebar.vue')
-    const wrapper = mountWithStubs(Sidebar.default)
+  it('renders SearchBox subcomponent', () => {
+    const wrapper = mountWithStubs(Sidebar)
     expect(wrapper.find('[data-testid="search-box"]').exists()).toBe(true)
   })
 
-  it('renders FilterPanel subcomponent', async () => {
-    const Sidebar = await import('../Sidebar.vue')
-    const wrapper = mountWithStubs(Sidebar.default)
+  it('renders FilterPanel subcomponent', () => {
+    const wrapper = mountWithStubs(Sidebar)
     expect(wrapper.find('[data-testid="filter-panel"]').exists()).toBe(true)
   })
 
-  it('renders HistoryList subcomponent', async () => {
-    const Sidebar = await import('../Sidebar.vue')
-    const wrapper = mountWithStubs(Sidebar.default)
+  it('renders HistoryList subcomponent', () => {
+    const wrapper = mountWithStubs(Sidebar)
     expect(wrapper.find('[data-testid="history-list"]').exists()).toBe(true)
   })
 })
 
 describe('HistoryCard', () => {
-  it('renders scan operator and RAT', async () => {
-    const HistoryCard = await import('../HistoryCard.vue')
-    const wrapper = mountWithStubs(HistoryCard.default, { props: { scan: mockScan } })
+  it('renders scan operator and RAT', () => {
+    const wrapper = mountWithStubs(HistoryCard, { props: { scan: mockScan } })
     expect(wrapper.text()).toContain('Telkomsel')
     expect(wrapper.text()).toContain('LTE')
   })
 
-  it('renders MCC/MNC', async () => {
-    const HistoryCard = await import('../HistoryCard.vue')
-    const wrapper = mountWithStubs(HistoryCard.default, { props: { scan: mockScan } })
+  it('renders MCC/MNC', () => {
+    const wrapper = mountWithStubs(HistoryCard, { props: { scan: mockScan } })
     expect(wrapper.text()).toContain('510')
     expect(wrapper.text()).toContain('10')
   })
 
   it('emits select with scan id on click', async () => {
-    const HistoryCard = await import('../HistoryCard.vue')
-    const wrapper = mountWithStubs(HistoryCard.default, { props: { scan: mockScan } })
+    const wrapper = mountWithStubs(HistoryCard, { props: { scan: mockScan } })
     await wrapper.find('[data-scan-id="1"]').trigger('click')
     expect(wrapper.emitted('select')).toBeTruthy()
     expect(wrapper.emitted('select')![0]).toEqual(['1'])
   })
 
-  it('shows Unknown Operator when operator is empty', async () => {
-    const HistoryCard = await import('../HistoryCard.vue')
-    const wrapper = mountWithStubs(HistoryCard.default, { props: { scan: { ...mockScan, operator: '' } } })
+  it('shows Unknown Operator when operator is empty', () => {
+    const wrapper = mountWithStubs(HistoryCard, { props: { scan: { ...mockScan, operator: '' } } })
     expect(wrapper.text()).toContain('Unknown Operator')
   })
 
-  it('renders scan time', async () => {
-    const HistoryCard = await import('../HistoryCard.vue')
-    const wrapper = mountWithStubs(HistoryCard.default, { props: { scan: mockScan } })
+  it('renders scan time', () => {
+    const wrapper = mountWithStubs(HistoryCard, { props: { scan: mockScan } })
     expect(wrapper.text()).toContain('2024')
   })
 })
 
 describe('HistoryList', () => {
-  it('shows skeleton when loading', async () => {
-    const HistoryList = await import('../HistoryList.vue')
-    const wrapper = mountWithStubs(HistoryList.default, { props: { scans: [], loading: true, selectedId: null } })
+  it('shows skeleton when loading', () => {
+    const wrapper = mountWithStubs(HistoryList, { props: { scans: [], loading: true, selectedId: null } })
     expect(wrapper.findAll('[data-testid="u-skeleton"]').length).toBeGreaterThan(0)
   })
 
-  it('shows empty state when no scans', async () => {
-    const HistoryList = await import('../HistoryList.vue')
-    const wrapper = mountWithStubs(HistoryList.default, { props: { scans: [], loading: false, selectedId: null } })
+  it('shows empty state when no scans', () => {
+    const wrapper = mountWithStubs(HistoryList, { props: { scans: [], loading: false, selectedId: null } })
     expect(wrapper.text()).toContain('No Scan History')
   })
 
-  it('renders history cards for each scan', async () => {
-    const HistoryList = await import('../HistoryList.vue')
-    const wrapper = mountWithStubs(HistoryList.default, {
+  it('renders history cards for each scan', () => {
+    const wrapper = mountWithStubs(HistoryList, {
       props: { scans: [mockScan, { ...mockScan, id: '2', operator: 'Indosat' }], loading: false, selectedId: null }
     })
     expect(wrapper.findAll('[data-testid="history-card"]').length).toBe(2)
@@ -226,9 +220,8 @@ describe('HistoryList', () => {
 })
 
 describe('FilterPanel', () => {
-  it('renders all RAT options', async () => {
-    const FilterPanel = await import('../FilterPanel.vue')
-    const wrapper = mountWithStubs(FilterPanel.default, { props: { selectedRat: 'ALL', operatorFilter: '' } })
+  it('renders all RAT options', () => {
+    const wrapper = mountWithStubs(FilterPanel, { props: { selectedRat: 'ALL', operatorFilter: '' } })
     expect(wrapper.findAll('[data-testid="u-button"]').length).toBe(4)
   })
 
@@ -236,8 +229,7 @@ describe('FilterPanel', () => {
     // The reset button has been removed from FilterPanel. Users now reset
     // by selecting the 'All' RAT pill directly. Verify 'All' is always
     // present and clickable, instead of asserting a separate reset button.
-    const FilterPanel = await import('../FilterPanel.vue')
-    const wrapper = mountWithStubs(FilterPanel.default, { props: { selectedRat: 'LTE', operatorFilter: 'test' } })
+    const wrapper = mountWithStubs(FilterPanel, { props: { selectedRat: 'LTE', operatorFilter: 'test' } })
     const allBtn = wrapper.findAll('[data-testid="u-button"]').find(b => b.text() === 'All')
     expect(allBtn).toBeTruthy()
     await allBtn!.trigger('click')
@@ -246,22 +238,19 @@ describe('FilterPanel', () => {
 })
 
 describe('SearchBox', () => {
-  it('renders with placeholder', async () => {
-    const SearchBox = await import('../SearchBox.vue')
-    const wrapper = mountWithStubs(SearchBox.default, { props: { placeholder: 'Search scans...', modelValue: '' } })
+  it('renders with placeholder', () => {
+    const wrapper = mountWithStubs(SearchBox, { props: { placeholder: 'Search scans...', modelValue: '' } })
     const input = wrapper.find('[data-testid="u-input"]')
     expect(input.attributes('placeholder')).toBe('Search scans...')
   })
 
-  it('shows clear button when text is entered', async () => {
-    const SearchBox = await import('../SearchBox.vue')
-    const wrapper = mountWithStubs(SearchBox.default, { props: { modelValue: 'test' } })
+  it('shows clear button when text is entered', () => {
+    const wrapper = mountWithStubs(SearchBox, { props: { modelValue: 'test' } })
     expect(wrapper.findAll('[data-testid="u-button"]').length).toBe(1)
   })
 
   it('clears text on clear button click', async () => {
-    const SearchBox = await import('../SearchBox.vue')
-    const wrapper = mountWithStubs(SearchBox.default, { props: { modelValue: 'test' } })
+    const wrapper = mountWithStubs(SearchBox, { props: { modelValue: 'test' } })
     const clearBtn = wrapper.find('[data-testid="u-button"]')
     await clearBtn.trigger('click')
     const emitted = wrapper.emitted('update:modelValue')
@@ -269,9 +258,8 @@ describe('SearchBox', () => {
     expect(emitted![emitted!.length - 1]).toEqual([''])
   })
 
-  it('does not show clear button when empty', async () => {
-    const SearchBox = await import('../SearchBox.vue')
-    const wrapper = mountWithStubs(SearchBox.default, { props: { modelValue: '' } })
+  it('does not show clear button when empty', () => {
+    const wrapper = mountWithStubs(SearchBox, { props: { modelValue: '' } })
     expect(wrapper.findAll('[data-testid="u-button"]').length).toBe(0)
   })
 })

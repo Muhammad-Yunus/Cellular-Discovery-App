@@ -4,6 +4,12 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { ref } from 'vue'
 
+// Static imports: vi.mock() above is hoisted so the resolved component
+// and composable already have mocks applied. This avoids re-transform
+// inside each it() block.
+import Page from '../settings.vue'
+import { useSettings } from '~/composables/useSettings'
+
 vi.mock('#app/nuxt', () => ({
   useRuntimeConfig: vi.fn(() => ({
     public: {
@@ -79,51 +85,36 @@ describe('SettingsPage', () => {
     vi.clearAllMocks()
   })
 
-  it('renders page title', async () => {
-    const { useSettings } = await import('~/composables/useSettings')
+  it('renders page title', () => {
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings() as any)
-
-    const Page = (await import('../settings.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
-    await vi.waitFor(() => expect(wrapper.text()).toContain('Settings'))
+    expect(wrapper.text()).toContain('Settings')
   }, 30000)
 
-  it('shows loading skeleton when loading', async () => {
-    const { useSettings } = await import('~/composables/useSettings')
+  it('shows loading skeleton when loading', () => {
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings({ loading: true }) as any)
-
-    const Page = (await import('../settings.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.find('.u-skeleton').exists()).toBe(true)
   })
 
-  it('shows error alert with retry button', async () => {
-    const { useSettings } = await import('~/composables/useSettings')
+  it('shows error alert with retry button', () => {
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings({ error: 'Network error' }) as any)
-
-    const Page = (await import('../settings.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Failed to load settings')
     expect(wrapper.text()).toContain('Retry')
   })
 
-  it('shows empty state when no settings', async () => {
-    const { useSettings } = await import('~/composables/useSettings')
+  it('shows empty state when no settings', () => {
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings() as any)
-
-    const Page = (await import('../settings.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('No settings available')
   })
 
-  it('renders settings form fields', async () => {
-    const { useSettings } = await import('~/composables/useSettings')
+  it('renders settings form fields', () => {
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings({
       settings: ref(mockSettings),
       dirty: ref(false)
     }) as any)
-
-    const Page = (await import('../settings.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('polling_interval')
     expect(wrapper.text()).toContain('notification_enabled')
@@ -131,32 +122,26 @@ describe('SettingsPage', () => {
     expect(wrapper.text()).toContain('map_zoom')
   })
 
-  it('calls save when Save button clicked', async () => {
+  it('calls save when Save button clicked', () => {
     const mockSave = vi.fn()
-    const { useSettings } = await import('~/composables/useSettings')
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings({
       settings: ref(mockSettings),
       dirty: ref(true),
       save: mockSave
     }) as any)
-
-    const Page = (await import('../settings.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     const saveBtn = wrapper.findAll('.u-button').find(b => b.text() === 'Save')
     if (saveBtn) saveBtn.trigger('click')
     expect(mockSave).toHaveBeenCalled()
   })
 
-  it('calls reset when Cancel button clicked', async () => {
+  it('calls reset when Cancel button clicked', () => {
     const mockReset = vi.fn()
-    const { useSettings } = await import('~/composables/useSettings')
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings({
       settings: ref(mockSettings),
       dirty: ref(true),
       reset: mockReset
     }) as any)
-
-    const Page = (await import('../settings.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     const cancelBtn = wrapper.findAll('.u-button').find(b => b.text() === 'Cancel')
     if (cancelBtn) cancelBtn.trigger('click')

@@ -4,6 +4,11 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { ref } from 'vue'
 
+// Static import: vi.mock() above is hoisted so the resolved component
+// already has useScan replaced with the mock. This avoids re-transform
+// inside each it() block.
+import Page from '../history.vue'
+
 vi.mock('#app/nuxt', () => ({
   useRuntimeConfig: vi.fn(() => ({
     public: {
@@ -145,61 +150,33 @@ describe('HistoryPage', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
     currentMockScanState = createMockScanStore()
-    // Re-create the useScan mock with fresh refs
-    vi.doMock('~/composables/useScan', () => {
-      return {
-        useScan: vi.fn(() => ({
-          scans: ref(currentMockScanState.scans),
-          selectedScan: ref(currentMockScanState.selectedScan),
-          selectedScanId: ref(currentMockScanState.selectedScanId),
-          loading: ref(currentMockScanState.loading),
-          creating: ref(currentMockScanState.creating),
-          error: ref(currentMockScanState.error),
-          pagination: ref(currentMockScanState.pagination),
-          wsConnected: ref(currentMockScanState.wsConnected),
-          sortParam: ref(currentMockScanState.sortParam),
-          fetchScans: currentMockScanState.fetchScans,
-          startScan: vi.fn(),
-          selectScan: currentMockScanState.selectScan,
-          removeScan: currentMockScanState.deleteScan,
-          setPage: currentMockScanState.setPage,
-          setSearch: currentMockScanState.setSearch,
-          setDateRange: currentMockScanState.setDateRange,
-          toggleSort: currentMockScanState.toggleSort
-        }))
-      }
-    })
   })
 
-  it('renders page title', async () => {
-    const Page = (await import('../history.vue')).default
+  it('renders page title', () => {
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Scan History')
   }, 30000)
 
-  it('shows loading skeleton when loading', async () => {
+  it('shows loading skeleton when loading', () => {
     currentMockScanState.loading = true
-    const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.find('.u-skeleton').exists()).toBe(true)
   })
 
-  it('shows error alert with retry button', async () => {
+  it('shows error alert with retry button', () => {
     currentMockScanState.error = 'Network error'
-    const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Failed to load scan history')
     expect(wrapper.text()).toContain('Network error')
     expect(wrapper.text()).toContain('Retry')
   })
 
-  it('shows empty state when no scans', async () => {
-    const Page = (await import('../history.vue')).default
+  it('shows empty state when no scans', () => {
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('No Scan Results')
   })
 
-  it('renders scan list', async () => {
+  it('renders scan list', () => {
     currentMockScanState.scans = mockScans
     currentMockScanState.pagination = {
       currentPage: 1,
@@ -209,13 +186,12 @@ describe('HistoryPage', () => {
       totalPages: 1,
       searchTerm: ''
     }
-    const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Telkomsel')
     expect(wrapper.text()).toContain('Indosat')
   })
 
-  it('shows pagination when multiple pages', async () => {
+  it('shows pagination when multiple pages', () => {
     currentMockScanState.scans = mockScans
     currentMockScanState.pagination = {
       currentPage: 1,
@@ -225,7 +201,6 @@ describe('HistoryPage', () => {
       totalPages: 2,
       searchTerm: ''
     }
-    const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.find('.u-pagination').exists()).toBe(true)
   })

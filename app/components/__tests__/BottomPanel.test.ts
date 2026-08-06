@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 
+// Static imports: vi.mock() above is hoisted so the resolved component
+// already has mocks applied. This avoids re-transform inside each it() block.
+import BottomPanel from '../BottomPanel.vue'
+import SignalPanel from '../SignalPanel.vue'
+import GPSPanel from '../GPSPanel.vue'
+import SystemPanel from '../SystemPanel.vue'
+
 vi.mock('#app/nuxt', () => ({
   useRuntimeConfig: vi.fn(() => ({
     public: {
@@ -113,42 +120,37 @@ describe('BottomPanel', () => {
     mockUiStore.toggleBottomPanel = vi.fn()
   })
 
-  it('renders when bottomPanelOpen is true', async () => {
-    const BottomPanel = await import('../BottomPanel.vue')
-    const wrapper = mountWithStubs(BottomPanel.default)
+  it('renders when bottomPanelOpen is true', () => {
+    const wrapper = mountWithStubs(BottomPanel)
     expect(wrapper.find('[role="tablist"]').exists()).toBe(true)
     expect(wrapper.findAll('[role="tab"]').length).toBe(3)
   }, 30000)
 
-  it('does not render when bottomPanelOpen is false', async () => {
+  it('does not render when bottomPanelOpen is false', () => {
     mockUiStore.bottomPanelOpen = false
-    const BottomPanel = await import('../BottomPanel.vue')
-    const wrapper = mountWithStubs(BottomPanel.default)
+    const wrapper = mountWithStubs(BottomPanel)
     expect(wrapper.find('[role="tablist"]').exists()).toBe(false)
   })
 
-  it('renders only the active tab panel', async () => {
+  it('renders only the active tab panel', () => {
     mockUiStore.activeInfoTab = 'signal'
-    const BottomPanel = await import('../BottomPanel.vue')
-    const wrapper = mountWithStubs(BottomPanel.default)
+    const wrapper = mountWithStubs(BottomPanel)
     expect(wrapper.find('[data-testid="signal-panel"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="gps-panel"]').exists()).toBe(false)
     expect(wrapper.find('[data-testid="system-panel"]').exists()).toBe(false)
   })
 
-  it('switches the active panel when the active tab changes', async () => {
+  it('switches the active panel when the active tab changes', () => {
     mockUiStore.activeInfoTab = 'gps'
-    const BottomPanel = await import('../BottomPanel.vue')
-    const wrapper = mountWithStubs(BottomPanel.default)
+    const wrapper = mountWithStubs(BottomPanel)
     expect(wrapper.find('[data-testid="gps-panel"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="signal-panel"]').exists()).toBe(false)
     expect(wrapper.find('[data-testid="system-panel"]').exists()).toBe(false)
   })
 
-  it('marks the active tab button with aria-selected', async () => {
+  it('marks the active tab button with aria-selected', () => {
     mockUiStore.activeInfoTab = 'system'
-    const BottomPanel = await import('../BottomPanel.vue')
-    const wrapper = mountWithStubs(BottomPanel.default)
+    const wrapper = mountWithStubs(BottomPanel)
     const tabs = wrapper.findAll('[role="tab"]')
     expect(tabs[0]?.attributes('aria-selected')).toBe('false')
     expect(tabs[1]?.attributes('aria-selected')).toBe('false')
@@ -156,8 +158,7 @@ describe('BottomPanel', () => {
   })
 
   it('calls setActiveTab when a tab button is clicked', async () => {
-    const BottomPanel = await import('../BottomPanel.vue')
-    const wrapper = mountWithStubs(BottomPanel.default)
+    const wrapper = mountWithStubs(BottomPanel)
     const tabs = wrapper.findAll('[role="tab"]')
     await tabs[1]?.trigger('click')
     expect(mockUiStore.setActiveTab).toHaveBeenCalledWith('gps')
@@ -165,14 +166,13 @@ describe('BottomPanel', () => {
 })
 
 describe('SignalPanel', () => {
-  it('shows empty state when no scan selected', async () => {
+  it('shows empty state when no scan selected', () => {
     mockScanStore.selectedScan = null
-    const SignalPanel = await import('../SignalPanel.vue')
-    const wrapper = mountWithStubs(SignalPanel.default)
+    const wrapper = mountWithStubs(SignalPanel)
     expect(wrapper.text()).toContain('No scan selected')
   })
 
-  it('displays scan details when scan is selected', async () => {
+  it('displays scan details when scan is selected', () => {
     mockScanStore.selectedScan = {
       id: '1',
       operator: 'Telkomsel',
@@ -183,8 +183,7 @@ describe('SignalPanel', () => {
       longitude: 106.89,
       scan_time: '2024-01-01T12:00:00Z'
     }
-    const SignalPanel = await import('../SignalPanel.vue')
-    const wrapper = mountWithStubs(SignalPanel.default)
+    const wrapper = mountWithStubs(SignalPanel)
     expect(wrapper.text()).toContain('Telkomsel')
     expect(wrapper.text()).toContain('510')
     expect(wrapper.text()).toContain('10')
@@ -193,64 +192,57 @@ describe('SignalPanel', () => {
 })
 
 describe('GPSPanel', () => {
-  it('shows waiting state when no provider', async () => {
+  it('shows waiting state when no provider', () => {
     mockGpsStore.provider = null
-    const GPSPanel = await import('../GPSPanel.vue')
-    const wrapper = mountWithStubs(GPSPanel.default)
+    const wrapper = mountWithStubs(GPSPanel)
     expect(wrapper.text()).toContain('Waiting for GPS')
   })
 
-  it('displays GPS data when provider is set', async () => {
+  it('displays GPS data when provider is set', () => {
     mockGpsStore.provider = 'gps'
     mockGpsStore.latitude = -6.15
     mockGpsStore.longitude = 106.89
     mockGpsStore.connected = true
-    const GPSPanel = await import('../GPSPanel.vue')
-    const wrapper = mountWithStubs(GPSPanel.default)
+    const wrapper = mountWithStubs(GPSPanel)
     expect(wrapper.text()).toContain('-6.150000')
     expect(wrapper.text()).toContain('106.890000')
     expect(wrapper.text()).toContain('gps')
     expect(wrapper.text()).toContain('Connected')
   })
 
-  it('shows disconnected status when not connected', async () => {
+  it('shows disconnected status when not connected', () => {
     mockGpsStore.provider = 'mock'
     mockGpsStore.connected = false
-    const GPSPanel = await import('../GPSPanel.vue')
-    const wrapper = mountWithStubs(GPSPanel.default)
+    const wrapper = mountWithStubs(GPSPanel)
     expect(wrapper.text()).toContain('Disconnected')
   })
 })
 
 describe('SystemPanel', () => {
-  it('displays backend status', async () => {
+  it('displays backend status', () => {
     mockSystemStore.backendStatus = 'ok'
     mockSystemStore.responseTime = 42
     mockSystemStore.lastCheck = '2024-01-01T12:00:00Z'
-    const SystemPanel = await import('../SystemPanel.vue')
-    const wrapper = mountWithStubs(SystemPanel.default)
+    const wrapper = mountWithStubs(SystemPanel)
     expect(wrapper.text()).toContain('Online')
     expect(wrapper.text()).toContain('42ms')
   })
 
-  it('displays unavailable status', async () => {
+  it('displays unavailable status', () => {
     mockSystemStore.backendStatus = 'unavailable'
-    const SystemPanel = await import('../SystemPanel.vue')
-    const wrapper = mountWithStubs(SystemPanel.default)
+    const wrapper = mountWithStubs(SystemPanel)
     expect(wrapper.text()).toContain('Offline')
   })
 
-  it('shows error when present', async () => {
+  it('shows error when present', () => {
     mockSystemStore.error = 'Connection refused'
-    const SystemPanel = await import('../SystemPanel.vue')
-    const wrapper = mountWithStubs(SystemPanel.default)
+    const wrapper = mountWithStubs(SystemPanel)
     expect(wrapper.text()).toContain('Connection refused')
   })
 
-  it('shows CLI status with UBadge', async () => {
+  it('shows CLI status with UBadge', () => {
     mockSystemStore.cliStatus = 'warning'
-    const SystemPanel = await import('../SystemPanel.vue')
-    const wrapper = mountWithStubs(SystemPanel.default)
+    const wrapper = mountWithStubs(SystemPanel)
     const badges = wrapper.findAll('[data-testid="u-badge"]')
     expect(badges.length).toBeGreaterThan(0)
   })

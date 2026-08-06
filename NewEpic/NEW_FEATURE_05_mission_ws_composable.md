@@ -43,7 +43,7 @@ export function useMissionWebSocket(missionId: string) {
 
   function getWebSocketUrl(): string {
     const config = useRuntimeConfig()
-    return buildWsUrl(config.public.apiBaseMissions as string, `/ws/mission/${missionId}`)
+    return buildWsUrl(config.public.apiBase as string, `/ws/mission/${missionId}`)
   }
 
   function parseEvent(raw: unknown): MissionWSEvent | null {

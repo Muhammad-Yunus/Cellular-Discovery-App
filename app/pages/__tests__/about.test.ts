@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
-import { mount, type Component } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { mount } from '@vue/test-utils'
 import { ref } from 'vue'
 
 vi.mock('#app/composables/router', () => ({
@@ -31,6 +31,11 @@ vi.mock('~/composables/useSystem', () => ({
   }))
 }))
 
+// Static import: vi.mock() above is hoisted so the resolved component
+// already has useSystem replaced with the mock. This avoids re-transform
+// inside each it() block.
+import Page from '../about.vue'
+
 const UIStubs = {
   UCard: {
     props: ['color', 'variant', 'size'],
@@ -50,12 +55,6 @@ describe('AboutPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
-
-  // Hoist the dynamic import out of each it() block.
-  let Page: Component
-  beforeAll(async () => {
-    Page = (await import('../about.vue')).default
-  }, 60000)
 
   it('renders app name', async () => {
     vi.mocked(useSystem).mockReturnValue({

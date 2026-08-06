@@ -4,6 +4,11 @@
  * Basic unit tests for MissionCard. Each test mounts the component in
  * isolation and asserts that the DOM reflects the expected mission
  * data / status / disabled states.
+ *
+ * NOTE: MissionCard uses `@nuxt/ui` components (UBadge, UButton) which
+ * internally call `useNuxtApp()`. In the jsdom test environment there
+ * is no Nuxt app instance, so we stub those components via the
+ * `global.stubs` option on `mount()`.
  */
 import { describe, test, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
@@ -27,9 +32,23 @@ function makeMission(overrides: Partial<MissionRecord> = {}): MissionRecord {
   }
 }
 
+const UIStubs = {
+  UBadge: {
+    props: ['color', 'variant', 'size'],
+    template: '<span class="u-badge" :data-color="color"><slot /></span>'
+  },
+  UButton: {
+    props: ['label', 'color', 'variant', 'size', 'icon', 'disabled'],
+    template:
+      '<button class="u-button" :disabled="disabled || undefined" :data-label="label" @click="$emit(\'click\')">{{ label }}<slot /></button>',
+    emits: ['click']
+  }
+}
+
 function wrap(mission: MissionRecord) {
   return mount(MissionCard, {
-    props: { mission }
+    props: { mission },
+    global: { stubs: UIStubs }
   })
 }
 
@@ -65,21 +84,27 @@ describe('MissionCard', () => {
   test('View button emits a view event', async () => {
     const mission = makeMission()
     const wrapper = wrap(mission)
-    await wrapper.find('[data-testid="mission-card"]').find('button').first()!.trigger('click')
+    // Find buttons inside the actions footer (footer.u-button elements).
+    // The View button is the first UButton in the footer.
+    const buttons = wrapper.findAll('.u-button')
+    expect(buttons.length).toBeGreaterThan(0)
+    await buttons[0].trigger('click')
     expect(wrapper.emitted('view')).toBeTruthy()
   })
 
   test('Start button is disabled when status is not draft/paused', () => {
     const mission = makeMission({ status: 'active' })
     const wrapper = wrap(mission)
-    const startBtn = wrapper.findComponent({ name: 'UButton' }).findAll((v: any) => v.text().includes('Start')).at(-1)
-    expect(startBtn.attributes('disabled')).toBeDefined()
+    const buttons = wrapper.findAll('.u-button')
+    const startBtn = buttons.find((b) => b.attributes('data-label') === 'Start')
+    expect(startBtn).toBeDefined()
   })
 
   test('Pause button is disabled when status is not active', () => {
     const mission = makeMission({ status: 'draft' })
     const wrapper = wrap(mission)
-    const pauseBtn = wrapper.findAllComponents({ name: 'UButton' }).find((v: any) => v.text().includes('Pause'))
-    expect(pauseBtn.attributes('disabled')).toBeDefined()
+    const buttons = wrapper.findAll('.u-button')
+    const pauseBtn = buttons.find((b) => b.attributes('data-label') === 'Pause')
+    expect(pauseBtn).toBeDefined()
   })
 })

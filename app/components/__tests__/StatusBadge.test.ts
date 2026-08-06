@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import { mount, type MountedComponent } from '@vue/test-utils'
-import type { DefineComponent } from 'vue'
+import { mount } from '@vue/test-utils'
+import StatusBadge from '../StatusBadge.vue'
 
 const UBadgeStub = {
   props: ['color', 'variant', 'size'],
@@ -8,15 +8,7 @@ const UBadgeStub = {
 }
 
 describe('StatusBadge', () => {
-  // Hoist the dynamic import out of each it() block so the SFC +
-  // @nuxt/ui runtime composables are resolved only once per suite.
-  let StatusBadge: DefineComponent<{ status: string, label?: string, pulse?: boolean }, Record<string, never>, unknown>
-
-  beforeAll(async () => {
-    StatusBadge = (await import('../StatusBadge.vue')).default
-  }, 60000)
-
-  it('renders with ok status', async () => {
+  it('renders with ok status', () => {
     const wrapper = mount(StatusBadge, {
       props: { status: 'ok' },
       global: { stubs: { UBadge: UBadgeStub } }
