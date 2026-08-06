@@ -41,6 +41,7 @@ describe('MapView', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     window.L = {
       map: vi.fn(() => ({
         setView: vi.fn(),
@@ -52,10 +53,26 @@ describe('MapView', () => {
         getCenter: vi.fn(() => ({ lat: 0, lng: 0 }))
       })),
       tileLayer: vi.fn(() => ({ addTo: vi.fn() })),
-      marker: vi.fn(() => mockMarker),
+      marker: vi.fn(() => {
+        const m: Record<string, any> = {}
+        m.addTo = vi.fn(() => m)
+        m.bindPopup = vi.fn(() => m)
+        m.on = vi.fn(() => m)
+        m.off = vi.fn(() => m)
+        m.remove = vi.fn()
+        m.closePopup = vi.fn()
+        m.setLatLng = vi.fn()
+        m.openPopup = vi.fn()
+        m.isPopupOpen = vi.fn(() => false)
+        return m
+      }),
       icon: vi.fn(() => ({ options: {} })),
+      divIcon: vi.fn(() => ({ options: {} })),
+      control: {
+        zoom: vi.fn(() => ({ addTo: vi.fn() }))
+      },
       DomEvent: { on: vi.fn(), off: vi.fn() }
-    } as Record<string, unknown>
+    } as unknown as typeof import('leaflet')
   })
 
   it('renders map container div', async () => {
@@ -80,7 +97,7 @@ describe('MapView', () => {
 
     mount(MapView, { props: { markers } })
 
-    expect(window.L.marker).toHaveBeenCalledWith([-6.15, 106.89])
+    expect(window.L.marker).toHaveBeenCalledWith([-6.15, 106.89], expect.objectContaining({ icon: expect.anything() }))
   })
 
   it('provides map actions to children', async () => {

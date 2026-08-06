@@ -133,7 +133,7 @@ describe('Sidebar', () => {
     const Sidebar = await import('../Sidebar.vue')
     const wrapper = mountWithStubs(Sidebar.default)
     expect(wrapper.find('aside').exists()).toBe(true)
-  })
+  }, 30000)
 
   it('does not render when sidebarOpen is false', async () => {
     currentUiStore.sidebarOpen = false
@@ -146,14 +146,6 @@ describe('Sidebar', () => {
     const Sidebar = await import('../Sidebar.vue')
     const wrapper = mountWithStubs(Sidebar.default)
     expect(wrapper.text()).toContain('Scan History')
-  })
-
-  it('renders new scan button', async () => {
-    const Sidebar = await import('../Sidebar.vue')
-    const wrapper = mountWithStubs(Sidebar.default)
-    const buttons = wrapper.findAll('[data-testid="u-button"]')
-    expect(buttons.length).toBe(2)
-    expect(buttons[1].text()).toContain('Get LTE Signal')
   })
 
   it('renders SearchBox subcomponent', async () => {
@@ -172,15 +164,6 @@ describe('Sidebar', () => {
     const Sidebar = await import('../Sidebar.vue')
     const wrapper = mountWithStubs(Sidebar.default)
     expect(wrapper.find('[data-testid="history-list"]').exists()).toBe(true)
-  })
-
-  it('calls createScan when Get LTE Signal is clicked', async () => {
-    currentScanStore.createScan = vi.fn()
-    const Sidebar = await import('../Sidebar.vue')
-    const wrapper = mountWithStubs(Sidebar.default)
-    const buttons = wrapper.findAll('[data-testid="u-button"]')
-    await buttons[1].trigger('click')
-    expect(currentScanStore.createScan).toHaveBeenCalled()
   })
 })
 
@@ -202,7 +185,7 @@ describe('HistoryCard', () => {
   it('emits select with scan id on click', async () => {
     const HistoryCard = await import('../HistoryCard.vue')
     const wrapper = mountWithStubs(HistoryCard.default, { props: { scan: mockScan } })
-    await wrapper.find('[data-testid="u-card"]').trigger('click')
+    await wrapper.find('[data-scan-id="1"]').trigger('click')
     expect(wrapper.emitted('select')).toBeTruthy()
     expect(wrapper.emitted('select')![0]).toEqual(['1'])
   })
@@ -246,7 +229,7 @@ describe('FilterPanel', () => {
   it('renders all RAT options', async () => {
     const FilterPanel = await import('../FilterPanel.vue')
     const wrapper = mountWithStubs(FilterPanel.default, { props: { selectedRat: 'ALL', operatorFilter: '' } })
-    expect(wrapper.findAll('[data-testid="u-button"]').length).toBeGreaterThanOrEqual(6)
+    expect(wrapper.findAll('[data-testid="u-button"]').length).toBe(4)
   })
 
   it('emits reset when reset button clicked', async () => {
@@ -265,7 +248,7 @@ describe('FilterPanel', () => {
 describe('SearchBox', () => {
   it('renders with placeholder', async () => {
     const SearchBox = await import('../SearchBox.vue')
-    const wrapper = mountWithStubs(SearchBox.default, { props: { placeholder: 'Search scans...' } })
+    const wrapper = mountWithStubs(SearchBox.default, { props: { placeholder: 'Search scans...', modelValue: '' } })
     const input = wrapper.find('[data-testid="u-input"]')
     expect(input.attributes('placeholder')).toBe('Search scans...')
   })

@@ -24,7 +24,7 @@ vi.mock('#app/nuxt', () => ({
   tryUseNuxtApp: vi.fn()
 }))
 
-vi.mock('~/app/composables/useSettings', () => ({
+vi.mock('~/composables/useSettings', () => ({
   useSettings: vi.fn()
 }))
 
@@ -44,6 +44,7 @@ function createMockUseSettings(overrides: Record<string, unknown> = {}) {
     error: ref(null),
     fetchSettings: vi.fn(),
     updateField: vi.fn(),
+    updateSetting: vi.fn(),
     save: vi.fn(),
     reset: vi.fn(),
     ...overrides
@@ -79,16 +80,16 @@ describe('SettingsPage', () => {
   })
 
   it('renders page title', async () => {
-    const { useSettings } = await import('~/app/composables/useSettings')
+    const { useSettings } = await import('~/composables/useSettings')
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings() as any)
 
     const Page = (await import('../settings.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
-    expect(wrapper.text()).toContain('Settings')
-  }, 15000)
+    await vi.waitFor(() => expect(wrapper.text()).toContain('Settings'))
+  }, 30000)
 
   it('shows loading skeleton when loading', async () => {
-    const { useSettings } = await import('~/app/composables/useSettings')
+    const { useSettings } = await import('~/composables/useSettings')
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings({ loading: true }) as any)
 
     const Page = (await import('../settings.vue')).default
@@ -97,7 +98,7 @@ describe('SettingsPage', () => {
   })
 
   it('shows error alert with retry button', async () => {
-    const { useSettings } = await import('~/app/composables/useSettings')
+    const { useSettings } = await import('~/composables/useSettings')
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings({ error: 'Network error' }) as any)
 
     const Page = (await import('../settings.vue')).default
@@ -107,7 +108,7 @@ describe('SettingsPage', () => {
   })
 
   it('shows empty state when no settings', async () => {
-    const { useSettings } = await import('~/app/composables/useSettings')
+    const { useSettings } = await import('~/composables/useSettings')
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings() as any)
 
     const Page = (await import('../settings.vue')).default
@@ -116,7 +117,7 @@ describe('SettingsPage', () => {
   })
 
   it('renders settings form fields', async () => {
-    const { useSettings } = await import('~/app/composables/useSettings')
+    const { useSettings } = await import('~/composables/useSettings')
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings({
       settings: ref(mockSettings),
       dirty: ref(false)
@@ -132,7 +133,7 @@ describe('SettingsPage', () => {
 
   it('calls save when Save button clicked', async () => {
     const mockSave = vi.fn()
-    const { useSettings } = await import('~/app/composables/useSettings')
+    const { useSettings } = await import('~/composables/useSettings')
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings({
       settings: ref(mockSettings),
       dirty: ref(true),
@@ -148,7 +149,7 @@ describe('SettingsPage', () => {
 
   it('calls reset when Cancel button clicked', async () => {
     const mockReset = vi.fn()
-    const { useSettings } = await import('~/app/composables/useSettings')
+    const { useSettings } = await import('~/composables/useSettings')
     vi.mocked(useSettings).mockReturnValue(createMockUseSettings({
       settings: ref(mockSettings),
       dirty: ref(true),

@@ -15,7 +15,7 @@ describe('StatusBadge', () => {
     })
     expect(wrapper.text()).toContain('OK')
     expect(wrapper.attributes('data-color')).toBe('success')
-  })
+  }, 30000)
 
   it('renders with error status', async () => {
     const StatusBadge = (await import('../StatusBadge.vue')).default

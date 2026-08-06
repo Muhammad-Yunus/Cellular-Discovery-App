@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
+import { ref } from 'vue'
 
 vi.mock('#app/nuxt', () => ({
   useRuntimeConfig: vi.fn(() => ({
@@ -20,11 +21,24 @@ vi.mock('#app/nuxt', () => ({
   defineNuxtPlugin: vi.fn(),
   definePayloadPlugin: vi.fn(),
   defineAppConfig: vi.fn(),
-  tryUseNuxtApp: vi.fn()
+  tryUseNuxtApp: vi.fn(),
+  definePageMeta: vi.fn()
 }))
 
-vi.mock('~/app/composables/useScan', () => ({
-  useScan: vi.fn()
+vi.mock('#app/composables/router', () => ({
+  useRoute: vi.fn(() => ({ path: '/' })),
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
+  onBeforeRouteLeave: vi.fn(),
+  onBeforeRouteUpdate: vi.fn()
+}))
+
+vi.mock('~/composables/useCustomToast', () => ({
+  useCustomToast: vi.fn(() => ({
+    add: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+    clear: vi.fn()
+  }))
 }))
 
 const mockScans = [
@@ -32,11 +46,12 @@ const mockScans = [
   { id: '2', operator: 'Indosat', mcc: '510', mnc: '21', rat: 'NR', latitude: -6.16, longitude: 106.88, scan_time: '2024-01-02T00:00:00Z' }
 ]
 
-function createMockUseScan(overrides: Record<string, unknown> = {}) {
+function createMockScanStore() {
   return {
-    scans: [],
+    scans: [] as any[],
     loading: false,
-    error: null,
+    creating: false,
+    error: null as string | null,
     pagination: {
       currentPage: 1,
       limit: 20,
@@ -45,12 +60,56 @@ function createMockUseScan(overrides: Record<string, unknown> = {}) {
       totalPages: 0,
       searchTerm: ''
     },
+    ratFilter: 'ALL' as string,
+    sortColumn: '' as string,
+    sortDirection: 'asc' as 'asc' | 'desc',
+    selectedScanId: null as string | null,
+    selectedScan: null as any,
+    wsConnected: true as boolean,
+    sortParam: 'scan_time' as string,
     fetchScans: vi.fn(),
+    createScan: vi.fn(),
+    selectScan: vi.fn(),
+    deleteScan: vi.fn(),
     setPage: vi.fn(),
     setSearch: vi.fn(),
-    ...overrides
+    setDateRange: vi.fn(),
+    setRat: vi.fn(),
+    toggleSort: vi.fn(),
+    loadMoreScans: vi.fn(),
+    setWsConnected: vi.fn()
   }
 }
+
+let currentMockScanState = createMockScanStore()
+
+vi.mock('~/stores/scanStore', () => ({
+  useScanStore: vi.fn(() => currentMockScanState)
+}))
+
+vi.mock('~/composables/useScan', () => {
+  return {
+    useScan: vi.fn(() => ({
+      scans: ref(currentMockScanState.scans),
+      selectedScan: ref(currentMockScanState.selectedScan),
+      selectedScanId: ref(currentMockScanState.selectedScanId),
+      loading: ref(currentMockScanState.loading),
+      creating: ref(currentMockScanState.creating),
+      error: ref(currentMockScanState.error),
+      pagination: ref(currentMockScanState.pagination),
+      wsConnected: ref(currentMockScanState.wsConnected),
+      sortParam: ref(currentMockScanState.sortParam),
+      fetchScans: currentMockScanState.fetchScans,
+      startScan: vi.fn(),
+      selectScan: currentMockScanState.selectScan,
+      removeScan: currentMockScanState.deleteScan,
+      setPage: currentMockScanState.setPage,
+      setSearch: currentMockScanState.setSearch,
+      setDateRange: currentMockScanState.setDateRange,
+      toggleSort: currentMockScanState.toggleSort
+    }))
+  }
+})
 
 const UIStubs = {
   UInput: { template: '<div class="u-input" />' },
@@ -75,37 +134,58 @@ const UIStubs = {
     props: ['label'],
     template: '<span class="u-badge">{{ label }}</span>'
   },
-  NuxtLink: { template: '<a class="nuxt-link"><slot /></a>' }
+  UIcon: { template: '<i class="u-icon" />' },
+  FilterPanel: { template: '<div class="filter-panel" />' },
+  NuxtLink: { template: '<a class="nuxt-link"><slot /></a>' },
+  Toast: { template: '<div />' }
 }
 
 describe('HistoryPage', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    currentMockScanState = createMockScanStore()
+    // Re-create the useScan mock with fresh refs
+    vi.doMock('~/composables/useScan', () => {
+      return {
+        useScan: vi.fn(() => ({
+          scans: ref(currentMockScanState.scans),
+          selectedScan: ref(currentMockScanState.selectedScan),
+          selectedScanId: ref(currentMockScanState.selectedScanId),
+          loading: ref(currentMockScanState.loading),
+          creating: ref(currentMockScanState.creating),
+          error: ref(currentMockScanState.error),
+          pagination: ref(currentMockScanState.pagination),
+          wsConnected: ref(currentMockScanState.wsConnected),
+          sortParam: ref(currentMockScanState.sortParam),
+          fetchScans: currentMockScanState.fetchScans,
+          startScan: vi.fn(),
+          selectScan: currentMockScanState.selectScan,
+          removeScan: currentMockScanState.deleteScan,
+          setPage: currentMockScanState.setPage,
+          setSearch: currentMockScanState.setSearch,
+          setDateRange: currentMockScanState.setDateRange,
+          toggleSort: currentMockScanState.toggleSort
+        }))
+      }
+    })
   })
 
   it('renders page title', async () => {
-    const { useScan } = await import('~/app/composables/useScan')
-    vi.mocked(useScan).mockReturnValue(createMockUseScan() as any)
-
     const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Scan History')
-  }, 15000)
+  }, 30000)
 
   it('shows loading skeleton when loading', async () => {
-    const { useScan } = await import('~/app/composables/useScan')
-    vi.mocked(useScan).mockReturnValue(createMockUseScan({ loading: true }) as any)
-
+    currentMockScanState.loading = true
     const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.find('.u-skeleton').exists()).toBe(true)
   })
 
   it('shows error alert with retry button', async () => {
-    const { useScan } = await import('~/app/composables/useScan')
-    vi.mocked(useScan).mockReturnValue(createMockUseScan({ error: 'Network error' }) as any)
-
+    currentMockScanState.error = 'Network error'
     const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Failed to load scan history')
@@ -114,21 +194,21 @@ describe('HistoryPage', () => {
   })
 
   it('shows empty state when no scans', async () => {
-    const { useScan } = await import('~/app/composables/useScan')
-    vi.mocked(useScan).mockReturnValue(createMockUseScan() as any)
-
     const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('No Scan Results')
   })
 
   it('renders scan list', async () => {
-    const { useScan } = await import('~/app/composables/useScan')
-    vi.mocked(useScan).mockReturnValue(createMockUseScan({
-      scans: mockScans,
-      pagination: { currentPage: 1, limit: 20, totalItems: 2, offset: 0, totalPages: 1, searchTerm: '' }
-    }) as any)
-
+    currentMockScanState.scans = mockScans
+    currentMockScanState.pagination = {
+      currentPage: 1,
+      limit: 20,
+      totalItems: 2,
+      offset: 0,
+      totalPages: 1,
+      searchTerm: ''
+    }
     const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('Telkomsel')
@@ -136,12 +216,15 @@ describe('HistoryPage', () => {
   })
 
   it('shows pagination when multiple pages', async () => {
-    const { useScan } = await import('~/app/composables/useScan')
-    vi.mocked(useScan).mockReturnValue(createMockUseScan({
-      scans: mockScans,
-      pagination: { currentPage: 1, limit: 1, totalItems: 2, offset: 0, totalPages: 2, searchTerm: '' }
-    }) as any)
-
+    currentMockScanState.scans = mockScans
+    currentMockScanState.pagination = {
+      currentPage: 1,
+      limit: 1,
+      totalItems: 2,
+      offset: 0,
+      totalPages: 2,
+      searchTerm: ''
+    }
     const Page = (await import('../history.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.find('.u-pagination').exists()).toBe(true)

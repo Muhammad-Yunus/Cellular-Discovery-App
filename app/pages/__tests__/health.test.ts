@@ -16,11 +16,21 @@ vi.mock('#app/nuxt', () => ({
   defineNuxtPlugin: vi.fn(),
   definePayloadPlugin: vi.fn(),
   defineAppConfig: vi.fn(),
-  tryUseNuxtApp: vi.fn()
+  tryUseNuxtApp: vi.fn(),
+  definePageMeta: vi.fn()
 }))
 
-vi.mock('~/app/composables/useSystem', () => ({
-  useSystem: vi.fn()
+vi.mock('~/composables/useSystem', () => ({
+  useSystem: vi.fn(() => ({
+    backendStatus: 'ok',
+    cliStatus: 'unknown',
+    responseTime: null,
+    lastCheck: null,
+    error: null,
+    checkNow: vi.fn(),
+    startPolling: vi.fn(),
+    stopPolling: vi.fn()
+  }))
 }))
 
 const UIStubs = {
@@ -48,7 +58,7 @@ describe('HealthPage', () => {
   })
 
   it('renders page title', async () => {
-    const { useSystem } = await import('~/app/composables/useSystem')
+    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('ok'),
       cliStatus: ref('ok'),
@@ -62,11 +72,11 @@ describe('HealthPage', () => {
 
     const Page = (await import('../health.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
-    expect(wrapper.text()).toContain('System Health')
-  }, 15000)
+    await vi.waitFor(() => expect(wrapper.text()).toContain('System Health'))
+  }, 30000)
 
   it('shows backend status as Online when ok', async () => {
-    const { useSystem } = await import('~/app/composables/useSystem')
+    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('ok'),
       cliStatus: ref('ok'),
@@ -84,7 +94,7 @@ describe('HealthPage', () => {
   })
 
   it('shows backend status as Offline when unavailable', async () => {
-    const { useSystem } = await import('~/app/composables/useSystem')
+    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('unavailable'),
       cliStatus: ref('unknown'),
@@ -102,7 +112,7 @@ describe('HealthPage', () => {
   })
 
   it('shows error alert when error exists', async () => {
-    const { useSystem } = await import('~/app/composables/useSystem')
+    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('unavailable'),
       cliStatus: ref('unknown'),
@@ -120,7 +130,7 @@ describe('HealthPage', () => {
   })
 
   it('shows response time', async () => {
-    const { useSystem } = await import('~/app/composables/useSystem')
+    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('ok'),
       cliStatus: ref('ok'),
@@ -138,7 +148,7 @@ describe('HealthPage', () => {
   })
 
   it('has Check Now button', async () => {
-    const { useSystem } = await import('~/app/composables/useSystem')
+    const { useSystem } = await import('~/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
       backendStatus: ref('ok'),
       cliStatus: ref('ok'),

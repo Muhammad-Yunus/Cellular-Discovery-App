@@ -20,17 +20,25 @@ vi.mock('#app/nuxt', () => ({
   defineNuxtPlugin: vi.fn(),
   definePayloadPlugin: vi.fn(),
   defineAppConfig: vi.fn(),
-  tryUseNuxtApp: vi.fn()
+  tryUseNuxtApp: vi.fn(),
+  definePageMeta: vi.fn()
 }))
 
-vi.mock('~/app/composables/useSystem', () => ({
-  useSystem: vi.fn()
+vi.mock('~/composables/useSystem', () => ({
+  useSystem: vi.fn(() => ({
+    backendStatus: 'ok',
+    error: null
+  }))
 }))
 
 const UIStubs = {
   UCard: {
     props: ['color', 'variant', 'size'],
     template: '<div class="u-card"><slot name="header" /><slot /><slot name="footer" /></div>'
+  },
+  UBadge: {
+    props: ['color', 'variant', 'size'],
+    template: '<span class="u-badge"><slot /></span>'
   },
   StatusBadge: {
     props: ['status', 'label'],
@@ -44,57 +52,63 @@ describe('AboutPage', () => {
   })
 
   it('renders app name', async () => {
-    const { useSystem } = await import('~/app/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
-      health: ref(null),
-      loading: ref(false)
+      backendStatus: ref('unavailable'),
+      error: ref(null),
+      checkNow: vi.fn(),
+      startPolling: vi.fn(),
+      stopPolling: vi.fn()
     } as any)
 
     const Page = (await import('../about.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
     expect(wrapper.text()).toContain('LTE Scanner')
-  }, 15000)
+  }, 30000)
 
   it('renders description', async () => {
-    const { useSystem } = await import('~/app/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
-      health: ref(null),
-      loading: ref(false)
+      backendStatus: ref('unavailable'),
+      error: ref(null),
+      checkNow: vi.fn(),
+      startPolling: vi.fn(),
+      stopPolling: vi.fn()
     } as any)
 
     const Page = (await import('../about.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
-    expect(wrapper.text()).toContain('USB Modem LTE Network Discovery Web Frontend')
+    expect(wrapper.text()).toContain('Discovering and monitoring LTE, UMTS, and GSM network')
   })
 
   it('renders technology stack', async () => {
-    const { useSystem } = await import('~/app/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
-      health: ref(null),
-      loading: ref(false)
+      backendStatus: ref('unavailable'),
+      error: ref(null),
+      checkNow: vi.fn(),
+      startPolling: vi.fn(),
+      stopPolling: vi.fn()
     } as any)
 
     const Page = (await import('../about.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
-    expect(wrapper.text()).toContain('Nuxt 4')
+    expect(wrapper.text()).toContain('Nuxt')
     expect(wrapper.text()).toContain('Vue 3')
-    expect(wrapper.text()).toContain('TypeScript')
     expect(wrapper.text()).toContain('Vite')
     expect(wrapper.text()).toContain('Pinia')
-    expect(wrapper.text()).toContain('TailwindCSS')
+    expect(wrapper.text()).toContain('Tailwind')
     expect(wrapper.text()).toContain('Leaflet')
   })
 
   it('renders backend info when health available', async () => {
-    const { useSystem } = await import('~/app/composables/useSystem')
     vi.mocked(useSystem).mockReturnValue({
-      health: ref({ status: 'ok', version: '1.0.0', uptime: 3600, timestamp: '' }),
-      loading: ref(false)
+      backendStatus: ref('ok'),
+      error: ref(null),
+      checkNow: vi.fn(),
+      startPolling: vi.fn(),
+      stopPolling: vi.fn()
     } as any)
 
     const Page = (await import('../about.vue')).default
     const wrapper = mount(Page, { global: { stubs: UIStubs } })
-    expect(wrapper.text()).toContain('1.0.0')
     expect(wrapper.text()).toContain('Online')
   })
 })

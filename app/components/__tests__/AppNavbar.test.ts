@@ -12,7 +12,7 @@ vi.mock('#app/nuxt', () => ({
     }
   })),
   useNuxtApp: vi.fn(() => ({
-    vueApp: { use: vi.fn() },
+    vueApp: { use: vi.fn(), component: vi.fn() },
     $config: { public: {} },
     _route: { path: '/' }
   })),
@@ -39,7 +39,8 @@ describe('AppNavbar', () => {
     const wrapper = mount(AppNavbar.default, {
       global: {
         stubs: {
-          NuxtLink: { template: '<a><slot /></a>' }
+          NuxtLink: { template: '<a><slot /></a>' },
+          Icon: { props: ['name'], template: '<span class="icon" /><slot />' }
         }
       }
     })
@@ -52,7 +53,8 @@ describe('AppNavbar', () => {
     const wrapper = mount(AppNavbar.default, {
       global: {
         stubs: {
-          NuxtLink: { template: '<a><slot /></a>' }
+          NuxtLink: { template: '<a><slot /></a>' },
+          Icon: { props: ['name'], template: '<span class="icon" /><slot />' }
         }
       }
     })

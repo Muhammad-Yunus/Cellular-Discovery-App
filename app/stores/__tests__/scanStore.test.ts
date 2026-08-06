@@ -35,7 +35,7 @@ describe('scanStore', () => {
     expect(store.creating).toBe(false)
     expect(store.error).toBeNull()
     expect(store.pagination.currentPage).toBe(1)
-    expect(store.pagination.limit).toBe(20)
+    expect(store.pagination.limit).toBe(10)
   })
 
   it('selectScan sets selected id', () => {
@@ -71,8 +71,8 @@ describe('scanStore', () => {
     store.setPage(2)
 
     expect(store.pagination.currentPage).toBe(2)
-    expect(store.pagination.offset).toBe(20)
-    expect(getScans).toHaveBeenCalledWith({ pageSize: 20, page: 2, search: undefined })
+    expect(store.pagination.offset).toBe(10)
+    expect(getScans).toHaveBeenCalledWith(expect.objectContaining({ pageSize: 10, page: 2, search: undefined }))
   })
 
   it('setSearch resets page and fetches', async () => {
