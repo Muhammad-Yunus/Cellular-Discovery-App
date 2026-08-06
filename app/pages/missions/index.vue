@@ -10,14 +10,7 @@ const missionStore = useCollectorMissionStore()
 const router = useRouter()
 const route = useRoute()
 
-const statusOptions: { label: string; value: MissionStatus5 | 'all' }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Draft', value: 'draft' },
-  { label: 'Active', value: 'active' },
-  { label: 'Paused', value: 'paused' },
-  { label: 'Completed', value: 'completed' },
-  { label: 'Cancelled', value: 'cancelled' }
-]
+const statusOptions = ['all', 'draft', 'active', 'paused', 'completed', 'cancelled']
 
 // Derived state
 const currentPage = computed(() => missionStore.pagination.currentPage)
@@ -47,16 +40,29 @@ onMounted(async () => {
   await missionStore.fetchMissions()
 })
 
-watch(() => route.query.search, (val) => {
+        watch(() => route.query.search, (val) => {
   localSearch.value = val as string
 })
 
-// Status filter sync
+// Status filter sync - only update URL when leaving the component
+const isUpdatingFromUrl = ref(false)
+watch(() => route.query.status, (val) => {
+  if (val && !isUpdatingFromUrl.value) {
+    isUpdatingFromUrl.value = true
+    missionStore.setStatusFilter(val as MissionStatus5 | 'all')
+    setTimeout(() => { isUpdatingFromUrl.value = false }, 100)
+  }
+}, { immediate: true })
+
 watch(() => missionStore.statusFilter, (val) => {
-  if (val === 'all') {
-    router.replace({ query: { ...route.query, status: undefined } })
-  } else {
-    router.replace({ query: { ...route.query, status: val } })
+  if (!isUpdatingFromUrl.value) {
+    isUpdatingFromUrl.value = true
+    if (val === 'all') {
+      router.replace({ query: { ...route.query, status: undefined } })
+    } else {
+      router.replace({ query: { ...route.query, status: val } })
+    }
+    setTimeout(() => { isUpdatingFromUrl.value = false }, 100)
   }
 })
 
@@ -165,10 +171,7 @@ function getStatusBadgeProps(status: MissionStatus5) {
         <label class="block text-sm font-medium text-muted mb-1">Status</label>
         <USelect
           :options="statusOptions"
-          option-attribute="label"
-          value-attribute="value"
-          :value="missionStore.statusFilter"
-          @update:model-value="(val) => missionStore.setStatusFilter(val as MissionStatus5 | 'all')"
+          v-model="missionStore.statusFilter"
           class="w-full"
         />
       </div>
