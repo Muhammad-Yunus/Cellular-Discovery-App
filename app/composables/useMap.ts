@@ -1,4 +1,4 @@
-import type { Map as LeafletMap, Marker } from 'leaflet'
+import type { Map as LeafletMap, Marker, Polyline, TileLayer as LeafletTileLayer } from 'leaflet'
 import type { InjectionKey } from 'vue'
 import type { ScanSummary } from '~/types'
 import { formatDateTime, formatRelativeTime } from '~/utils/dateFormat'
@@ -69,6 +69,10 @@ export interface MapActions {
   getMap: () => LeafletMap | null
   // Highlight an existing marker with a pulsing animation when active
   setMarkerActive(id: string, active: boolean): void
+  // Draw a polyline through the supplied lat/lng pairs.
+  addPolyline: (latlngs: [number, number][], options?: { color?: string, weight?: number }) => Polyline | null
+  // Remove a polyline by its id. Removes all if no id supplied.
+  clearPolylines: () => void
 }
 
 // Tile themes. Dark uses CartoDB base + label overlay so street names, roads,
@@ -96,10 +100,11 @@ export const MapKey: InjectionKey<MapActions> = Symbol('map-actions')
 export function useMap(): MapActions {
   let map: LeafletMap | null = null
   // Up to two stacked tile layers at once (dark base + dark labels)
-  let baseTileLayer: ReturnType<typeof useLeaflet>['tileLayer'] | null = null
-  let labelTileLayer: ReturnType<typeof useLeaflet>['tileLayer'] | null = null
+  let baseTileLayer: LeafletTileLayer | null = null
+  let labelTileLayer: LeafletTileLayer | null = null
   let darkMode = true
   const markers: Map<string, Marker> = new Map()
+  const polylines: Map<string, Polyline> = new Map()
 
   function addBaseTile(url: string, subdomains: string, attribution: string) {
     const L = useLeaflet()
@@ -322,6 +327,7 @@ function addMarker(
 
   function destroy() {
     clearMarkers()
+    clearPolylines()
     map?.remove()
     map = null
   }
@@ -344,6 +350,33 @@ function addMarker(
     }
   }
 
+  /**
+   * Add a polyline through the supplied lat/lng pairs. The polyline is
+   * drawn on top of any existing polylines (Layer ordering matches Leaflet
+   * default behaviour: later additions render above earlier ones).
+   */
+  function addPolyline(
+    latlngs: [number, number][],
+    options: { color?: string, weight?: number } = {}
+  ): Polyline | null {
+    if (!map) return null
+    const L = useLeaflet()
+    const line = L.polyline(latlngs, {
+      color: options.color ?? '#16a34a',
+      weight: options.weight ?? 4,
+      opacity: 0.85
+    }).addTo(map)
+    const id = `polyline-${polylines.size + 1}`
+    polylines.set(id, line)
+    return line
+  }
+
+  /** Remove all polylines from the map and clear the registry. */
+  function clearPolylines() {
+    polylines.forEach(p => p.remove())
+    polylines.clear()
+  }
+
   return {
     initMap,
     addMarker,
@@ -357,7 +390,9 @@ function addMarker(
     closeAllPopups,
     destroy,
     getMap: () => map,
-    setMarkerActive
+    setMarkerActive,
+    addPolyline,
+    clearPolylines
   }
 }
 

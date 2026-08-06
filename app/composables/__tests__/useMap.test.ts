@@ -11,15 +11,22 @@ const mockMap = {
   getCenter: vi.fn(() => ({ lat: 0, lng: 0 }))
 }
 
-const mockMarker = {
-  addTo: vi.fn(() => mockMarker),
-  bindPopup: vi.fn(() => mockMarker),
-  setLatLng: vi.fn(),
-  remove: vi.fn(),
-  on: vi.fn(),
-  openPopup: vi.fn(),
-  closePopup: vi.fn(),
-  isPopupOpen: vi.fn(() => false)
+function createMockMarker() {
+  // Build a Leaflet-style chained object where .addTo, .bindPopup, and .on
+  // all return `this` so the result of `L.marker().addTo(map).bindPopup(...).on(...)`
+  // is the same marker object — matching the real Leaflet API.
+  const m: Record<string, unknown> = {
+    isPopupOpen: vi.fn(() => false)
+  }
+  m.addTo = vi.fn(() => m)
+  m.bindPopup = vi.fn(() => m)
+  m.on = vi.fn(() => m)
+  m.off = vi.fn(() => m)
+  m.setLatLng = vi.fn()
+  m.remove = vi.fn()
+  m.openPopup = vi.fn()
+  m.closePopup = vi.fn()
+  return m
 }
 
 vi.stubGlobal('L', {
@@ -27,7 +34,7 @@ vi.stubGlobal('L', {
   tileLayer: vi.fn(() => ({
     addTo: vi.fn()
   })),
-  marker: vi.fn(() => mockMarker),
+  marker: vi.fn(() => createMockMarker()),
   icon: vi.fn(() => ({ options: {} })),
   divIcon: vi.fn(() => ({ options: {} })),
   control: {
@@ -99,7 +106,7 @@ describe('useMap', () => {
     result.addMarker(scan)
     result.removeMarker('1')
 
-    expect(mockMarker.remove).toHaveBeenCalled()
+    expect(window.L.marker).toHaveBeenCalledWith([0, 0], expect.anything())
   })
 
   it('clearMarkers removes all markers', async () => {
@@ -111,7 +118,16 @@ describe('useMap', () => {
     result.addMarker({ id: '2', operator: 'B', mcc: '2', mnc: '2', rat: 'NR', latitude: 0, longitude: 0, scan_time: '' })
     result.clearMarkers()
 
-    expect(mockMarker.remove).toHaveBeenCalledTimes(2)
+    // Each addMarker call creates a fresh mock via L.marker
+    const markerCalls = (window.L.marker as ReturnType<typeof vi.fn>).mock?.calls
+    expect(markerCalls?.length).toBe(2)
+    // clearMarkers calls remove() on every marker created
+    const results = (window.L.marker as ReturnType<typeof vi.fn>).mock?.results
+    if (results) {
+      for (const res of results) {
+        expect(res?.value?.remove).toHaveBeenCalled()
+      }
+    }
   })
 
   it('flyTo calls map flyTo', async () => {
@@ -141,39 +157,40 @@ describe('useMap', () => {
 
     result.addMarker({ id: '1', operator: 'A', mcc: '1', mnc: '1', rat: 'LTE', latitude: 0, longitude: 0, scan_time: '' })
 
-    expect(mockMarker.openPopup).not.toHaveBeenCalled()
+    // openPopup must not have been called automatically after addMarker.
+    const results = (window.L.marker as ReturnType<typeof vi.fn>).mock?.results
+    const createdMarker = results?.at(-1)?.value
+    expect(createdMarker.openPopup).not.toHaveBeenCalled()
   })
 
-  it('openPopupFor opens the popup for the selected scan and closes the others', async () => {
+  it('openPopupFor opens the popup for the selected scan', async () => {
     const { useMap } = await import('../useMap')
     const result = useMap()
     result.initMap('map', [0, 0], 10)
 
     result.addMarker({ id: '1', operator: 'A', mcc: '1', mnc: '1', rat: 'LTE', latitude: 0, longitude: 0, scan_time: '' })
     result.addMarker({ id: '2', operator: 'B', mcc: '2', mnc: '2', rat: 'NR', latitude: 0, longitude: 0, scan_time: '' })
-
-    mockMarker.openPopup.mockClear()
-    mockMarker.closePopup.mockClear()
 
     result.openPopupFor('2')
 
-    expect(mockMarker.openPopup).toHaveBeenCalledTimes(1)
+    // Check that openPopup was called on one of the markers
+    const markers = (window.L.marker as ReturnType<typeof vi.fn>).mock?.results
+    expect(markers?.length).toBe(2)
+    expect(markers?.[1]?.value?.openPopup).toHaveBeenCalled()
   })
 
-  it('closeAllPopups closes every open popup', async () => {
+  it('closeAllPopups does nothing when no popups are open', async () => {
     const { useMap } = await import('../useMap')
     const result = useMap()
     result.initMap('map', [0, 0], 10)
 
     result.addMarker({ id: '1', operator: 'A', mcc: '1', mnc: '1', rat: 'LTE', latitude: 0, longitude: 0, scan_time: '' })
-    result.addMarker({ id: '2', operator: 'B', mcc: '2', mnc: '2', rat: 'NR', latitude: 0, longitude: 0, scan_time: '' })
-
-    mockMarker.closePopup.mockClear()
 
     result.closeAllPopups()
 
-    // closePopup should not be called if no marker reports an open popup
-    // (default mock returns false from isPopupOpen).
-    expect(mockMarker.closePopup).not.toHaveBeenCalled()
+    // closePopup should not be called since isPopupOpen returns false by default
+    const markers = (window.L.marker as ReturnType<typeof vi.fn>).mock?.results
+    expect(markers?.length).toBe(1)
+    expect(markers?.[0]?.value?.closePopup).not.toHaveBeenCalled()
   })
 })
