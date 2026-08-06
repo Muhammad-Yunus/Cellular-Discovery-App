@@ -120,6 +120,10 @@ export interface MissionRecord {
   location_count?: number
   /** Number of scans collected */
   scan_count?: number
+  /** Search radius in meters (whole number). */
+  radius_meters: number
+  /** TTY serial port identifier (e.g. "/dev/ttyUSB0"). */
+  tty_port: string
   /** Bounding box / center hint (nullable — derived from locations) */
   center_lat?: number | null
   center_lon?: number | null
@@ -129,6 +133,10 @@ export interface MissionRecord {
 export interface MissionRecordCreate {
   name: string
   description?: string | null
+  /** Search radius in meters (whole number). */
+  radius_meters: number
+  /** TTY serial port identifier (e.g. "/dev/ttyUSB0"). */
+  tty_port: string
   /** Start at known lat/lon — optional; if omitted mission is draft */
   center_lat?: number | null
   center_lon?: number | null
@@ -163,6 +171,10 @@ export interface LocationPaginated {
 // Query params (collector backend)
 // ---------------------------------------------------------------------------
 
+/** Valid sort fields for `/missions` endpoint. `created_at` is the implicit default (sent as `-created_at`). */
+export const MISSION_SORT_FIELDS = ['created_at', 'name', 'description'] as const
+export type MissionSortField = typeof MISSION_SORT_FIELDS[number]
+
 export interface ListMissionsParams {
   page?: number
   page_size?: number
@@ -170,6 +182,10 @@ export interface ListMissionsParams {
   status?: MissionStatus5 | 'all'
   /** e.g. 'created_at' or '-created_at' */
   sort?: string
+  /** ISO-8601 datetime filter — created_at >= this value */
+  start_time?: string
+  /** ISO-8601 datetime filter — created_at <= this value */
+  end_time?: string
 }
 
 export interface ListLocationsParams {

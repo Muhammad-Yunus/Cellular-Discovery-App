@@ -2,6 +2,7 @@
 import type { MissionStatus5 } from '~/types/mission'
 import { useCollectorMissionStore } from '~/stores/mission'
 import { useCustomToast } from '~/composables/useCustomToast'
+import { nextTick, watch } from 'vue'
 
 definePageMeta({ title: 'Mission Planner' })
 
@@ -12,6 +13,17 @@ const route = useRoute()
 const deleteTargetId = ref<string | null>(null)
 const deleteTargetName = ref<string>('')
 const showDeleteConfirm = ref(false)
+
+// Time range refs
+const startDateTime = ref<string | null>(null)
+const endDateTime = ref<string | null>(null)
+
+// Sort options — exposed for the template
+const MISSION_SORT_FIELDS = [
+  { value: 'created_at', label: 'Created At' },
+  { value: 'name', label: 'Name' },
+  { value: 'description', label: 'Description' }
+] as const
 
 type StatusChipColor = 'default' | 'success' | 'warning' | 'info' | 'error' | 'neutral'
 
@@ -44,8 +56,92 @@ watch(localSearch, (val) => {
   }, 300)
 })
 
+// Show toast whenever an error occurs
+watch(() => missionStore.error, (newErr) => {
+  if (newErr) {
+    toast.add({ title: 'Error', description: newErr, color: 'error', icon: 'i-lucide-alert-circle' })
+  }
+})
+
+// Helper to produce default time range: 1 month ago at 00:00 → today at 23:59 (local time)
+function getDefaultDateRange() {
+  const now = new Date()
+  const start = new Date(now)
+  start.setMonth(now.getMonth() - 1)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(now)
+  end.setHours(23, 59, 0, 0)
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  return { start: fmt(start), end: fmt(end) }
+}
+
+// Helper to produce default sort from sortColumn/sortDirection refs
+function getDefaultSort() {
+  const col = missionStore.sortColumn ?? 'created_at'
+  const dir = missionStore.sortDirection ?? 'desc'
+  return dir === 'asc' ? col : `-${col}`
+}
+
+// Format local datetime-local string to ISO-8601 with timezone offset
+function formatLocalIsoOffset(val: string): string | null {
+  const d = new Date(val)
+  if (isNaN(d.getTime())) return null
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const y = d.getFullYear()
+  const m = pad(d.getMonth() + 1)
+  const day = pad(d.getDate())
+  const hh = pad(d.getHours())
+  const mm = pad(d.getMinutes())
+  const ss = pad(d.getSeconds())
+  const offsetMinutes = -d.getTimezoneOffset()
+  const offsetSign = offsetMinutes >= 0 ? '+' : '-'
+  const absOffset = Math.abs(offsetMinutes)
+  const offsetH = pad(Math.floor(absOffset / 60))
+  const offsetM = pad(absOffset % 60)
+  return `${y}-${m}-${day}T${hh}:${mm}:${ss}${offsetSign}${offsetH}:${offsetM}`
+}
+
+// Validate and apply time range to store
+async function updateTimeRange() {
+  await nextTick()
+  const start = startDateTime.value ? formatLocalIsoOffset(startDateTime.value) : null
+  const end = endDateTime.value ? formatLocalIsoOffset(endDateTime.value) : null
+  console.log('[Missions] updateTimeRange called:', { start, end })
+
+  if (start && end) {
+    const dStart = new Date(start)
+    const dEnd = new Date(end)
+    if (!isNaN(dStart.getTime()) && !isNaN(dEnd.getTime())) {
+      if (dStart > dEnd) {
+        console.error('Invalid time range: Start time is after end time')
+        missionStore.missions = []
+        missionStore.pagination.totalItems = 0
+        missionStore.pagination.totalPages = 0
+        missionStore.error = 'Start time cannot be after end time.'
+        return
+      }
+    }
+  }
+  missionStore.setTimeRange(start, end)
+}
+
 // Sync with URL query
 onMounted(async () => {
+  // Set default time range (1 month ago to today) on first load
+  const defaults = getDefaultDateRange()
+  startDateTime.value = defaults.start
+  endDateTime.value = defaults.end
+  missionStore.setTimeRange(
+    formatLocalIsoOffset(defaults.start),
+    formatLocalIsoOffset(defaults.end)
+  )
+
+  // Set default sort (created_at desc)
+  const defaultSort = getDefaultSort()
+  missionStore.sortColumn = defaultSort.startsWith('-') ? defaultSort.slice(1) : defaultSort
+  missionStore.sortDirection = defaultSort.startsWith('-') ? 'desc' : 'asc'
+
   if (route.query.search) {
     localSearch.value = route.query.search as string
     missionStore.setSearch(route.query.search as string)
@@ -70,21 +166,25 @@ watch(() => missionStore.statusFilter, (val) => {
   missionStore.fetchMissions()
 })
 
-// Error toast
-watch(() => missionStore.error, (err) => {
-  if (err) {
-    toast.add({
-      title: 'Error',
-      description: err,
-      color: 'error',
-      icon: 'i-lucide-alert-circle'
-    })
-  }
-})
-
 // Actions
 function onCreateNew() {
   router.push('/missions/new')
+}
+
+function onSortFieldChange(field: string) {
+  if (missionStore.sortColumn === field) {
+    // Same field clicked — flip direction
+    missionStore.toggleSort(field)
+  } else {
+    missionStore.sortColumn = field
+    missionStore.sortDirection = 'desc'
+    missionStore.fetchMissions()
+  }
+}
+
+function onSortDirectionToggle() {
+  if (!missionStore.sortColumn) return
+  missionStore.toggleSort(missionStore.sortColumn)
 }
 
 function onViewMission(id: string) {
@@ -140,7 +240,7 @@ function disabledBtnClass(_disabled?: boolean) {
 // stop    : allowed from STARTING, RUNNING, PAUSED
 // terminal: COMPLETED, STOPPED, FAILED — no actions (except STOPPED/FAILED can restart)
 function canStart(status: MissionStatus5): boolean {
-  return status === 'IDLE' || status === 'READY' || status === 'STOPPED' || status === 'FAILED'
+  return status === 'READY'
 }
 function canPause(status: MissionStatus5): boolean {
   return status === 'RUNNING'
@@ -153,6 +253,10 @@ function canStop(status: MissionStatus5): boolean {
 }
 function isTerminal(status: MissionStatus5): boolean {
   return status === 'COMPLETED'
+}
+// delete: only allowed when mission is not actively running/planning/starting/paused/completed
+function canDelete(status: MissionStatus5): boolean {
+  return status === 'IDLE' || status === 'STOPPED' || status === 'FAILED'
 }
 
 // Track which (mission, action) is currently in flight so per-card buttons
@@ -214,9 +318,22 @@ function formatDate(isoStr: string): string {
     minute: '2-digit'
   })
 }
+function formatDateTimeInput(val: string | null): string {
+  if (!val) return '—'
+  return new Date(val).toLocaleString('en-GB', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })
+}
+// True when a time range has been explicitly set by the user
+const isTimeRangeActive = computed(() => Boolean(startDateTime.value && endDateTime.value))
 
 function getStatusBadgeProps(status: MissionStatus5) {
-  const map: Record<MissionStatus5, { color: 'success' | 'warning' | 'error' | 'info' | 'primary' | 'neutral' | 'default'; label: string }> = {
+  const map: Record<MissionStatus5, { color: 'success' | 'warning' | 'error' | 'info' | 'primary' | 'neutral'; label: string }> = {
     IDLE: { color: 'neutral', label: 'IDLE' },
     PLANNING: { color: 'info', label: 'PLANNING' },
     READY: { color: 'info', label: 'READY' },
@@ -234,7 +351,7 @@ function getStatusBadgeProps(status: MissionStatus5) {
 <template>
   <div class="p-4 md:p-6 max-w-5xl mx-auto min-h-screen">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
       <div>
         <h1 class="text-xl font-semibold text-highlighted">Mission Planner</h1>
         <p class="text-sm text-muted mt-1">
@@ -313,20 +430,91 @@ function getStatusBadgeProps(status: MissionStatus5) {
         </USelect>
       </div>
 
-      <!-- New Mission button (aligned right in a new row) -->
-      <div class="ml-auto w-full flex justify-end mt-3">
-        <UButton
-          icon="i-lucide-plus"
-          label="New Mission"
-          @click="onCreateNew"
+      <!-- Time range -->
+      <div class="min-w-[180px]">
+        <label class="block text-sm font-medium text-muted mb-1">Start Time</label>
+        <UInput
+          :model-value="startDateTime ?? ''"
+          type="datetime-local"
+          class="w-full"
+          @update:model-value="(v: string) => { startDateTime = v || null; updateTimeRange() }"
+        />
+      </div>
+      <div class="min-w-[180px]">
+        <label class="block text-sm font-medium text-muted mb-1">End Time</label>
+        <UInput
+          :model-value="endDateTime ?? ''"
+          type="datetime-local"
+          class="w-full"
+          @update:model-value="(v: string) => { endDateTime = v || null; updateTimeRange() }"
         />
       </div>
     </div>
 
+    <!-- Sort + Action row -->
+    <div class="flex items-center justify-between mb-4">
+      <!-- Sort group (left-aligned) -->
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-medium text-muted">Sort</span>
+        <UButtonGroup size="sm" color="neutral" variant="outline">
+          <UButton
+            v-for="field in MISSION_SORT_FIELDS"
+            :key="field.value"
+            :color="missionStore.sortColumn === field.value ? 'primary' : 'neutral'"
+            :variant="missionStore.sortColumn === field.value ? 'solid' : 'ghost'"
+            :title="`Sort by ${field.label}`"
+            @click="onSortFieldChange(field.value)"
+          >
+            <span class="text-xs font-semibold uppercase">{{ field.label }}</span>
+          </UButton>
+        </UButtonGroup>
+        <UButton
+          :icon="missionStore.sortDirection === 'asc' ? 'i-lucide-arrow-down-wide-narrow' : 'i-lucide-arrow-up-narrow-wide'"
+          size="sm"
+          color="neutral"
+          variant="outline"
+          :title="missionStore.sortDirection === 'asc' ? 'Ascending — click for newest first' : 'Descending — click for oldest first'"
+          @click="onSortDirectionToggle"
+        >
+          <span class="ml-1 text-xs font-semibold uppercase">{{ missionStore.sortDirection }}</span>
+        </UButton>
+      </div>
+      <!-- New Mission button (right-aligned) -->
+      <UButton
+        icon="i-lucide-plus"
+        label="New Mission"
+        @click="onCreateNew"
+      />
+    </div>
+
     <!-- Content -->
     <template v-if="missionStore.loading">
-      <div class="space-y-3">
-        <USkeleton v-for="i in 5" :key="i" class="h-20 w-full" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div
+          v-for="i in 6"
+          :key="i"
+          class="bg-elevated border border-muted rounded-lg p-4"
+        >
+          <!-- Header row: title + status badge -->
+          <div class="flex items-start justify-between mb-3 gap-2">
+            <USkeleton class="h-5 w-2/3" />
+            <USkeleton class="h-5 w-16 rounded-md" />
+          </div>
+          <!-- Description -->
+          <USkeleton class="h-4 w-full mb-1" />
+          <USkeleton class="h-4 w-5/6 mb-3" />
+          <!-- Timestamps + locations count -->
+          <div class="flex items-center gap-4 mb-3">
+            <USkeleton class="h-3 w-32" />
+            <USkeleton class="h-3 w-20 ml-auto" />
+          </div>
+          <!-- Actions row -->
+          <div class="flex items-center gap-2 pt-3 border-t border-muted">
+            <USkeleton class="h-6 w-14 rounded" />
+            <USkeleton class="h-6 w-14 rounded" />
+            <USkeleton class="h-6 w-14 rounded ml-auto" />
+          </div>
+        </div>
       </div>
     </template>
 
@@ -353,7 +541,31 @@ function getStatusBadgeProps(status: MissionStatus5) {
       class="flex flex-col items-center justify-center py-16 text-muted"
     >
       <span class="i-lucide-plane text-4xl mb-3" />
-      <template v-if="missionStore.statusFilter === 'all' && !localSearch">
+      <template v-if="isTimeRangeActive && !localSearch && missionStore.statusFilter === 'all'">
+        <p class="text-lg font-medium text-highlighted">
+          No missions found for time range {{ formatDateTimeInput(startDateTime) }} to {{ formatDateTimeInput(endDateTime) }}
+        </p>
+        <p class="text-sm mt-1">Try adjusting your time range filter</p>
+      </template>
+      <template v-else-if="isTimeRangeActive && localSearch && missionStore.statusFilter === 'all'">
+        <p class="text-lg font-medium text-highlighted">
+          No missions found for time range {{ formatDateTimeInput(startDateTime) }} to {{ formatDateTimeInput(endDateTime) }} and search keyword "{{ localSearch }}"
+        </p>
+        <p class="text-sm mt-1">Try adjusting your time range or search keywords</p>
+      </template>
+      <template v-else-if="isTimeRangeActive && !localSearch && missionStore.statusFilter !== 'all'">
+        <p class="text-lg font-medium text-highlighted">
+          No missions found for time range {{ formatDateTimeInput(startDateTime) }} to {{ formatDateTimeInput(endDateTime) }} and status {{ missionStore.statusFilter }}
+        </p>
+        <p class="text-sm mt-1">Try adjusting your time range or status filter</p>
+      </template>
+      <template v-else-if="isTimeRangeActive && localSearch && missionStore.statusFilter !== 'all'">
+        <p class="text-lg font-medium text-highlighted">
+          No missions found for time range {{ formatDateTimeInput(startDateTime) }} to {{ formatDateTimeInput(endDateTime) }} and status {{ missionStore.statusFilter }} and search keyword "{{ localSearch }}"
+        </p>
+        <p class="text-sm mt-1">Try adjusting your time range, status filter, or search keywords</p>
+      </template>
+      <template v-else-if="missionStore.statusFilter === 'all' && !localSearch">
         <p class="text-lg font-medium text-highlighted">No missions yet</p>
         <p class="text-sm mt-1">Create your first mission to get started</p>
         <UButton
@@ -498,8 +710,10 @@ function getStatusBadgeProps(status: MissionStatus5) {
             <UButton
               size="xs"
               variant="ghost"
-              color="error"
+              :color="canDelete(mission.status) ? 'error' : 'neutral'"
               icon="i-lucide-trash-2"
+              title="Delete mission (only available when IDLE, STOPPED or FAILED)"
+              :disabled="!canDelete(mission.status)"
               @click="onDeleteMission(mission.id)"
             />
           </div>

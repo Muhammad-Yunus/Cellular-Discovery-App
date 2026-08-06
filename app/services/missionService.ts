@@ -260,7 +260,7 @@ export async function runMissionCommand(
 
 /**
  * List missions (`/missions`) with optional pagination, search, status
- * filter, and sort.
+ * filter, sort, and time range.
  */
 export async function listCollectorMissions(
   params: ListMissionsParams = {}
@@ -271,7 +271,9 @@ export async function listCollectorMissions(
       page_size: params.page_size ?? 10,
       ...(params.search ? { search: params.search } : {}),
       ...(params.status && params.status !== 'all' ? { status: params.status } : {}),
-      ...(params.sort ? { sort: params.sort } : {})
+      ...(params.sort ? { sort: params.sort } : {}),
+      ...(params.start_time ? { start_time: params.start_time } : {}),
+      ...(params.end_time ? { end_time: params.end_time } : {})
     }
   })
 }

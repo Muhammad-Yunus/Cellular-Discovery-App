@@ -39,6 +39,8 @@ interface MissionState {
   sortColumn: string | null
   sortDirection: 'asc' | 'desc' | null
   pagination: PaginationMeta
+  startTime: string | null
+  endTime: string | null
   // Locations state
   locations: MissionLocation[]
   locationsLoading: boolean
@@ -70,6 +72,8 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
       totalPages: 0,
       searchTerm: ''
     },
+    startTime: null,
+    endTime: null,
     locations: [],
     locationsLoading: false,
     locationsError: null,
@@ -108,7 +112,9 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
           search: this.search || undefined,
           sort: this.sortColumn
             ? `${this.sortDirection === 'asc' ? '' : '-'}${this.sortColumn}`
-            : undefined
+            : undefined,
+          start_time: this.startTime || undefined,
+          end_time: this.endTime || undefined
         })
         this.missions = result.items
         this.pagination.totalItems = result.total
@@ -125,6 +131,40 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
         this.missions = []
         this.pagination.totalItems = 0
         this.pagination.totalPages = 0
+      } finally {
+        this.loading = false
+      }
+    },
+
+    /**
+     * Fetch a single mission from the collector backend by id
+     * (GET /missions/{mission_id}). Used by the detail page so that it
+     * always loads the mission matching the URL path rather than the
+     * last-inserted mission in the cached list.
+     *
+     * The result is written to state and `selectedMissionId` is set so the
+     * existing `selectedMission` getter returns it. Any stale entry with
+     * the same id in the list is replaced.
+     */
+    async fetchMissionById(id: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const record = await missionService.getCollectorMission(id)
+        // Upsert into local list so the grid view stays in sync.
+        const idx = this.missions.findIndex(m => m.id === record.id)
+        if (idx >= 0) {
+          this.missions[idx] = record
+        } else {
+          this.missions.unshift(record)
+        }
+        this.selectedMissionId = record.id
+        return record
+      } catch (e) {
+        const { parseApiError } = await import('~/types/api')
+        const appError = parseApiError(e)
+        this.error = appError.message
+        throw appError
       } finally {
         this.loading = false
       }
@@ -356,6 +396,14 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
 
     setStatusFilter(status: MissionStatus5 | 'all') {
       this.statusFilter = status
+      this.pagination.currentPage = 1
+      this.pagination.offset = 0
+      this.fetchMissions()
+    },
+
+    setTimeRange(startTime: string | null, endTime: string | null) {
+      this.startTime = startTime
+      this.endTime = endTime
       this.pagination.currentPage = 1
       this.pagination.offset = 0
       this.fetchMissions()

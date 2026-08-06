@@ -104,7 +104,7 @@ function exportCSV() {
             <td class="px-4 py-3 font-mono">{{ loc.latitude }}</td>
             <td class="px-4 py-3 font-mono">{{ loc.longitude }}</td>
             <td class="px-4 py-3 font-mono">{{ loc.altitude ?? '—' }}</td>
-            <td class="px-4 py-3 text-muted">{{ loc.created_at ? new Date(loc.created_at).toLocaleString() : '—' }}</td>
+            <td class="px-4 py-3 text-muted">{{ loc.created_at ? new Date(loc.created_at).toLocaleString('en-GB', { hour12: false }) : '—' }}</td>
             <td class="px-4 py-3 text-right">
               <UButton
                 icon="i-lucide-trash-2"
