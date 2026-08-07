@@ -18,6 +18,9 @@ function getEventTypeColor(eventType: string): string {
   if (lower === 'failed' || lower === 'error' || lower === 'failure') return 'error'
   if (lower === 'paused' || lower === 'pause') return 'warning'
   if (lower === 'resumed' || lower === 'resume') return 'primary'
+  if (lower === 'info' || lower === 'information') return 'info'
+  if (lower === 'warn' || lower === 'warning') return 'warning'
+  if (lower === 'debug') return 'neutral'
   return 'neutral'
 }
 
@@ -28,6 +31,9 @@ function getEventTypeIcon(eventType: string): string {
   if (lower === 'failed' || lower === 'error' || lower === 'failure') return 'lucide:x-circle'
   if (lower === 'paused' || lower === 'pause') return 'lucide:pause'
   if (lower === 'resumed' || lower === 'resume') return 'lucide:resume'
+  if (lower === 'info' || lower === 'information') return 'lucide:info'
+  if (lower === 'warn' || lower === 'warning') return 'lucide:alert-triangle'
+  if (lower === 'debug') return 'lucide:bug'
   return 'lucide:file-text'
 }
 
