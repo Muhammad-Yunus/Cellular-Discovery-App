@@ -16,6 +16,32 @@ const missionStore = useCollectorMissionStore()
 const toast = useCustomToast()
 
 const uploadRef = ref<InstanceType<typeof LocationUpload> | null>(null)
+const downloadingTemplate = ref(false)
+
+async function downloadTemplate() {
+  downloadingTemplate.value = true
+  try {
+    const { downloadLocationTemplate } = await import('~/services/missionService')
+    const { blob, filename } = await downloadLocationTemplate(missionId)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  } catch (e: any) {
+    toast.add({
+      title: 'Failed to download template',
+      description: e?.message ?? 'Unknown error',
+      color: 'error',
+      icon: 'i-lucide-alert-circle'
+    })
+  } finally {
+    downloadingTemplate.value = false
+  }
+}
 
 onMounted(async () => {
   try {
@@ -37,7 +63,7 @@ function onUploaded(count: number) {
     color: 'success',
     icon: 'i-lucide-check-circle'
   })
-  setTimeout(() => router.push(`/missions/${missionId}/locations`), 1000)
+  setTimeout(() => router.push(`/missions/${missionId}`), 1000)
 }
 
 function onError(msg: string) {
@@ -65,8 +91,20 @@ function onError(msg: string) {
     </div>
 
     <!-- Header -->
-    <h1 class="text-xl font-semibold text-highlighted">Upload locations</h1>
-    <p class="text-sm text-muted">Add GPS waypoints to this mission via CSV.</p>
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-xl font-semibold text-highlighted">Upload locations</h1>
+        <p class="text-sm text-muted">Add Tower GPS Coordinate to this mission.</p>
+      </div>
+      <UButton
+        size="sm"
+        variant="ghost"
+        icon="i-lucide-download"
+        :loading="downloadingTemplate"
+        :disabled="downloadingTemplate"
+        @click="downloadTemplate"
+      >Download template</UButton>
+    </div>
 
     <!-- Form area with bordered container -->
     <div class="border border-default/10 bg-elevated rounded-lg p-4">

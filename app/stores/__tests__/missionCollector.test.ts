@@ -11,6 +11,8 @@ const mockListLocations = vi.fn()
 const mockCreateLocation = vi.fn()
 const mockDeleteLocation = vi.fn()
 const mockUploadLocationsCSV = vi.fn()
+const mockGetMissionRoute = vi.fn()
+const mockReorderRoute = vi.fn()
 
 vi.mock('~/services/missionService', () => ({
   listCollectorMissions: (...args: unknown[]) => mockListCollectorMissions(...args),
@@ -21,7 +23,9 @@ vi.mock('~/services/missionService', () => ({
   listLocations: (...args: unknown[]) => mockListLocations(...args),
   createLocation: (...args: unknown[]) => mockCreateLocation(...args),
   deleteLocation: (...args: unknown[]) => mockDeleteLocation(...args),
-  uploadLocationsCSV: (...args: unknown[]) => mockUploadLocationsCSV(...args)
+  uploadLocationsCSV: (...args: unknown[]) => mockUploadLocationsCSV(...args),
+  getMissionRoute: (...args: unknown[]) => mockGetMissionRoute(...args),
+  reorderRoute: (...args: unknown[]) => mockReorderRoute(...args)
 }))
 
 vi.mock('~/types/api', () => ({
@@ -490,6 +494,71 @@ describe('collectorMission store', () => {
 
       expect(mockDeleteLocation).toHaveBeenCalledWith('cm-001', 'loc-1')
       expect(store.locations).toHaveLength(0)
+    })
+
+    it('fetchRoute populates route state from /missions/{id}/route', async () => {
+      const routePayload = {
+        mission_id: 'cm-001',
+        mission_name: 'Tower Survey 1',
+        status: 'IDLE',
+        start_location_id: null,
+        total_distance_meters: 1234,
+        items: [
+          mockLocation({ id: 'loc-1', sequence_order: 1 }),
+          mockLocation({ id: 'loc-2', sequence_order: 2 })
+        ]
+      }
+      mockGetMissionRoute.mockResolvedValueOnce(routePayload)
+
+      const store = useCollectorMissionStore()
+      await store.fetchRoute('cm-001')
+
+      expect(mockGetMissionRoute).toHaveBeenCalledWith('cm-001')
+      expect(store.route).toEqual(routePayload)
+      expect(store.routeLoading).toBe(false)
+      expect(store.routeError).toBeNull()
+    })
+
+    it('fetchRoute sets routeError on failure', async () => {
+      mockGetMissionRoute.mockRejectedValueOnce(new Error('Network down'))
+
+      const store = useCollectorMissionStore()
+      store.route = {
+        mission_id: 'cm-001',
+        mission_name: 'old',
+        status: 'IDLE',
+        start_location_id: null,
+        total_distance_meters: null,
+        items: []
+      }
+      await store.fetchRoute('cm-001')
+
+      expect(store.route).toBeNull()
+      expect(store.routeError).toBeTruthy()
+      expect(store.routeLoading).toBe(false)
+    })
+
+    it('reorderRoute refreshes the route endpoint so map reflects new order', async () => {
+      const updated = [mockLocation({ id: 'loc-2', sequence_order: 1 })]
+      const routeAfter = {
+        mission_id: 'cm-001',
+        mission_name: 'Tower Survey 1',
+        status: 'IDLE',
+        start_location_id: null,
+        total_distance_meters: 999,
+        items: updated
+      }
+      mockReorderRoute.mockResolvedValueOnce(updated)
+      mockGetMissionRoute.mockResolvedValueOnce(routeAfter)
+
+      const store = useCollectorMissionStore()
+      const payload = [{ location_id: 'loc-2', sequence_order: 1 }]
+      await store.reorderRoute('cm-001', payload)
+
+      expect(mockReorderRoute).toHaveBeenCalledWith('cm-001', payload)
+      expect(mockGetMissionRoute).toHaveBeenCalledWith('cm-001')
+      expect(store.locations).toEqual(updated)
+      expect(store.route).toEqual(routeAfter)
     })
 
     it('uploadLocationsCSV calls service and refreshes', async () => {

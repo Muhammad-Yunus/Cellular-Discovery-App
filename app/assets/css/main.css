@@ -148,8 +148,131 @@ body {
   transition: transform 0.15s ease;
 }
 
+/* Per-status glow color overrides so the marker outline glow matches the
+   marker fill (e.g. VISITED → green glow instead of the default blue). */
+.leaflet-signal-marker .signal-marker-badge--visited {
+  --glow-color: rgba(22, 163, 74, 0.55); /* green-600 */
+}
+.leaflet-signal-marker .signal-marker-badge--pending {
+  --glow-color: rgba(37, 99, 235, 0.55); /* blue-600 */
+}
+.leaflet-signal-marker .signal-marker-badge--in-progress {
+  --glow-color: rgba(245, 158, 11, 0.55); /* amber-500 */
+}
+.leaflet-signal-marker .signal-marker-badge--skipped {
+  --glow-color: rgba(120, 113, 108, 0.45); /* stone-500 */
+}
+.leaflet-signal-marker .signal-marker-badge--failed {
+  --glow-color: rgba(120, 113, 108, 0.45); /* stone-500 */
+}
+
 .leaflet-signal-marker .signal-marker-badge:hover {
   transform: scale(1.08);
+}
+
+/* Sequence order badge: small circular chip in the top-right corner of the marker. */
+.leaflet-signal-marker .sequence-order-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background-color: #f59e0b; /* amber-500 */
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 0 0 1.5px #ffffff;
+  display: inline-block;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Wrapper for marker icon + label below */
+.leaflet-signal-marker .signal-marker-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+/* Tower ID chip rendered below the marker icon */
+.leaflet-signal-marker .tower-id-label {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background-color: #111827; /* gray-900 */
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* Water-flow animation on the route polyline: dashed line that moves along
+   the stroke, visually indicating direction from sequence 1 → last. */
+.route-flow-polyline {
+  stroke-dasharray: 8 6;
+  animation: route-flow 1s linear infinite;
+}
+
+@keyframes route-flow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+/* Midpoint chip label between two route markers (distance + bearing). */
+.leaflet-route-segment-label {
+  background: transparent !important;
+  border: none !important;
+}
+.leaflet-route-segment-label .route-segment-label {
+  width: fit-content;
+  transform: translate(-50%, -50%);
+}
+.route-segment-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background-color: rgba(17, 24, 39, 0.85); /* gray-900 with opacity */
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.route-segment-label__distance {
+  color: #fbbf24; /* amber-400 — easy to read on dark bg */
+}
+.route-segment-label__bearing {
+  color: #60a5fa; /* blue-400 — easy to read on dark bg */
+}
+.route-segment-label__sep {
+  color: #9ca3af; /* gray-400 */
+}
+.route-segment-label__bearing-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.route-segment-label__arrow {
+  color: #60a5fa; /* blue-400 — same hue as bearing number */
+  display: inline-block;
+  transform-origin: 50% 50%;
 }
 
 /* Pulsing soft animation for active marker badge */
@@ -215,6 +338,48 @@ body {
   border-bottom: 1px solid var(--theme-border);
 }
 
+/* Status chip row: placed on its own line below the header to avoid crowding
+   long tower IDs. */
+.leaflet-signal-popup .signal-popup-status-row {
+  padding-bottom: 6px;
+}
+
+/* Location status chip in marker popup header — mirrors the chip style
+   used in the Route sidebar list (PENDING primary, IN_PROGRESS warning,
+   VISITED success, SKIPPED/FAILED neutral-muted). */
+.leaflet-signal-popup .signal-popup-status {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+.leaflet-signal-popup .signal-popup-status--pending {
+  background-color: rgba(37, 99, 235, 0.18); /* primary/blue */
+  color: #60a5fa;
+}
+.leaflet-signal-popup .signal-popup-status--in-progress {
+  background-color: rgba(245, 158, 11, 0.18); /* warning/amber */
+  color: #fbbf24;
+}
+.leaflet-signal-popup .signal-popup-status--visited {
+  background-color: rgba(22, 163, 74, 0.2); /* success/green */
+  color: #4ade80;
+}
+.leaflet-signal-popup .signal-popup-status--skipped {
+  background-color: rgba(120, 113, 108, 0.22); /* neutral/stone */
+  color: #d6d3d1;
+}
+.leaflet-signal-popup .signal-popup-status--failed {
+  background-color: rgba(120, 113, 108, 0.22); /* neutral/stone */
+  color: #d6d3d1;
+}
+
 .leaflet-signal-popup .signal-popup-row {
   display: flex;
   justify-content: space-between;
@@ -224,6 +389,17 @@ body {
 
 .leaflet-signal-popup .signal-popup-row span:first-child {
   color: var(--theme-text-muted);
+}
+
+.leaflet-signal-popup .signal-popup-row--coordinate {
+  justify-content: flex-start !important;
+}
+.leaflet-signal-popup .signal-popup-row--coordinate > span {
+  color: var(--theme-text) !important;
+}
+.leaflet-signal-popup .signal-popup-row--coordinate svg {
+  color: var(--theme-text-muted) !important;
+  vertical-align: -1px;
 }
 
 .leaflet-signal-popup .signal-popup-row span:last-child {

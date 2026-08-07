@@ -78,16 +78,44 @@ export const MISSION_STATUS_COLOR: Record<
 export interface MissionLocation {
   id: string
   mission_id: string
+  cellular_tower_id: string
+  cellular_tower_name: string
   latitude: number
   longitude: number
   altitude?: number | null
   order_index: number
+  /** Planned visit order (1-based). May be null until planning completes. */
+  sequence_order?: number | null
+  /** Per-location status from the collector backend. */
+  status?: 'PENDING' | 'IN_PROGRESS' | 'VISITED' | 'SKIPPED' | 'FAILED' | string
+  upload_batch_id?: string | null
+  distance_from_previous_meters?: number | null
+  bearing_from_previous_degrees?: number | null
+  estimated_arrival_time?: string | null
+  actual_visit_time?: string | null
+  scan_session_id?: string | null
+  visited_at?: string | null
   created_at: string
   updated_at: string
 }
 
+/**
+ * Mission route response from GET /missions/{id}/route.
+ * Contains the full ordered itinerary with per-segment distance and bearing.
+ */
+export interface MissionRoute {
+  mission_id: string
+  mission_name: string
+  status: MissionStatus5
+  start_location_id: string | null
+  total_distance_meters: number | null
+  items: MissionLocation[]
+}
+
 /** Payload for creating a new location. */
 export interface MissionLocationCreate {
+  cellular_tower_id: string
+  cellular_tower_name: string
   latitude: number
   longitude: number
   altitude?: number | null
@@ -96,10 +124,10 @@ export interface MissionLocationCreate {
 
 /** Raw row parsed from a CSV upload before validation. */
 export interface MissionLocationUploadRow {
+  cellular_tower_id: string
+  cellular_tower_name: string
   latitude?: string | number
   longitude?: string | number
-  altitude?: string | number
-  order?: string | number
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +146,12 @@ export interface MissionRecord {
   updated_at: string
   /** Number of locations already uploaded */
   location_count?: number
+  /** Number of locations already uploaded (alternative field name from backend) */
+  total_locations?: number
+  /** Number of locations already visited by the collector */
+  visited_locations?: number
+  /** Mission progress as a percentage (0-100) */
+  progress_percent?: number
   /** Number of scans collected */
   scan_count?: number
   /** Search radius in meters (whole number). */

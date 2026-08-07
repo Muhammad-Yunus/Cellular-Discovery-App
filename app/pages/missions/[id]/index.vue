@@ -10,16 +10,16 @@ const router = useRouter()
 const missionId = route.params.id as string
 
 const missionStore = useCollectorMissionStore()
+const toast = useCustomToast()
 
 // Tabs
-type TabKey = 'locations' | 'route' | 'activity' | 'settings' | 'logs'
+type TabKey = 'locations' | 'route' | 'scans' | 'logs'
 const activeTab = ref<TabKey>('locations')
 
 const tabs: { key: TabKey; label: string; icon: string }[] = [
   { key: 'locations', label: 'Locations', icon: 'lucide:map-pin' },
   { key: 'route', label: 'Route', icon: 'lucide:route' },
-  { key: 'activity', label: 'Activity', icon: 'lucide:activity' },
-  { key: 'settings', label: 'Settings', icon: 'lucide:settings' },
+  { key: 'scans', label: 'Tower Scans', icon: 'lucide:radar' },
   { key: 'logs', label: 'Logs', icon: 'lucide:file-text' }
 ]
 
@@ -27,8 +27,20 @@ onMounted(async () => {
   // Always load the mission matching the URL path from
   // GET /missions/{mission_id} so the detail view shows the correct
   // record rather than the last-inserted mission in the cached list.
-  await missionStore.fetchMissionById(missionId)
-  await missionStore.fetchLocations(missionId)
+  try {
+    await missionStore.fetchMissionById(missionId)
+    await missionStore.fetchLocations(missionId)
+  } catch (e: any) {
+    if (e?.status === 404) {
+      toast.add({
+        title: 'Mission not found',
+        description: e?.message ?? 'The mission does not exist.',
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      router.replace('/missions')
+    }
+  }
 })
 
 // If the user navigates between /missions/{a} -> /missions/{b} without
@@ -41,15 +53,23 @@ watch(
     try {
       await missionStore.fetchMissionById(newId)
       await missionStore.fetchLocations(newId)
-    } catch {
-      // Error is already surfaced via missionStore.error; keep UI responsive.
+    } catch (e: any) {
+      if (e?.status === 404) {
+        toast.add({
+          title: 'Mission not found',
+          description: e?.message ?? 'The mission does not exist.',
+          color: 'error',
+          icon: 'i-lucide-alert-circle'
+        })
+        router.replace('/missions')
+      }
     }
   }
 )
 
 // ── Lifecycle button rules (same as list page) ───────────────────────────
 function canStart(status: string): boolean {
-  return status === 'IDLE' || status === 'READY' || status === 'STOPPED' || status === 'FAILED'
+  return status === 'READY'
 }
 function canPause(status: string): boolean {
   return status === 'RUNNING'
@@ -60,8 +80,25 @@ function canResume(status: string): boolean {
 function canStop(status: string): boolean {
   return status === 'STARTING' || status === 'RUNNING' || status === 'PAUSED'
 }
+function canPlan(status: string, locationCount: number): boolean {
+  return status === 'IDLE' && locationCount > 0
+}
 function isTerminal(status: string): boolean {
   return status === 'COMPLETED'
+}
+function getStatusBadgeProps(status: string) {
+  const map: Record<string, { color: string; label: string }> = {
+    IDLE: { color: 'neutral', label: 'IDLE' },
+    PLANNING: { color: 'info', label: 'PLANNING' },
+    READY: { color: 'info', label: 'READY' },
+    STARTING: { color: 'warning', label: 'STARTING' },
+    RUNNING: { color: 'success', label: 'RUNNING' },
+    PAUSED: { color: 'warning', label: 'PAUSED' },
+    COMPLETED: { color: 'info', label: 'COMPLETED' },
+    STOPPED: { color: 'error', label: 'STOPPED' },
+    FAILED: { color: 'error', label: 'FAILED' }
+  }
+  return map[status] ?? { color: 'neutral', label: status }
 }
 
 const pendingActionFor = ref<string | null>(null)
@@ -74,16 +111,69 @@ async function onStatusChange(action: 'start' | 'pause' | 'resume' | 'stop') {
   const key = `${missionId}:${action}`
   pendingActionFor.value = key
   try {
-    await missionStore.patchMissionStatus(missionId, action)
+    const result = await missionStore.patchMissionStatus(missionId, action)
+    // Surface the server response message in a toast instead of a popup alert.
+    // `result` is the MissionRecord returned by /missions/{id}/{action}.
+    const serverMessage =
+      (result as any)?.message ??
+      (result as any)?.detail ??
+      (result as any)?.status_message ??
+      `Mission ${action} request succeeded.`
+    toast.add({
+      title: `Mission ${action}`,
+      description: String(serverMessage),
+      color: 'success',
+      icon: 'i-lucide-check-circle'
+    })
     // Status badge will auto-update via fetchMissions() inside the store.
   } catch (e: any) {
     const status = e?.status ?? e?.response?.status
     const isConflict = status === 409
-    // eslint-disable-next-line no-alert
-    alert(isConflict
-      ? 'Action not allowed — the mission is not in a state that supports this action.'
-      : `Action failed: ${e?.message ?? 'Unknown error'}`
-    )
+    const errMessage =
+      (e?.data?.detail as string | undefined) ??
+      (e?.response?.data?.detail as string | undefined) ??
+      (typeof e?.message === 'string' ? e.message : null) ??
+      'Unknown error'
+    toast.add({
+      title: `Mission ${action} failed`,
+      description: isConflict
+        ? 'Action not allowed — the mission is not in a state that supports this action.'
+        : errMessage,
+      color: 'error',
+      icon: 'i-lucide-alert-circle'
+    })
+  } finally {
+    if (pendingActionFor.value === key) pendingActionFor.value = null
+  }
+}
+
+async function onPlan() {
+  const key = `${missionId}:plan`
+  pendingActionFor.value = key
+  try {
+    await missionStore.planMission(missionId)
+    toast.add({
+      title: 'Mission plan requested',
+      description: 'The mission is being planned.',
+      color: 'success',
+      icon: 'i-lucide-check-circle'
+    })
+  } catch (e: any) {
+    const status = e?.status ?? e?.response?.status
+    const isConflict = status === 409
+    const errMessage =
+      (e?.data?.detail as string | undefined) ??
+      (e?.response?.data?.detail as string | undefined) ??
+      (typeof e?.message === 'string' ? e.message : null) ??
+      'Unknown error'
+    toast.add({
+      title: 'Plan failed',
+      description: isConflict
+        ? 'Plan failed — the mission is not in a state that supports this action, or it has no locations.'
+        : errMessage,
+      color: 'error',
+      icon: 'i-lucide-alert-circle'
+    })
   } finally {
     if (pendingActionFor.value === key) pendingActionFor.value = null
   }
@@ -130,20 +220,12 @@ async function onStatusChange(action: 'start' | 'pause' | 'resume' | 'stop') {
             <UButton icon="lucide:edit" variant="outline">Edit</UButton>
           </NuxtLink>
            <UButton
-            v-if="missionStore.selectedMission?.status === 'IDLE'"
-            icon="lucide:upload"
-            :to="`/missions/${missionId}/locations/upload`"
-          >
-            Upload
-          </UButton>
-          <UButton
-            v-else
-            icon="lucide:upload"
-            disabled
-            title="Upload is only available while the mission is IDLE"
-          >
-            Upload
-          </UButton>
+             v-if="missionStore.selectedMission?.status === 'IDLE'"
+             icon="lucide:upload"
+             :to="`/missions/${missionId}/locations/upload`"
+           >
+             Upload
+           </UButton>
         </div>
       </div>
 
@@ -151,17 +233,20 @@ async function onStatusChange(action: 'start' | 'pause' | 'resume' | 'stop') {
       <template v-if="missionStore.selectedMission">
         <div class="flex flex-wrap items-center gap-3 rounded border border-default/10 bg-default p-3">
           <UBadge
-            :color="missionStore.selectedMission.status === 'RUNNING' ? 'success' : missionStore.selectedMission.status === 'PAUSED' ? 'warning' : missionStore.selectedMission.status === 'COMPLETED' ? 'info' : missionStore.selectedMission.status === 'FAILED' || missionStore.selectedMission.status === 'STOPPED' ? 'error' : 'default'"
+            :color="getStatusBadgeProps(missionStore.selectedMission.status).color"
             variant="subtle"
           >
-            {{ missionStore.selectedMission.status }}
+            {{ getStatusBadgeProps(missionStore.selectedMission.status).label }}
           </UBadge>
           <div
-            class="inline-flex items-center gap-1.5 rounded-md border border-default/15 bg-elevated px-2 py-1 text-xs text-default"
-            title="Number of locations collected"
+            class="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-2 py-1 text-xs text-default"
+            :title="`${missionStore.selectedMission.visited_locations ?? 0} of ${missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0} locations visited (${(missionStore.selectedMission.progress_percent ?? 0).toFixed(1)}%)`"
           >
             <Icon name="lucide:map-pin" class="size-3.5 shrink-0 text-muted" aria-hidden="true" />
-            <span class="font-mono">{{ missionStore.selectedMission.location_count ?? 0 }}</span>
+            <span class="font-mono">
+              {{ missionStore.selectedMission.visited_locations ?? 0 }} / {{ missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0 }}
+              <span v-if="missionStore.selectedMission.progress_percent !== undefined">({{ missionStore.selectedMission.progress_percent.toFixed(1) }}%)</span>
+            </span>
             <span class="text-muted">locations</span>
           </div>
 
@@ -187,6 +272,16 @@ async function onStatusChange(action: 'start' | 'pause' | 'resume' | 'stop') {
           </span>
 
           <div class="ml-auto flex items-center gap-1">
+            <!-- Plan: IDLE only and only when locations > 0 -->
+            <UButton
+              v-if="canPlan(missionStore.selectedMission.status, missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0)"
+              size="xs"
+              variant="ghost"
+              icon="i-lucide-map"
+              :loading="isActionPending()"
+              :disabled="isActionPending()"
+              @click="onPlan()"
+            >Plan</UButton>
             <!-- Start: IDLE, READY, STOPPED, FAILED -->
             <UButton
               v-if="canStart(missionStore.selectedMission.status)"
@@ -254,26 +349,33 @@ async function onStatusChange(action: 'start' | 'pause' | 'resume' | 'stop') {
       </button>
     </div>
 
-    <!-- Tab panels in a bordered container -->
-    <div class="border border-default/10 bg-elevated rounded-lg p-4 flex-1">
-      <div v-if="activeTab === 'locations'">
-        <LocationList :mission-id="missionId" />
-      </div>
-      <div v-else-if="activeTab === 'route'">
-        <RouteMap :mission-id="missionId" />
-      </div>
-      <div v-else-if="activeTab === 'activity'" class="py-12 text-center text-muted">
-        <span class="i-lucide-activity text-3xl mb-3" />
-        <p>Activity feed coming soon.</p>
-      </div>
-      <div v-else-if="activeTab === 'settings'" class="py-12 text-center text-muted">
-        <span class="i-lucide-settings text-3xl mb-3" />
-        <p>Mission settings coming soon.</p>
-      </div>
-      <div v-else-if="activeTab === 'logs'" class="py-12 text-center text-muted">
-        <span class="i-lucide-file-text text-3xl mb-3" />
-        <p>Mission logs coming soon.</p>
-      </div>
+    <!-- Tab panels: Locations tab renders the table directly so it can
+         carry its own border (matching the /history table pattern). -->
+    <div
+      v-if="activeTab === 'locations'"
+      class="flex-1"
+    >
+      <LocationList :mission-id="missionId" />
+    </div>
+    <!-- Route tab: bezel-less map, fills the available height. -->
+    <div
+      v-else-if="activeTab === 'route'"
+      class="flex-1 overflow-hidden"
+    >
+      <RouteMap :mission-id="missionId" />
+    </div>
+    <!-- Tower Scans tab: paginated scan list from /api/v1/missions/{id}/scans -->
+    <div
+      v-else-if="activeTab === 'scans'"
+      class="flex-1 overflow-y-auto"
+    >
+      <MissionScanList :mission-id="missionId" />
+    </div>
+    <div
+      v-else-if="activeTab === 'logs'"
+      class="flex-1 overflow-y-auto"
+    >
+      <MissionLogList :mission-id="missionId" />
     </div>
   </div>
 </template>

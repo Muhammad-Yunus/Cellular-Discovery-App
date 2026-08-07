@@ -29,6 +29,43 @@ export interface ScanPaginated {
   offset: number
 }
 
+/**
+ * Single tower-scan record returned by
+ * GET /api/v1/missions/{mission_id}/scans.
+ * Mirrors the FastAPI MissionScan response model.
+ */
+export interface MissionScan {
+  id: string
+  mission_id: string
+  cellular_tower_id: string
+  cellular_tower_name: string
+  operator: string
+  mcc: string
+  mnc: string
+  rat: string
+  /** Signal strength in dBm (nullable for older records). */
+  signal_strength?: number | null
+  latitude: number
+  longitude: number
+  /** ISO-8601 timestamp recorded by the collector. */
+  scan_time: string
+  /** Optional raw payload (e.g. serialised ModemManager result). */
+  raw?: Record<string, unknown> | null
+}
+
+export interface MissionScanPaginated {
+  items: MissionScan[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export interface MissionLog {
+  timestamp: string
+  event_type: string
+  message: string
+}
+
 export interface Setting {
   id?: string
   key: string

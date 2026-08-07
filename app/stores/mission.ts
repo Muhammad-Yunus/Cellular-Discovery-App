@@ -20,7 +20,8 @@ import type {
   MissionRecord,
   MissionStatus5,
   MissionLocation,
-  MissionLocationCreate
+  MissionLocationCreate,
+  MissionRoute
 } from '~/types/mission'
 import type { PaginationMeta } from '~/types'
 import * as missionService from '~/services/missionService'
@@ -45,6 +46,10 @@ interface MissionState {
   locations: MissionLocation[]
   locationsLoading: boolean
   locationsError: string | null
+  // Route state (specialized endpoint: GET /missions/{id}/route)
+  route: MissionRoute | null
+  routeLoading: boolean
+  routeError: string | null
   // WebSocket state (Feature 05)
   wsConnected: boolean
   wsStatus: 'connected' | 'disconnected' | 'reconnecting'
@@ -77,6 +82,9 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
     locations: [],
     locationsLoading: false,
     locationsError: null,
+    route: null,
+    routeLoading: false,
+    routeError: null,
     // WebSocket state (Feature 05)
     wsConnected: false,
     wsStatus: 'disconnected' as const
@@ -166,8 +174,9 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
         this.error = appError.message
         throw appError
       } finally {
-        this.loading = false
+        this.saving = false
       }
+      return result
     },
 
     /**
@@ -271,13 +280,41 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
         this.optimisticStatus(id, expectedNext)
       }
 
+      let result: any
       try {
-        await missionService.collectorMissionAction(id, action)
+        result = await missionService.collectorMissionAction(id, action)
         // Refresh the full list so any backend-driven fields sync up.
         await this.fetchMissions()
       } catch (e) {
         // Roll back optimistic change if we made one.
         if (expectedNext && previousStatus) {
+          this.optimisticStatus(id, previousStatus)
+        }
+        const { parseApiError } = await import('~/types/api')
+        const appError = parseApiError(e)
+        this.error = appError.message
+        throw appError
+      } finally {
+        this.saving = false
+      }
+      return result
+    },
+
+    /**
+     * Plan a collector mission (POST /missions/{id}/plan).
+     * The backend validates that locations exist before planning.
+     * Optimistically updates status to PLANNING, then refreshes the list.
+     */
+    async planMission(id: string) {
+      this.saving = true
+      this.error = null
+      const previousStatus = this.findMission(id)?.status
+      this.optimisticStatus(id, 'PLANNING')
+      try {
+        await missionService.planCollectorMission(id)
+        await this.fetchMissions()
+      } catch (e) {
+        if (previousStatus) {
           this.optimisticStatus(id, previousStatus)
         }
         const { parseApiError } = await import('~/types/api')
@@ -320,6 +357,29 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
         this.locations = []
       } finally {
         this.locationsLoading = false
+      }
+    },
+
+    /**
+     * Fetch the specialized route payload from GET /missions/{id}/route.
+     * This endpoint returns the ordered itinerary with per-segment distance
+     * and bearing values, which the RouteMap uses to render the polyline +
+     * segment labels. Independent of `fetchLocations` so the Locations tab
+     * remains unaffected.
+     */
+    async fetchRoute(missionId: string) {
+      this.routeLoading = true
+      this.routeError = null
+      try {
+        const result = await missionService.getMissionRoute(missionId)
+        this.route = result
+      } catch (e) {
+        const { parseApiError } = await import('~/types/api')
+        const appError = parseApiError(e)
+        this.routeError = appError.message
+        this.route = null
+      } finally {
+        this.routeLoading = false
       }
     },
 
@@ -371,6 +431,40 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
         // Refresh the location list after upload
         await this.fetchLocations(missionId)
         return result
+      } catch (e) {
+        const { parseApiError } = await import('~/types/api')
+        const appError = parseApiError(e)
+        this.error = appError.message
+        throw appError
+      } finally {
+        this.saving = false
+      }
+    },
+
+    /**
+     * Manually reorder the route by sending an ordered list of
+     * `{location_id, sequence_order}` pairs to POST /missions/{id}/route/reorder.
+     * On success, refreshes the local locations list so the UI reflects the
+     * new ordering.
+     */
+    async reorderRoute(
+      missionId: string,
+      payload: { location_id: string; sequence_order: number }[]
+    ) {
+      this.saving = true
+      this.error = null
+      try {
+        const updated = await missionService.reorderRoute(missionId, payload)
+        // Replace locations with the authoritative server response when provided.
+        if (Array.isArray(updated) && updated.length > 0) {
+          this.locations = updated
+        } else {
+          await this.fetchLocations(missionId)
+        }
+        // Refresh the specialized route endpoint so the map's polyline and
+        // per-segment distance/bearing labels reflect the new order.
+        await this.fetchRoute(missionId)
+        return updated
       } catch (e) {
         const { parseApiError } = await import('~/types/api')
         const appError = parseApiError(e)

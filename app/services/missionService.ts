@@ -6,7 +6,7 @@
 // the `NUXT_PUBLIC_MISSION_API_BASE` config is respected and errors are
 // normalised to the shared `AppError` / `MissionApiError` types.
 
-import { missionApiRequest } from './missionApi'
+import { missionApiRequest, getMissionApiBaseURL } from './missionApi'
 import type {
   Mission,
   MissionListQuery,
@@ -28,7 +28,8 @@ import type {
   MissionPaginated,
   ListMissionsParams,
   ListLocationsParams,
-  CSVUploadResult
+  CSVUploadResult,
+  MissionRoute
 } from '~/types/mission'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -349,6 +350,13 @@ export async function stopCollectorMission(id: string): Promise<MissionRecord> {
   )
 }
 
+export async function planCollectorMission(id: string): Promise<MissionRecord> {
+  return missionApiRequest<MissionRecord>(
+    `/missions/${id}/plan`,
+    { method: 'POST' }
+  )
+}
+
 /** Map an action name to its dedicated endpoint. Helper used by the store. */
 export async function collectorMissionAction(
   id: string,
@@ -402,6 +410,39 @@ export async function createLocation(
   )
 }
 
+/**
+ * Manually reorder the route. The payload is an ordered list of
+ * `{ location_id, sequence_order }` pairs (1-based sequence). The backend
+ * reorders the affected locations and returns the updated route state.
+ */
+export interface ReorderPayloadItem {
+  location_id: string
+  sequence_order: number
+}
+
+export async function reorderRoute(
+  missionId: string,
+  payload: ReorderPayloadItem[]
+): Promise<MissionLocation[]> {
+  return missionApiRequest<MissionLocation[]>(
+    `/missions/${missionId}/route/reorder`,
+    { method: 'POST', body: payload }
+  )
+}
+
+/**
+ * Fetch the full ordered route for a mission from GET /missions/{id}/route.
+ * Returns the route payload with per-segment distance and bearing.
+ */
+export async function getMissionRoute(
+  missionId: string
+): Promise<MissionRoute> {
+  return missionApiRequest<MissionRoute>(
+    `/missions/${missionId}/route`,
+    { method: 'GET' }
+  )
+}
+
 /** Delete a single location from a mission. */
 export async function deleteLocation(
   missionId: string,
@@ -427,4 +468,53 @@ export async function uploadLocationsCSV(
     `/missions/${missionId}/locations/upload`,
     { method: 'POST', body: form }
   )
+}
+
+/**
+ * Download the CSV template for uploading locations. The backend streams a
+ * CSV body and sets a `Content-Disposition: attachment; filename="..."`
+ * header naming the file. We return both the `Blob` and the parsed filename
+ * so the UI can trigger a save-as with the exact server-provided name.
+ */
+export async function downloadLocationTemplate(
+  missionId: string
+): Promise<{ blob: Blob; filename: string }> {
+  const url = `${getMissionApiBaseURL()}/missions/${missionId}/locations/download_template`
+  const result = await $fetch.raw(url, {
+    method: 'GET',
+    responseType: 'blob',
+    retry: false,
+    ignoreResponseError: true
+  })
+
+  const status = result.status ?? 0
+  if (status >= 400) {
+    const { parseApiError } = await import('~/types/api')
+    throw parseApiError(
+      new Error(`Request failed with status ${status}`)
+    )
+  }
+
+  const blob = result._data as Blob
+
+  // Parse filename from Content-Disposition. Default to a sensible fallback
+  // so the UI always has something to write to disk.
+  let filename = 'locations_template.csv'
+  const disposition
+    = result.headers && (result.headers.get?.('content-disposition')
+      ?? (result.headers as Record<string, string>)['content-disposition'])
+  if (typeof disposition === 'string' && disposition.length > 0) {
+    const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+    const plainMatch = disposition.match(/filename="?([^";]+)"?/i)
+    const raw = utf8Match?.[1] ?? plainMatch?.[1]
+    if (raw) {
+      try {
+        filename = decodeURIComponent(raw)
+      } catch {
+        filename = raw
+      }
+    }
+  }
+
+  return { blob, filename }
 }

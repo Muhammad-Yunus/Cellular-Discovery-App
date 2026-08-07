@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  current?: 'new' | 'edit' | 'detail' | 'upload'
+  current?: 'new' | 'edit' | 'detail' | 'upload' | 'locations'
   missionId?: string
   missionName?: string
 }>()
@@ -28,7 +28,7 @@ function truncateName(name: string | undefined | null, maxLen = 7): string {
     <span class="text-muted">›</span>
 
     <!-- Detail or New or Edit (segment 3) -->
-    <template v-if="current !== 'edit' && current !== 'upload'">
+    <template v-if="current !== 'edit' && current !== 'upload' && current !== 'locations'">
       <NuxtLink
         v-if="current === 'detail' && missionId && missionName"
         :to="`/missions/${missionId}`"
@@ -51,10 +51,10 @@ function truncateName(name: string | undefined | null, maxLen = 7): string {
       </span>
     </template>
 
-    <!-- Upload (segment 4, when current is 'upload') -->
-    <template v-if="current === 'upload'">
+    <!-- Mission segment link (segment 3, when current is upload/locations) -->
+    <template v-if="current === 'upload' || current === 'locations'">
       <NuxtLink
-        v-if="missionId"
+        v-if="missionId && missionName"
         :to="`/missions/${missionId}`"
         class="flex items-center gap-1 text-primary hover:text-accented transition-colors"
         :title="missionName"
@@ -68,8 +68,12 @@ function truncateName(name: string | undefined | null, maxLen = 7): string {
       </span>
       <span class="text-muted">›</span>
       <span class="flex items-center gap-1 text-highlighted">
-        <Icon name="lucide:upload" class="text-base shrink-0" aria-hidden="true" />
-        Locations Upload
+        <Icon
+          :name="current === 'upload' ? 'lucide:upload' : 'lucide:map-pin'"
+          class="text-base shrink-0"
+          aria-hidden="true"
+        />
+        {{ current === 'upload' ? 'Locations Upload' : 'Locations' }}
       </span>
     </template>
 

@@ -638,7 +638,17 @@ function getStatusBadgeProps(status: MissionStatus5) {
         <!-- Timestamps + locations count -->
         <div class="flex items-center gap-4 text-xs text-muted mb-3">
           <span>Created: {{ formatDate(mission.created_at) }}</span>
-          <span class="ml-auto">{{ mission.location_count ?? 0 }} locations</span>
+          <div
+            class="ml-auto inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-2 py-1 text-xs text-default"
+            :title="`${mission.visited_locations ?? 0} of ${mission.location_count ?? mission.total_locations ?? 0} locations visited (${(mission.progress_percent ?? 0).toFixed(1)}%)`"
+          >
+            <Icon name="lucide:map-pin" class="size-3.5 shrink-0 text-muted" aria-hidden="true" />
+            <span class="font-mono">
+              {{ mission.visited_locations ?? 0 }} / {{ mission.location_count ?? mission.total_locations ?? 0 }}
+              <span v-if="mission.progress_percent !== undefined">({{ mission.progress_percent.toFixed(1) }}%)</span>
+            </span>
+            <span class="text-muted">locations</span>
+          </div>
         </div>
 
         <!-- Actions -->

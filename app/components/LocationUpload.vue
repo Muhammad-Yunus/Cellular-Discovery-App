@@ -38,8 +38,16 @@ function validateAndPreview(fileInput: File) {
     const text = (e.target?.result as string) ?? ''
     preview.value = parseCSV(text)
     errors.value = preview.value.map((row, idx) => {
+      const towerId = (row['cellular_tower_id'] ?? '').trim()
+      const towerName = (row['cellular_tower_name'] ?? '').trim()
       const lat = parseFloat(row['latitude'] ?? '')
       const lon = parseFloat(row['longitude'] ?? '')
+      if (!towerId) {
+        return { row: idx + 2, message: 'cellular_tower_id is required' }
+      }
+      if (!towerName) {
+        return { row: idx + 2, message: 'cellular_tower_name is required' }
+      }
       if (Number.isNaN(lat) || Number.isNaN(lon)) {
         return { row: idx + 2, message: 'latitude/longitude must be numeric' }
       }
@@ -88,8 +96,8 @@ defineExpose({ validateAndPreview, upload })
         @change="(e: Event) => validateAndPreview((e.target as HTMLInputElement).files?.[0] as File)"
       />
       <p class="mt-1 text-xs text-muted">
-        Columns: <code>latitude</code>, <code>longitude</code> (optional:
-        <code>altitude</code>, <code>order</code>)
+        Columns: <code>cellular_tower_id</code> (text), <code>cellular_tower_name</code> (text),
+        <code>latitude</code> (decimal), <code>longitude</code> (decimal)
       </p>
     </div>
 
@@ -98,10 +106,10 @@ defineExpose({ validateAndPreview, upload })
         <thead>
           <tr class="border-b border-default/10 text-left text-muted">
             <th class="pb-2 pr-4">#</th>
+            <th class="pb-2 pr-4">Cellular Tower ID</th>
+            <th class="pb-2 pr-4">Cellular Tower Name</th>
             <th class="pb-2 pr-4">Latitude</th>
-            <th class="pb-2 pr-4">Longitude</th>
-            <th class="pb-2 pr-4">Altitude</th>
-            <th class="pb-2">Order</th>
+            <th class="pb-2">Longitude</th>
           </tr>
         </thead>
         <tbody>
@@ -111,10 +119,10 @@ defineExpose({ validateAndPreview, upload })
             :class="errors.find(e => e.row === idx + 2) ? 'bg-error/10' : ''"
           >
             <td class="py-1 pr-4 text-muted">{{ idx + 2 }}</td>
+            <td class="py-1 pr-4 font-mono">{{ row.cellular_tower_id }}</td>
+            <td class="py-1 pr-4 font-mono">{{ row.cellular_tower_name }}</td>
             <td class="py-1 pr-4 font-mono">{{ row.latitude }}</td>
             <td class="py-1 pr-4 font-mono">{{ row.longitude }}</td>
-            <td class="py-1 pr-4 font-mono">{{ row.altitude ?? '—' }}</td>
-            <td class="py-1 font-mono">{{ row.order ?? '—' }}</td>
           </tr>
         </tbody>
       </table>

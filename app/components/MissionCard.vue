@@ -26,6 +26,9 @@ interface MissionGridItem {
   status: MissionStatus5
   description?: string | null
   location_count?: number
+  total_locations?: number
+  visited_locations?: number
+  progress_percent?: number
   scan_count?: number
   center_lat?: number | null
   center_lon?: number | null
@@ -61,7 +64,7 @@ const emit = defineEmits<{
 const missionName = computed(() => props.mission.name)
 const missionStatus = computed<MissionStatus5>(() => props.mission.status)
 const missionDescription = computed(() => props.mission.description ?? '')
-const locationCount = computed(() => Number(props.mission.location_count ?? 0))
+const locationCount = computed(() => Number(props.mission.location_count ?? props.mission.total_locations ?? 0))
 const scanCount = computed(() => Number(props.mission.scan_count ?? 0))
 
 const statusLabel = computed(
