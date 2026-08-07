@@ -10,6 +10,10 @@ const props = defineProps<{
   missionId: string
 }>()
 
+const emit = defineEmits<{
+  (e: 'data-loaded'): void
+}>()
+
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50] as const
 
 // --- State ---
@@ -96,6 +100,7 @@ async function fetchScans(resetPage = false) {
   } finally {
     loading.value = false
   }
+  emit('data-loaded')
 }
 
 function onPageChange(page: number) {

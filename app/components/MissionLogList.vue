@@ -7,6 +7,10 @@ const props = defineProps<{
   missionId: string
 }>()
 
+const emit = defineEmits<{
+  (e: 'data-loaded'): void
+}>()
+
 const logs = ref<MissionLog[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -47,6 +51,7 @@ async function fetchLogs() {
   } finally {
     loading.value = false
   }
+  emit('data-loaded')
 }
 
 onMounted(fetchLogs)

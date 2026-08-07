@@ -1,5 +1,6 @@
 <!-- app/pages/missions/[id]/index.vue -->
 <script setup lang="ts">
+import { onMounted, onUnmounted, watch, ref } from 'vue'
 definePageMeta({
   layout: 'default',
   title: 'Mission detail'
@@ -67,7 +68,187 @@ watch(
   }
 )
 
-// ── Lifecycle button rules (same as list page) ───────────────────────────
+// ── Polling state ─────────────────────────────────────────────────────────
+const POLLING_INTERVAL_MS = 5000 // 5 seconds
+let missionPollTimer: ReturnType<typeof setTimeout> | null = null
+let locationsPollTimer: ReturnType<typeof setTimeout> | null = null
+let routePollTimer: ReturnType<typeof setTimeout> | null = null
+
+/** Get current mission status from store */
+function getMissionStatus(): string {
+  return missionStore.selectedMission?.status ?? ''
+}
+
+/** Check if mission is currently running */
+function isRunning(): boolean {
+  return getMissionStatus() === 'RUNNING'
+}
+
+/**
+ * Poll mission detail. Always called when status is RUNNING.
+ */
+async function pollMission() {
+  if (!isRunning()) return
+  try {
+    await missionStore.fetchMissionById(missionId)
+  } catch (e) {
+    // Silently ignore polling errors to avoid spamming the console
+    console.debug('[poll] mission detail failed:', e)
+  }
+  // Schedule next poll
+  missionPollTimer = setTimeout(pollMission, POLLING_INTERVAL_MS)
+}
+
+/**
+ * Poll locations tab data. Only when tab is active AND mission is running.
+ */
+async function pollLocations() {
+  if (!isRunning() || activeTab.value !== 'locations') return
+  try {
+    await missionStore.fetchLocations(missionId)
+  } catch (e) {
+    console.debug('[poll] locations failed:', e)
+  }
+  locationsPollTimer = setTimeout(pollLocations, POLLING_INTERVAL_MS)
+}
+
+/**
+ * Poll route tab data. Only when tab is active AND mission is running.
+ */
+async function pollRoute() {
+  if (!isRunning() || activeTab.value !== 'route') return
+  try {
+    await missionStore.fetchRoute(missionId)
+  } catch (e) {
+    console.debug('[poll] route failed:', e)
+  }
+  routePollTimer = setTimeout(pollRoute, POLLING_INTERVAL_MS)
+}
+
+/**
+ * Start polling for mission detail when status changes to RUNNING.
+ * Also start polling for active tab data.
+ */
+function startPolling() {
+  // Clear any existing timers
+  if (missionPollTimer) clearTimeout(missionPollTimer)
+  if (locationsPollTimer) clearTimeout(locationsPollTimer)
+  if (routePollTimer) clearTimeout(routePollTimer)
+
+  // Start mission detail polling
+  pollMission()
+
+  // Start polling for active tab if running
+  if (isRunning()) {
+    switch (activeTab.value) {
+      case 'locations':
+        pollLocations()
+        break
+      case 'route':
+        pollRoute()
+        break
+    }
+  }
+}
+
+/**
+ * Stop all polling timers.
+ */
+function stopPolling() {
+  if (missionPollTimer) {
+    clearTimeout(missionPollTimer)
+    missionPollTimer = null
+  }
+  if (locationsPollTimer) {
+    clearTimeout(locationsPollTimer)
+    locationsPollTimer = null
+  }
+  if (routePollTimer) {
+    clearTimeout(routePollTimer)
+    routePollTimer = null
+  }
+}
+
+// Watch mission status to start/stop polling
+let previousStatus = getMissionStatus()
+watch(
+  () => getMissionStatus(),
+  (newStatus) => {
+    // Stop polling if mission is no longer running
+    if (previousStatus === 'RUNNING' && newStatus !== 'RUNNING') {
+      stopPolling()
+    }
+    // Start polling if mission just became running
+    if (newStatus === 'RUNNING' && previousStatus !== 'RUNNING') {
+      startPolling()
+    }
+    previousStatus = newStatus
+  }
+)
+
+// Watch active tab to start/stop tab-specific polling
+watch(
+  () => activeTab.value,
+  (newTab, oldTab) => {
+    // Stop polling for old tab if it was active and mission is running
+    if (isRunning() && oldTab === 'locations') {
+      if (locationsPollTimer) {
+        clearTimeout(locationsPollTimer)
+        locationsPollTimer = null
+      }
+    }
+    if (isRunning() && oldTab === 'route') {
+      if (routePollTimer) {
+        clearTimeout(routePollTimer)
+        routePollTimer = null
+      }
+    }
+
+    // Start polling for new tab if mission is running
+    if (isRunning()) {
+      switch (newTab) {
+        case 'locations':
+          pollLocations()
+          break
+        case 'route':
+          pollRoute()
+          break
+      }
+    }
+  }
+)
+
+onMounted(async () => {
+  // Always load the mission matching the URL path from
+  // GET /missions/{mission_id} so the detail view shows the correct
+  // record rather than the last-inserted mission in the cached list.
+  try {
+    await missionStore.fetchMissionById(missionId)
+    await missionStore.fetchLocations(missionId)
+  } catch (e: any) {
+    if (e?.status === 404) {
+      toast.add({
+        title: 'Mission not found',
+        description: e?.message ?? 'The mission does not exist.',
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      router.replace('/missions')
+      return
+    }
+  }
+
+  // Start polling if mission is already running
+  if (isRunning()) {
+    startPolling()
+  }
+})
+
+// Clean up polling timers on unmount
+onUnmounted(() => {
+  stopPolling()
+})
+
 function canStart(status: string): boolean {
   return status === 'READY'
 }
@@ -369,13 +550,13 @@ async function onPlan() {
       v-else-if="activeTab === 'scans'"
       class="flex-1 overflow-y-auto"
     >
-      <MissionScanList :mission-id="missionId" />
+      <MissionScanList :mission-id="missionId" @data-loaded="startPolling" />
     </div>
     <div
       v-else-if="activeTab === 'logs'"
       class="flex-1 overflow-y-auto"
     >
-      <MissionLogList :mission-id="missionId" />
+      <MissionLogList :mission-id="missionId" @data-loaded="startPolling" />
     </div>
   </div>
 </template>
