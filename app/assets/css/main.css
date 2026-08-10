@@ -494,6 +494,7 @@ body {
 
 .leaflet-signal-popup .signal-popup-row--coordinate {
   justify-content: space-between !important;
+  align-items: center !important;
 }
 .leaflet-signal-popup .signal-popup-row--coordinate > span {
   color: var(--theme-text) !important;
