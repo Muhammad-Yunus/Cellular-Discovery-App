@@ -657,6 +657,46 @@ body {
   border-bottom: 1px solid var(--theme-border);
 }
 
+/* Drone popup rows — label left, value right */
+.leaflet-drone-popup .signal-popup-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.leaflet-drone-popup .signal-popup-row span:first-child {
+  color: var(--theme-text-muted);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.leaflet-drone-popup .signal-popup-row span:last-child {
+  color: var(--theme-text);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  word-break: break-all;
+}
+
+.leaflet-drone-popup .signal-popup-row--coordinate {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px;
+}
+
+.leaflet-drone-popup .signal-popup-row--coordinate svg {
+  color: var(--theme-text-muted);
+  flex-shrink: 0;
+}
+
+.leaflet-drone-popup .signal-popup-row--coordinate > span {
+  color: var(--theme-text) !important;
+  text-align: left !important;
+  flex: 1;
+}
+
 .drone-status-chip {
   display: inline-flex;
   align-items: center;
