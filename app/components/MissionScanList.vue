@@ -188,20 +188,21 @@ async function exportScans() {
 }
 
 // --- Columns ---
+const cellBase = 'whitespace-nowrap'
 const columns: TableColumn<MissionScan>[] = [
   {
     id: 'row-number',
     header: '#',
     cell: ({ row }) => (currentPage.value - 1) * pageSize.value + row.index + 1,
     meta: {
-      class: { th: 'w-12 text-center', td: 'text-center text-muted' }
+      class: { th: `w-12 text-center ${cellBase}`, td: `text-center text-muted ${cellBase}` }
     }
   },
   {
     id: 'operator-logo',
     header: '',
     meta: {
-      class: { th: 'w-8', td: 'w-8 flex items-center justify-center px-0 py-4' }
+      class: { th: `w-8 ${cellBase}`, td: `w-8 flex items-center justify-center px-0 py-4 ${cellBase}` }
     }
   },
   {
@@ -218,7 +219,7 @@ const columns: TableColumn<MissionScan>[] = [
     ]),
     cell: ({ row }) => h('a', {
       href: `/?scan=${row.original.id}`,
-      class: 'text-primary hover:underline font-medium'
+      class: 'text-primary hover:underline font-medium whitespace-nowrap'
     }, row.original.operator_name || 'Unknown')
   },
   {
@@ -234,7 +235,7 @@ const columns: TableColumn<MissionScan>[] = [
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
     ]),
     meta: {
-      class: { th: 'w-24', td: 'font-mono text-sm' }
+      class: { th: `w-24 ${cellBase}`, td: `font-mono text-sm ${cellBase}` }
     }
   },
   {
@@ -250,7 +251,7 @@ const columns: TableColumn<MissionScan>[] = [
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
     ]),
     meta: {
-      class: { th: 'w-28', td: '' }
+      class: { th: `w-28 ${cellBase}`, td: `${cellBase}` }
     }
   },
   {
@@ -264,7 +265,10 @@ const columns: TableColumn<MissionScan>[] = [
       sortColumn === 'mcc'
         ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-0-1' : 'i-lucide-arrow-down-0-1', class: 'w-3 h-3' })
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
-    ])
+    ]),
+    meta: {
+      class: { th: `w-16 ${cellBase}`, td: cellBase }
+    }
   },
   {
     id: 'mnc',
@@ -277,7 +281,10 @@ const columns: TableColumn<MissionScan>[] = [
       sortColumn === 'mnc'
         ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-0-1' : 'i-lucide-arrow-down-0-1', class: 'w-3 h-3' })
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
-    ])
+    ]),
+    meta: {
+      class: { th: `w-16 ${cellBase}`, td: cellBase }
+    }
   },
   {
     id: 'rat',
@@ -290,7 +297,10 @@ const columns: TableColumn<MissionScan>[] = [
       sortColumn === 'rat'
         ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z', class: 'w-3 h-3' })
         : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
-    ])
+    ]),
+    meta: {
+      class: { th: `w-16 ${cellBase}`, td: cellBase }
+    }
   },
   {
     id: 'scan_time',
@@ -306,17 +316,18 @@ const columns: TableColumn<MissionScan>[] = [
     ]),
     cell: ({ row }) => {
       const d = new Date(row.original.scan_time)
-      return d.toLocaleString('en-GB', {
+      return h('span', { class: 'whitespace-nowrap' }, d.toLocaleString('en-GB', {
         year: 'numeric', month: '2-digit', day: '2-digit',
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-      })
+      }))
     }
   },
   {
     id: 'latitude',
     accessorKey: 'latitude',
     header: 'GPS',
-    cell: ({ row }) => `${row.original.latitude.toFixed(4)}, ${row.original.longitude.toFixed(4)}`
+    cell: ({ row }) => h('span', { class: 'whitespace-nowrap font-mono text-xs' },
+      `${row.original.latitude.toFixed(4)}, ${row.original.longitude.toFixed(4)}`)
   }
 ]
 
@@ -417,7 +428,7 @@ onMounted(() => {
         :key="scans.length"
         :data="scans"
         :columns="columns"
-        class="hidden lg:table w-full"
+        class="hidden lg:table w-max min-w-full"
       >
         <template #operator-logo-cell="{ row }">
           <img
