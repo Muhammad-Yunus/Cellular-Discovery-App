@@ -451,7 +451,15 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
     
     // Wire up the custom close button inside the popup to actually close it.
     droneMarker.on('popupopen', (e: any) => {
+      // Force layout fix for coordinate row
       const popupEl = e?.popup?.getElement?.()
+      const coordRow = popupEl?.querySelector('#drone-coord-row')
+      if (coordRow) {
+        coordRow.style.display = 'flex'
+        coordRow.style.justifyContent = 'space-between'
+        coordRow.style.alignItems = 'center'
+        coordRow.style.gap = '6px'
+      }
       const btn = popupEl?.querySelector('.signal-popup-close-btn')
       if (btn) {
         btn.addEventListener('click', (ev: Event) => {
