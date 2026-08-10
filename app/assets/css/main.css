@@ -683,8 +683,9 @@ body {
 .leaflet-drone-popup .signal-popup-row--coordinate {
   flex-direction: row !important;
   align-items: center;
-  gap: 6px;
-  justify-content: space-between;
+  gap: 6px !important;
+  justify-content: space-between !important;
+  padding: 3px 0 !important;
 }
 
 .leaflet-drone-popup .signal-popup-row--coordinate svg {
@@ -696,7 +697,7 @@ body {
   color: var(--theme-text) !important;
   text-align: right !important;
   flex: 1;
-  text-align: right;
+  margin-left: auto;
 }
 
 /* Drone popup close button — inside the popup card, top-right */
