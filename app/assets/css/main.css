@@ -658,7 +658,8 @@ body {
 }
 
 /* Drone popup rows — label left, value right */
-.leaflet-drone-popup .signal-popup-row {
+.leaflet-drone-popup .signal-popup-row,
+.leaflet-drone-popup .drone-popup .signal-popup-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
