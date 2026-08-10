@@ -376,7 +376,7 @@ onUnmounted(() => {
       aria-label="Show route list"
       title="Show route list"
     >
-      <UIcon name="lucide:panel-left-open" class="size-4" aria-hidden="true" />
+      <UIcon name="lucide:panel-left-open" class="size-5" aria-hidden="true" />
     </button>
     <RouteSidebar
       :mission-id="missionId"

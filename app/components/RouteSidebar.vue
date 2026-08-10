@@ -170,7 +170,7 @@ function truncateName(name: string, max = 12): string {
           aria-label="Collapse sidebar"
           title="Collapse sidebar"
         >
-          <UIcon name="lucide:panel-left-close" class="size-3" aria-hidden="true" />
+          <UIcon name="lucide:panel-left-close" class="size-4" aria-hidden="true" />
         </button>
       </div>
     </div>
