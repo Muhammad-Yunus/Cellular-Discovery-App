@@ -147,6 +147,8 @@ function getSortIcon(column: string, direction: 'asc' | 'desc') {
       return direction === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z'
   }
 }
+
+function onSort(column: string) {
   const wasSameColumn = sortColumn === column
   if (sortColumn === column) {
     sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
