@@ -32,6 +32,10 @@ const props = defineProps<{
 const missionStore = useCollectorMissionStore()
 const mapContainer = ref<HTMLDivElement | null>(null)
 const mapWrapper = ref<HTMLDivElement | null>(null)
+const sidebarCollapsed = ref(false)
+function toggleSidebar() {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+}
 
 /**
  * Items rendered on the map. Prefer the specialised route payload from
@@ -363,6 +367,49 @@ onUnmounted(() => {
       data-testid="route-map"
       class="absolute inset-0"
     />
-    <RouteSidebar :mission-id="missionId" />
+    <!-- Toggle sidebar button (top-left) -->
+    <button
+      type="button"
+      @click="toggleSidebar"
+      class="absolute left-4 top-4 z-[600] flex size-8 items-center justify-center rounded-lg border border-muted/40 bg-black/70 text-muted transition-colors hover:bg-black/90 hover:text-default backdrop-blur-md"
+      :title="sidebarCollapsed ? 'Show route list' : 'Hide route list'"
+      aria-label="Toggle route sidebar"
+    >
+      <svg
+        v-if="sidebarCollapsed"
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+      <svg
+        v-else
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+    </button>
+    <RouteSidebar
+      :mission-id="missionId"
+      :collapsed="sidebarCollapsed"
+      @toggle="toggleSidebar"
+    />
   </div>
 </template>

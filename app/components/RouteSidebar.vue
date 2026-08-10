@@ -11,6 +11,11 @@ import { useCollectorMissionStore } from '~/stores/mission'
 
 const props = defineProps<{
   missionId: string
+  collapsed?: boolean
+}>()
+
+const emit = defineEmits<{
+  toggle: []
 }>()
 
 const missionStore = useCollectorMissionStore()
@@ -147,15 +152,30 @@ function truncateName(name: string, max = 12): string {
 <template>
   <div
     data-testid="route-sidebar"
-    class="absolute left-4 top-4 bottom-4 z-[500] w-[300px] flex flex-col overflow-hidden rounded-xl border border-muted bg-black/70 backdrop-blur-md shadow-lg pointer-events-auto"
+    class="absolute left-4 top-4 bottom-4 z-[500] flex flex-col overflow-hidden rounded-xl border border-muted bg-black/70 backdrop-blur-md shadow-lg pointer-events-auto transition-all duration-200"
+    :class="props.collapsed ? 'w-0 opacity-0 pointer-events-none' : 'w-[300px] opacity-100'"
   >
-    <div class="flex items-center justify-between border-b border-muted px-3 py-2">
+    <div class="flex items-center justify-between border-b border-muted px-3 py-2 shrink-0">
       <h2 class="text-sm font-semibold text-default">
         Route Sequence
       </h2>
-      <span class="text-xs text-muted">
-        {{ locations.length }} stop{{ locations.length === 1 ? '' : 's' }}
-      </span>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-muted">
+          {{ locations.length }} stop{{ locations.length === 1 ? '' : 's' }}
+        </span>
+        <button
+          type="button"
+          @click="emit('toggle')"
+          class="flex size-5 items-center justify-center rounded text-muted transition-colors hover:bg-muted/20 hover:text-default"
+          aria-label="Collapse sidebar"
+          title="Collapse sidebar"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div class="flex-1 overflow-y-auto p-2 flex flex-col gap-2">
