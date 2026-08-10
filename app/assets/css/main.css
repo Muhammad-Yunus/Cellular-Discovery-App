@@ -684,6 +684,7 @@ body {
   flex-direction: row !important;
   align-items: center;
   gap: 6px;
+  justify-content: flex-end;
 }
 
 .leaflet-drone-popup .signal-popup-row--coordinate svg {
@@ -693,8 +694,25 @@ body {
 
 .leaflet-drone-popup .signal-popup-row--coordinate > span {
   color: var(--theme-text) !important;
-  text-align: left !important;
+  text-align: right !important;
   flex: 1;
+  text-align: right;
+}
+
+/* Drone header — icon and title aligned right */
+.leaflet-drone-popup .drone-popup-header {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Custom close button — align to the right edge of the popup */
+.leaflet-drone-popup .signal-popup-close-btn {
+  position: absolute;
+  top: -4px;
+  right: -8px;
 }
 
 .drone-status-chip {
