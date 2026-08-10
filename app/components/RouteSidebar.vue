@@ -17,11 +17,19 @@ const missionStore = useCollectorMissionStore()
 
 const isIdle = computed(() => missionStore.selectedMission?.status === 'IDLE')
 
-const locations = computed(() =>
-  [...(missionStore.locations ?? [])]
+/**
+ * Items displayed in the sidebar. Prefer the authoritative route payload
+ * (GET /missions/{id}/route) which carries distance/bearing and the
+ * server-ordered sequence. Fall back to the locations list when the route
+ * endpoint hasn't loaded yet (e.g. before Plan is called).
+ */
+const locations = computed(() => {
+  const routeItems = missionStore.route?.items
+  if (routeItems && routeItems.length > 0) return routeItems
+  return [...(missionStore.locations ?? [])]
     .filter((l): l is NonNullable<typeof l> => l.sequence_order != null)
     .sort((a, b) => (a.sequence_order ?? 0) - (b.sequence_order ?? 0))
-)
+})
 
 /** Drag state for the currently-dragged location. */
 const dragIndex = ref<number | null>(null)
