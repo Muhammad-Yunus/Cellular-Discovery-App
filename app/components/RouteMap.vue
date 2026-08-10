@@ -341,7 +341,7 @@ let routeLayerRef: any = null
 let droneMarker: any = null
 let droneLocationInterval: any = null
 let resizeObserver: ResizeObserver | null = null
-let dronePopupWasOpen: boolean = false
+let dronePopupInitialized: boolean = false
 
 async function locateToDevice(map: any) {
   if (isLocating.value) return
@@ -411,23 +411,26 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
     
     const status = deviceLocation.status || 'UNKNOWN'
     console.log('[RouteMap] Drone status:', status)
-    const icon = createDroneIcon(status)
-    
-    // Check if popup was open before removing
-    if (droneMarker?.isOpen?.()) {
-      dronePopupWasOpen = true
-      console.log('[RouteMap] Popup was open, will reopen after update')
-    }
-    
-    // Remove existing marker
-    if (droneMarker) {
-      console.log('[RouteMap] Removing old drone marker')
-      map.removeLayer(droneMarker)
-      droneMarker = null
-    }
-    
     const latlng = [deviceLocation.latitude, deviceLocation.longitude]
-    console.log('[RouteMap] Creating drone marker at:', latlng)
+    console.log('[RouteMap] Drone latlng:', latlng)
+
+    // If marker already exists, just update its position and content — DO NOT
+    // remove and recreate. Removing causes the bound popup to close mid-display
+    // when the polling interval fires every 5 seconds.
+    if (droneMarker) {
+      droneMarker.setLatLng(latlng)
+      const newIcon = createDroneIcon(status)
+      droneMarker.setIcon(newIcon)
+      // Update popup content in place if popup is bound
+      const popup = droneMarker.getPopup()
+      if (popup) {
+        popup.setContent(buildDronePopupHtml(status, deviceLocation))
+      }
+      console.log('[RouteMap] Drone marker updated in place')
+      return
+    }
+
+    const icon = createDroneIcon(status)
     
     droneMarker = L.marker(latlng, {
       icon,
@@ -438,62 +441,75 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
     droneMarker.addTo(map)
     
     // Add popup with drone info
-    const popupContent = `
-      <div class="drone-popup">
-        <button type="button" class="signal-popup-close-btn" aria-label="Close">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-        <div class="drone-popup-header">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M10 10 7 7"></path>
-            <path d="m10 14-3 3"></path>
-            <path d="m14 10 3-3"></path>
-            <path d="m14 14 3 3"></path>
-            <path d="M14.205 4.139a4 4 0 1 1 5.439 5.863"></path>
-            <path d="M19.637 14a4 4 0 1 1-5.432 5.868"></path>
-            <path d="M4.367 10a4 4 0 1 1 5.438-5.862"></path>
-            <path d="M9.795 19.862a4 4 0 1 1-5.429-5.873"></path>
-            <rect x="10" y="8" width="4" height="8" rx="1"></rect>
-          </svg>
-          <strong>Drone Location</strong>
-        </div>
-        <div class="signal-popup-row"><span>Status</span><span class="drone-status-chip drone-status-${status.toLowerCase()}">${status}</span></div>
-        <div class="signal-popup-row signal-popup-row--coordinate">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          <span>${deviceLocation.latitude.toFixed(6)}, ${deviceLocation.longitude.toFixed(6)}</span>
-        </div>
-        ${deviceLocation.speed != null ? `<div class="signal-popup-row"><span>Speed</span><span>${deviceLocation.speed.toFixed(2)} m/s</span></div>` : ''}
-        ${deviceLocation.altitude != null ? `<div class="signal-popup-row"><span>Altitude</span><span>${deviceLocation.altitude.toFixed(1)} m</span></div>` : ''}
-        <div class="signal-popup-row"><span>Updated</span><span>${new Date(deviceLocation.datetime).toLocaleString('en-GB', { hour12: false })}</span></div>
-      </div>
-    `
+    const popupContent = buildDronePopupHtml(status, deviceLocation)
     
     droneMarker.bindPopup(popupContent, {
-      closeButton: true,
+      closeButton: false, // Custom X button inside content (Leaflet's default X is in the corner already)
       autoClose: false,
       closeOnClick: false,
       className: 'leaflet-drone-popup'
     })
     
-    // Reopen popup if it was open before
-    if (dronePopupWasOpen) {
-      setTimeout(() => {
-        droneMarker?.openPopup()
-        dronePopupWasOpen = false
-      }, 50)
-    }
+    // Wire up the custom close button inside the popup to actually close it.
+    droneMarker.on('popupopen', (e: any) => {
+      const popupEl = e?.popup?.getElement?.()
+      const btn = popupEl?.querySelector('.signal-popup-close-btn')
+      if (btn) {
+        btn.addEventListener('click', (ev: Event) => {
+          ev.stopPropagation()
+          ev.preventDefault()
+          droneMarker?.closePopup()
+        }, { once: true })
+      }
+    })
     
     console.log('[RouteMap] Drone marker added to map, total layers:', map.hasLayer(droneMarker))
     
   } catch (err) {
     console.error('[RouteMap] Failed to fetch drone location:', err)
   }
+}
+
+/**
+ * Build the HTML markup for the drone popup. Extracted so the same markup
+ * can be reused for both initial bind and in-place updates.
+ */
+function buildDronePopupHtml(status: string, deviceLocation: any): string {
+  return `
+    <div class="drone-popup">
+      <button type="button" class="signal-popup-close-btn" aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="drone-popup-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10 10 7 7"></path>
+          <path d="m10 14-3 3"></path>
+          <path d="m14 10 3-3"></path>
+          <path d="m14 14 3 3"></path>
+          <path d="M14.205 4.139a4 4 0 1 1 5.439 5.863"></path>
+          <path d="M19.637 14a4 4 0 1 1-5.432 5.868"></path>
+          <path d="M4.367 10a4 4 0 1 1 5.438-5.862"></path>
+          <path d="M9.795 19.862a4 4 0 1 1-5.429-5.873"></path>
+          <rect x="10" y="8" width="4" height="8" rx="1"></rect>
+        </svg>
+        <strong>Drone Location</strong>
+      </div>
+      <div class="signal-popup-row"><span>Status</span><span class="drone-status-chip drone-status-${status.toLowerCase()}">${status}</span></div>
+      <div class="signal-popup-row signal-popup-row--coordinate">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        <span>${deviceLocation.latitude.toFixed(6)}, ${deviceLocation.longitude.toFixed(6)}</span>
+      </div>
+      ${deviceLocation.speed != null ? `<div class="signal-popup-row"><span>Speed</span><span>${deviceLocation.speed.toFixed(2)} m/s</span></div>` : ''}
+      ${deviceLocation.altitude != null ? `<div class="signal-popup-row"><span>Altitude</span><span>${deviceLocation.altitude.toFixed(1)} m</span></div>` : ''}
+      <div class="signal-popup-row"><span>Updated</span><span>${new Date(deviceLocation.datetime).toLocaleString('en-GB', { hour12: false })}</span></div>
+    </div>
+  `
 }
 
 onMounted(async () => {
