@@ -255,7 +255,7 @@ function renderRoute(
       else if (statusRaw === 'SKIPPED') chipClass = 'signal-popup-status--skipped'
       else if (statusRaw === 'FAILED') chipClass = 'signal-popup-status--failed'
       else if (statusRaw === 'IN_PROGRESS') chipClass = 'signal-popup-status--in-progress'
-      statusChipHtml = `<span class="signal-popup-status ${chipClass}">${statusLabel}</span>`
+      statusChipHtml = `<div class="signal-popup-row"><span>Status</span><span class="signal-popup-status ${chipClass}">${statusLabel}</span></div>`
     }
 
     const popupHtml = `
@@ -275,7 +275,7 @@ function renderRoute(
           <strong>${towerId}</strong>
         </div>
         <div class="signal-popup-row"><span>Tower Name</span><span>${towerName}</span></div>
-        ${statusChipHtml ? `<div class="signal-popup-status-row">${statusChipHtml}</div>` : ''}
+        ${statusChipHtml ? statusChipHtml : ''}
         <div class="signal-popup-row signal-popup-row--coordinate">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
