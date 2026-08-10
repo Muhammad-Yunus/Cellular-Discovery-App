@@ -21,7 +21,8 @@ import type {
   MissionStatus5,
   MissionLocation,
   MissionLocationCreate,
-  MissionRoute
+  MissionRoute,
+  DeviceLocation
 } from '~/types/mission'
 import type { PaginationMeta } from '~/types'
 import * as missionService from '~/services/missionService'
@@ -50,6 +51,10 @@ interface MissionState {
   route: MissionRoute | null
   routeLoading: boolean
   routeError: string | null
+  // Device (drone) state
+  deviceLocation: DeviceLocation | null
+  deviceLocationLoading: boolean
+  deviceLocationError: string | null
   // WebSocket state (Feature 05)
   wsConnected: boolean
   wsStatus: 'connected' | 'disconnected' | 'reconnecting'
@@ -85,6 +90,10 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
     route: null,
     routeLoading: false,
     routeError: null,
+    // Device (drone) state
+    deviceLocation: null,
+    deviceLocationLoading: false,
+    deviceLocationError: null,
     // WebSocket state (Feature 05)
     wsConnected: false,
     wsStatus: 'disconnected' as const
@@ -553,7 +562,6 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
         this.loadingMore = false
       }
     },
-
     // ── WebSocket state (Feature 05) ─────────────────────────────────────
 
     setWsConnected(connected: boolean) {
@@ -562,6 +570,22 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
 
     setWsStatus(status: 'connected' | 'disconnected' | 'reconnecting') {
       this.wsStatus = status
+    },
+
+    // ── Device (drone) location ─────────────────────────────────────
+
+    async fetchDeviceLocation() {
+      this.deviceLocationLoading = true
+      this.deviceLocationError = null
+      try {
+        this.deviceLocation = await missionService.getDeviceLocation()
+      } catch (err) {
+        console.error('Failed to fetch device location', err)
+        this.deviceLocationError = err instanceof Error ? err.message : String(err)
+        this.deviceLocation = null
+      } finally {
+        this.deviceLocationLoading = false
+      }
     }
   }
 })

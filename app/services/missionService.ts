@@ -18,6 +18,7 @@ import type {
   WaypointResponse,
   Drone,
   SurveyArea,
+  DeviceLocation,
   // Collector backend (Feature 02+) types
   MissionRecord,
   MissionRecordCreate,
@@ -517,4 +518,9 @@ export async function downloadLocationTemplate(
   }
 
   return { blob, filename }
+}
+
+/** Get current device (drone) location from the collector backend. */
+export async function getDeviceLocation(): Promise<DeviceLocation> {
+  return missionApiRequest<DeviceLocation>('/device/location', { method: 'GET' })
 }

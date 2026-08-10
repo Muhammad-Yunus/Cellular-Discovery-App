@@ -412,6 +412,18 @@ export interface MissionListQuery {
   sort?: string
 }
 
+/** Device (drone) current location from GET /device/location. */
+export interface DeviceLocation {
+  latitude: number
+  longitude: number
+  altitude: number | null
+  accuracy: number | null
+  speed: number | null
+  status: 'UNKNOWN' | 'IDLE' | 'MOVING' | string
+  datetime: string
+  provider: string
+}
+
 /** Patch payload for updating an existing waypoint. */
 export type WaypointUpdateInput = Partial<WaypointCreateInput>
 
