@@ -667,13 +667,15 @@ body {
   padding: 3px 0;
 }
 
-.leaflet-drone-popup .signal-popup-row span:first-child {
+.leaflet-drone-popup .signal-popup-row span:first-child,
+.leaflet-drone-popup .drone-popup .signal-popup-row span:first-child {
   color: var(--theme-text-muted);
   font-size: 12px;
   flex-shrink: 0;
 }
 
-.leaflet-drone-popup .signal-popup-row span:last-child {
+.leaflet-drone-popup .signal-popup-row span:last-child,
+.leaflet-drone-popup .drone-popup .signal-popup-row span:last-child {
   color: var(--theme-text);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
