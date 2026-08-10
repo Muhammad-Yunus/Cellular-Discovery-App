@@ -362,7 +362,7 @@ async function onPlan() {
 </script>
 
 <template>
-  <div class="p-4 md:p-6 max-w-5xl mx-auto min-h-screen flex flex-col gap-6">
+  <div class="p-4 md:p-6 max-w-7xl mx-auto min-h-screen flex flex-col gap-6">
     <!-- Top row: Back link (left) + Breadcrumb (right) -->
     <div class="flex items-center justify-between">
       <NuxtLink to="/missions" class="text-sm text-muted hover:text-primary">
@@ -375,188 +375,196 @@ async function onPlan() {
       />
     </div>
 
-    <!-- Header + Status bar in a bordered container -->
-    <div class="border border-default/10 bg-elevated rounded-lg p-4 space-y-4">
-      <!-- Title + action buttons inline -->
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <template v-if="missionStore.loading && !missionStore.selectedMission">
-            <p class="text-2xl font-bold text-default">Loading</p>
-          </template>
-          <template v-else-if="!missionStore.loading && !missionStore.selectedMission">
-            <p class="text-2xl font-bold text-default">Mission not found</p>
-            <p class="mt-1 text-sm text-muted">No mission matches the given ID.</p>
-          </template>
-          <template v-else>
-            <h1 class="text-2xl font-bold text-default">
-              {{ missionStore.selectedMission?.name ?? missionId }}
-            </h1>
-            <p class="mt-1 text-sm text-muted">
-              {{ missionStore.selectedMission?.description ?? '' }}
-            </p>
-          </template>
+    <!-- Main content: left sidebar (mission detail) + right panel (tabs) -->
+    <div class="flex gap-4 items-start flex-1 min-h-0">
+      <!-- Left: Mission detail card (fixed, scrollable) -->
+      <div class="w-80 shrink-0 border border-default/10 bg-elevated rounded-lg p-4 space-y-4 overflow-y-auto">
+        <!-- Title + action buttons -->
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <template v-if="missionStore.loading && !missionStore.selectedMission">
+              <p class="text-xl font-bold text-default">Loading</p>
+            </template>
+            <template v-else-if="!missionStore.loading && !missionStore.selectedMission">
+              <p class="text-xl font-bold text-default">Mission not found</p>
+              <p class="mt-1 text-sm text-muted">No mission matches.</p>
+            </template>
+            <template v-else>
+              <h1 class="text-xl font-bold text-default">
+                {{ missionStore.selectedMission?.name ?? missionId }}
+              </h1>
+              <p class="mt-1 text-xs text-muted">
+                {{ missionStore.selectedMission?.description ?? '' }}
+              </p>
+            </template>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <NuxtLink :to="`/missions/${missionId}/edit`">
+              <UButton icon="lucide:edit" variant="outline" size="xs">Edit</UButton>
+            </NuxtLink>
+             <UButton
+              v-if="missionStore.selectedMission?.status === 'IDLE'"
+              icon="lucide:upload"
+              :to="`/missions/${missionId}/locations/upload`"
+              size="xs"
+            >
+              Upload
+            </UButton>
+          </div>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <NuxtLink :to="`/missions/${missionId}/edit`">
-            <UButton icon="lucide:edit" variant="outline">Edit</UButton>
-          </NuxtLink>
-           <UButton
-             v-if="missionStore.selectedMission?.status === 'IDLE'"
-             icon="lucide:upload"
-             :to="`/missions/${missionId}/locations/upload`"
-           >
-             Upload
-           </UButton>
-        </div>
+
+        <!-- Status bar + actions -->
+        <template v-if="missionStore.selectedMission">
+          <div class="flex flex-col gap-2 rounded border border-default/10 bg-default p-3 text-xs">
+            <div class="flex items-center gap-2">
+              <UBadge
+                :color="getStatusBadgeProps(missionStore.selectedMission.status).color"
+                variant="subtle"
+                size="sm"
+              >
+                {{ getStatusBadgeProps(missionStore.selectedMission.status).label }}
+              </UBadge>
+              <span class="text-muted">Created {{ new Date(missionStore.selectedMission.created_at).toLocaleString('en-GB', { hour12: false }) }}</span>
+            </div>
+            <div
+              class="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-2 py-1 text-xs text-default"
+              :title="`${missionStore.selectedMission.visited_locations ?? 0} of ${missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0} locations visited (${(missionStore.selectedMission.progress_percent ?? 0).toFixed(1)}%)`"
+            >
+              <Icon name="lucide:map-pin" class="size-3 text-muted" aria-hidden="true" />
+              <span class="font-mono">
+                {{ missionStore.selectedMission.visited_locations ?? 0 }} / {{ missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0 }}
+                <span v-if="missionStore.selectedMission.progress_percent !== undefined">({{ missionStore.selectedMission.progress_percent.toFixed(1) }}%)</span>
+              </span>
+              <span class="text-muted">locations</span>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <div
+                class="inline-flex items-center gap-1.5 rounded-md border border-default/15 bg-elevated px-2 py-1 text-xs text-default"
+                title="Search radius (meters)"
+              >
+                <Icon name="lucide:radius" class="size-3 shrink-0 text-muted" aria-hidden="true" />
+                <span class="font-mono">{{ missionStore.selectedMission.radius_meters ?? 0 }}</span>
+                <span class="text-muted">m</span>
+              </div>
+              <div
+                class="inline-flex items-center gap-1.5 rounded-md border border-default/15 bg-elevated px-2 py-1 text-xs text-default"
+                title="TTY serial port"
+              >
+                <Icon name="lucide:usb" class="size-3 shrink-0 text-muted" aria-hidden="true" />
+                <span class="font-mono">{{ missionStore.selectedMission.tty_port || '—' }}</span>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1 pt-1">
+              <!-- Plan: IDLE only and only when locations > 0 -->
+              <UButton
+                v-if="canPlan(missionStore.selectedMission.status, missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0)"
+                size="xs"
+                variant="ghost"
+                icon="i-lucide-map"
+                :loading="isActionPending()"
+                :disabled="isActionPending()"
+                @click="onPlan()"
+              >Plan</UButton>
+              <!-- Start: IDLE, READY, STOPPED, FAILED -->
+              <UButton
+                v-if="canStart(missionStore.selectedMission.status)"
+                size="xs"
+                variant="ghost"
+                icon="i-lucide-play"
+                :loading="isActionPending()"
+                :disabled="isActionPending()"
+                @click="onStatusChange('start')"
+              >Start</UButton>
+              <!-- Pause: RUNNING only -->
+              <UButton
+                v-if="canPause(missionStore.selectedMission.status)"
+                size="xs"
+                variant="ghost"
+                icon="i-lucide-pause"
+                :loading="isActionPending()"
+                :disabled="isActionPending()"
+                @click="onStatusChange('pause')"
+              >Pause</UButton>
+              <!-- Resume: PAUSED only -->
+              <UButton
+                v-if="canResume(missionStore.selectedMission.status)"
+                size="xs"
+                variant="ghost"
+                icon="i-lucide-play"
+                :loading="isActionPending()"
+                :disabled="isActionPending()"
+                @click="onStatusChange('resume')"
+              >Resume</UButton>
+              <!-- Stop: STARTING, RUNNING, PAUSED -->
+              <UButton
+                v-if="canStop(missionStore.selectedMission.status)"
+                size="xs"
+                variant="ghost"
+                color="error"
+                icon="i-lucide-square"
+                :loading="isActionPending()"
+                :disabled="isActionPending()"
+                @click="onStatusChange('stop')"
+              >Stop</UButton>
+              <!-- Terminal: no action buttons -->
+              <span
+                v-if="isTerminal(missionStore.selectedMission.status)"
+                class="text-xs text-muted italic"
+              >Terminal</span>
+            </div>
+          </div>
+        </template>
       </div>
 
-      <!-- Status bar + actions -->
-      <template v-if="missionStore.selectedMission">
-        <div class="flex flex-wrap items-center gap-3 rounded border border-default/10 bg-default p-3">
-          <UBadge
-            :color="getStatusBadgeProps(missionStore.selectedMission.status).color"
-            variant="subtle"
+      <!-- Right: Tabs + Tab panels -->
+      <div class="flex-1 flex flex-col gap-4 min-w-0">
+        <!-- Tabs -->
+        <div role="tablist" class="flex gap-1 border-b border-default/10">
+          <button
+            v-for="tab in tabs"
+            :key="tab.key"
+            role="tab"
+            :data-reka-collection-item="''"
+            class="inline-flex items-center gap-1.5 cursor-pointer rounded-t px-4 py-2 text-sm font-medium transition-colors hover:bg-accented"
+            :class="activeTab === tab.key ? 'border-b-2 border-primary text-primary' : 'text-muted'"
+            @click="activeTab = tab.key"
           >
-            {{ getStatusBadgeProps(missionStore.selectedMission.status).label }}
-          </UBadge>
-          <div
-            class="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-2 py-1 text-xs text-default"
-            :title="`${missionStore.selectedMission.visited_locations ?? 0} of ${missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0} locations visited (${(missionStore.selectedMission.progress_percent ?? 0).toFixed(1)}%)`"
-          >
-            <Icon name="lucide:map-pin" class="size-3.5 shrink-0 text-muted" aria-hidden="true" />
-            <span class="font-mono">
-              {{ missionStore.selectedMission.visited_locations ?? 0 }} / {{ missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0 }}
-              <span v-if="missionStore.selectedMission.progress_percent !== undefined">({{ missionStore.selectedMission.progress_percent.toFixed(1) }}%)</span>
-            </span>
-            <span class="text-muted">locations</span>
-          </div>
+            <Icon :name="tab.icon" class="size-3.5 shrink-0" aria-hidden="true" />
+            {{ tab.label }}
+          </button>
+        </div>
 
-          <!-- Read-only metadata chips: radius & TTY port are set at mission
-               creation and are not editable here. -->
+        <!-- Tab panels -->
+        <div class="flex-1 min-h-0">
           <div
-            class="inline-flex items-center gap-1.5 rounded-md border border-default/15 bg-elevated px-2 py-1 text-xs text-default"
-            title="Search radius (meters)"
+            v-if="activeTab === 'locations'"
+            class="h-full"
           >
-            <Icon name="lucide:radius" class="size-3.5 shrink-0 text-muted" aria-hidden="true" />
-            <span class="font-mono">{{ missionStore.selectedMission.radius_meters ?? 0 }}</span>
-            <span class="text-muted">m</span>
+            <LocationList :mission-id="missionId" />
+          </div>
+          <!-- Route tab: bezel-less map, fills the available height. -->
+          <div
+            v-else-if="activeTab === 'route'"
+            class="h-full overflow-hidden"
+          >
+            <RouteMap :mission-id="missionId" />
+          </div>
+          <!-- Tower Scans tab -->
+          <div
+            v-else-if="activeTab === 'scans'"
+            class="h-full overflow-y-auto"
+          >
+            <MissionScanList :mission-id="missionId" @data-loaded="startPolling" />
           </div>
           <div
-            class="inline-flex items-center gap-1.5 rounded-md border border-default/15 bg-elevated px-2 py-1 text-xs text-default"
-            title="TTY serial port"
+            v-else-if="activeTab === 'logs'"
+            class="h-full overflow-y-auto"
           >
-            <Icon name="lucide:usb" class="size-3.5 shrink-0 text-muted" aria-hidden="true" />
-            <span class="font-mono">{{ missionStore.selectedMission.tty_port || '—' }}</span>
-          </div>
-          <span class="text-xs text-muted">
-            Created {{ new Date(missionStore.selectedMission.created_at).toLocaleString('en-GB', { hour12: false }) }}
-          </span>
-
-          <div class="ml-auto flex items-center gap-1">
-            <!-- Plan: IDLE only and only when locations > 0 -->
-            <UButton
-              v-if="canPlan(missionStore.selectedMission.status, missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0)"
-              size="xs"
-              variant="ghost"
-              icon="i-lucide-map"
-              :loading="isActionPending()"
-              :disabled="isActionPending()"
-              @click="onPlan()"
-            >Plan</UButton>
-            <!-- Start: IDLE, READY, STOPPED, FAILED -->
-            <UButton
-              v-if="canStart(missionStore.selectedMission.status)"
-              size="xs"
-              variant="ghost"
-              icon="i-lucide-play"
-              :loading="isActionPending()"
-              :disabled="isActionPending()"
-              @click="onStatusChange('start')"
-            >Start</UButton>
-            <!-- Pause: RUNNING only -->
-            <UButton
-              v-if="canPause(missionStore.selectedMission.status)"
-              size="xs"
-              variant="ghost"
-              icon="i-lucide-pause"
-              :loading="isActionPending()"
-              :disabled="isActionPending()"
-              @click="onStatusChange('pause')"
-            >Pause</UButton>
-            <!-- Resume: PAUSED only -->
-            <UButton
-              v-if="canResume(missionStore.selectedMission.status)"
-              size="xs"
-              variant="ghost"
-              icon="i-lucide-play"
-              :loading="isActionPending()"
-              :disabled="isActionPending()"
-              @click="onStatusChange('resume')"
-            >Resume</UButton>
-            <!-- Stop: STARTING, RUNNING, PAUSED -->
-            <UButton
-              v-if="canStop(missionStore.selectedMission.status)"
-              size="xs"
-              variant="ghost"
-              color="error"
-              icon="i-lucide-square"
-              :loading="isActionPending()"
-              :disabled="isActionPending()"
-              @click="onStatusChange('stop')"
-            >Stop</UButton>
-            <!-- Terminal: no action buttons -->
-            <span
-              v-if="isTerminal(missionStore.selectedMission.status)"
-              class="text-xs text-muted italic"
-            >Terminal — no actions</span>
+            <MissionLogList :mission-id="missionId" @data-loaded="startPolling" />
           </div>
         </div>
-      </template>
-    </div>
-
-    <!-- Tabs (always visible — required by e2e tests) -->
-    <div role="tablist" class="flex gap-1 border-b border-default/10">
-      <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        role="tab"
-        :data-reka-collection-item="''"
-        class="inline-flex items-center gap-1.5 cursor-pointer rounded-t px-4 py-2 text-sm font-medium transition-colors hover:bg-accented"
-        :class="activeTab === tab.key ? 'border-b-2 border-primary text-primary' : 'text-muted'"
-        @click="activeTab = tab.key"
-      >
-        <Icon :name="tab.icon" class="size-3.5 shrink-0" aria-hidden="true" />
-        {{ tab.label }}
-      </button>
-    </div>
-
-    <!-- Tab panels: Locations tab renders the table directly so it can
-         carry its own border (matching the /history table pattern). -->
-    <div
-      v-if="activeTab === 'locations'"
-      class="flex-1"
-    >
-      <LocationList :mission-id="missionId" />
-    </div>
-    <!-- Route tab: bezel-less map, fills the available height. -->
-    <div
-      v-else-if="activeTab === 'route'"
-      class="flex-1 overflow-hidden"
-    >
-      <RouteMap :mission-id="missionId" />
-    </div>
-    <!-- Tower Scans tab: paginated scan list from /api/v1/missions/{id}/scans -->
-    <div
-      v-else-if="activeTab === 'scans'"
-      class="flex-1 overflow-y-auto"
-    >
-      <MissionScanList :mission-id="missionId" @data-loaded="startPolling" />
-    </div>
-    <div
-      v-else-if="activeTab === 'logs'"
-      class="flex-1 overflow-y-auto"
-    >
-      <MissionLogList :mission-id="missionId" @data-loaded="startPolling" />
+      </div>
     </div>
   </div>
 </template>
