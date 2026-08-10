@@ -66,6 +66,14 @@ export interface MissionLog {
   message: string
 }
 
+export interface MissionLogPaginated {
+  items: MissionLog[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
 export interface Setting {
   id?: string
   key: string

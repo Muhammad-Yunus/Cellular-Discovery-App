@@ -1,5 +1,5 @@
 import { apiRequest } from './api'
-import type { ScanResponse, ScanPaginated, ScanCreate, MissionScan, MissionScanPaginated, MissionLog } from '~/types'
+import type { ScanResponse, ScanPaginated, ScanCreate, MissionScan, MissionScanPaginated, MissionLog, MissionLogPaginated } from '~/types'
 
 export interface GetScansParams {
   page?: number
@@ -74,8 +74,15 @@ export async function getMissionScans(
   })
 }
 
-export async function getMissionLogs(missionId: string): Promise<MissionLog[]> {
-  return apiRequest<MissionLog[]>(`/missions/${missionId}/logs`, {
-    method: 'GET'
+export async function getMissionLogs(
+  missionId: string,
+  params?: { page?: number; page_size?: number }
+): Promise<MissionLogPaginated> {
+  return apiRequest<MissionLogPaginated>(`/missions/${missionId}/logs`, {
+    method: 'GET',
+    params: {
+      page: params?.page ?? 1,
+      page_size: params?.page_size ?? 10
+    }
   })
 }

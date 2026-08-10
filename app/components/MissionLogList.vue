@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MissionLog } from '~/types'
+import type { MissionLog, MissionLogPaginated } from '~/types'
 import { getMissionLogs } from '~/services/scan.service'
 import { ref, onMounted } from 'vue'
 
@@ -14,6 +14,10 @@ const emit = defineEmits<{
 const logs = ref<MissionLog[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const totalItems = ref(0)
+const totalPages = ref(0)
 
 function getEventTypeColor(eventType: string): string {
   const lower = eventType.toLowerCase()
@@ -41,13 +45,23 @@ function getEventTypeIcon(eventType: string): string {
   return 'lucide:file-text'
 }
 
-async function fetchLogs() {
+async function fetchLogs(resetPage = false) {
+  if (resetPage) currentPage.value = 1
   loading.value = true
   error.value = null
   try {
-    logs.value = await getMissionLogs(props.missionId)
+    const result = await getMissionLogs(props.missionId, {
+      page: currentPage.value,
+      page_size: pageSize.value
+    })
+    logs.value = result.items
+    totalItems.value = result.total
+    totalPages.value = result.total_pages
   } catch (e: any) {
     error.value = e?.message ?? 'Failed to load logs'
+    logs.value = []
+    totalItems.value = 0
+    totalPages.value = 0
   } finally {
     loading.value = false
   }
@@ -146,10 +160,20 @@ onMounted(fetchLogs)
 
           <!-- Line number (desktop) -->
           <span class="hidden sm:block text-xs text-muted font-mono shrink-0">
-            #{{ index + 1 }}
+            #{{ ((currentPage - 1) * pageSize) + index + 1 }}
           </span>
         </div>
       </div>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="totalPages > 1" class="flex justify-center mt-4">
+      <UPagination
+        :page="currentPage"
+        :total="totalItems"
+        :items-per-page="pageSize"
+        @update:page="currentPage = $event; fetchLogs()"
+      />
     </div>
   </div>
 </template>
