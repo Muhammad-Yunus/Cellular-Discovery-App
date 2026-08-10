@@ -341,6 +341,7 @@ let routeLayerRef: any = null
 let droneMarker: any = null
 let droneLocationInterval: any = null
 let resizeObserver: ResizeObserver | null = null
+let dronePopupWasOpen: boolean = false
 
 async function locateToDevice(map: any) {
   if (isLocating.value) return
@@ -412,6 +413,12 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
     console.log('[RouteMap] Drone status:', status)
     const icon = createDroneIcon(status)
     
+    // Check if popup was open before removing
+    if (droneMarker?.isOpen?.()) {
+      dronePopupWasOpen = true
+      console.log('[RouteMap] Popup was open, will reopen after update')
+    }
+    
     // Remove existing marker
     if (droneMarker) {
       console.log('[RouteMap] Removing old drone marker')
@@ -433,6 +440,12 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
     // Add popup with drone info
     const popupContent = `
       <div class="drone-popup">
+        <button type="button" class="signal-popup-close-btn" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
         <div class="drone-popup-header">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M10 10 7 7"></path>
@@ -462,10 +475,19 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
     `
     
     droneMarker.bindPopup(popupContent, {
+      closeButton: true,
       autoClose: false,
       closeOnClick: false,
       className: 'leaflet-drone-popup'
     })
+    
+    // Reopen popup if it was open before
+    if (dronePopupWasOpen) {
+      setTimeout(() => {
+        droneMarker?.openPopup()
+        dronePopupWasOpen = false
+      }, 50)
+    }
     
     console.log('[RouteMap] Drone marker added to map, total layers:', map.hasLayer(droneMarker))
     
