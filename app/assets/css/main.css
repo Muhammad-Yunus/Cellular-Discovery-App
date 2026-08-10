@@ -684,7 +684,7 @@ body {
   flex-direction: row !important;
   align-items: center;
   gap: 6px;
-  justify-content: flex-end;
+  justify-content: space-between;
 }
 
 .leaflet-drone-popup .signal-popup-row--coordinate svg {
