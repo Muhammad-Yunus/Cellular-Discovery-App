@@ -493,7 +493,7 @@ body {
 }
 
 .leaflet-signal-popup .signal-popup-row--coordinate {
-  justify-content: flex-start !important;
+  justify-content: space-between !important;
 }
 .leaflet-signal-popup .signal-popup-row--coordinate > span {
   color: var(--theme-text) !important;
