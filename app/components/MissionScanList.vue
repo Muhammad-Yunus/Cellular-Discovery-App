@@ -33,14 +33,12 @@ const startDateTime = ref<string | null>(null)
 const endDateTime = ref<string | null>(null)
 
 // Sort
-let sortColumn = 'scan_time'
-let sortDirection: 'asc' | 'desc' = 'desc'
-// Track previous sort column for transition animation
-const prevSortColumn = ref(sortColumn)
+const sortColumn = ref('scan_time')
+const sortDirection = ref<'asc' | 'desc'>('desc')
 
 // --- Helpers ---
 function getSortParam(): string {
-  return `${sortDirection === 'asc' ? '' : '-'}${sortColumn}`
+  return `${sortDirection.value === 'asc' ? '' : '-'}${sortColumn.value}`
 }
 
 function getDefaultDateRange() {
@@ -129,7 +127,7 @@ watch(search, (val) => {
 watch(ratFilter, () => fetchScans())
 
 function getSortIcon(column: string, direction: 'asc' | 'desc') {
-  const isActive = sortColumn === column
+  const isActive = sortColumn.value === column
   // Return appropriate icon based on column and direction
   if (!isActive) return 'i-lucide-arrow-up-down'
   switch (column) {
@@ -149,17 +147,14 @@ function getSortIcon(column: string, direction: 'asc' | 'desc') {
 }
 
 function onSort(column: string) {
-  const wasSameColumn = sortColumn === column
-  if (sortColumn === column) {
-    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
+  const wasSameColumn = sortColumn.value === column
+  if (sortColumn.value === column) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
-    sortColumn = column
-    sortDirection = 'desc'
+    sortColumn.value = column
+    sortDirection.value = 'desc'
   }
   // Trigger transition animation when column changes
-  if (!wasSameColumn) {
-    prevSortColumn.value = column
-  }
   fetchScans()
 }
 
@@ -241,7 +236,7 @@ const columns: TableColumn<MissionScan>[] = [
     }, [
       'Operator',
       h(resolveComponent('UIcon'), {
-        name: getSortIcon('operator', sortDirection),
+        name: getSortIcon('operator', sortDirection.value),
         class: 'w-3 h-3 transition-transform duration-200'
       })
     ]),
@@ -259,7 +254,7 @@ const columns: TableColumn<MissionScan>[] = [
     }, [
       'Tower ID',
       h(resolveComponent('UIcon'), {
-        name: getSortIcon('cellular_tower_id', sortDirection),
+        name: getSortIcon('cellular_tower_id', sortDirection.value),
         class: 'w-3 h-3 transition-transform duration-200'
       })
     ]),
@@ -276,7 +271,7 @@ const columns: TableColumn<MissionScan>[] = [
     }, [
       'Tower Name',
       h(resolveComponent('UIcon'), {
-        name: getSortIcon('cellular_tower_name', sortDirection),
+        name: getSortIcon('cellular_tower_name', sortDirection.value),
         class: 'w-3 h-3 transition-transform duration-200'
       })
     ]),
@@ -293,7 +288,7 @@ const columns: TableColumn<MissionScan>[] = [
     }, [
       'MCC',
       h(resolveComponent('UIcon'), {
-        name: getSortIcon('mcc', sortDirection),
+        name: getSortIcon('mcc', sortDirection.value),
         class: 'w-3 h-3 transition-transform duration-200'
       })
     ]),
@@ -310,7 +305,7 @@ const columns: TableColumn<MissionScan>[] = [
     }, [
       'MNC',
       h(resolveComponent('UIcon'), {
-        name: getSortIcon('mnc', sortDirection),
+        name: getSortIcon('mnc', sortDirection.value),
         class: 'w-3 h-3 transition-transform duration-200'
       })
     ]),
@@ -327,7 +322,7 @@ const columns: TableColumn<MissionScan>[] = [
     }, [
       'RAT',
       h(resolveComponent('UIcon'), {
-        name: getSortIcon('rat', sortDirection),
+        name: getSortIcon('rat', sortDirection.value),
         class: 'w-3 h-3 transition-transform duration-200'
       })
     ]),
@@ -344,7 +339,7 @@ const columns: TableColumn<MissionScan>[] = [
     }, [
       'Scan Time',
       h(resolveComponent('UIcon'), {
-        name: getSortIcon('scan_time', sortDirection),
+        name: getSortIcon('scan_time', sortDirection.value),
         class: 'w-3 h-3 transition-transform duration-200'
       })
     ]),
