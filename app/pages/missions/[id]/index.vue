@@ -379,41 +379,26 @@ async function onPlan() {
     <div class="flex gap-4 items-start flex-1 min-h-0">
       <!-- Left: Mission detail card (fixed, scrollable) -->
       <div class="w-80 shrink-0 border border-default/10 bg-elevated rounded-lg p-4 space-y-4 overflow-y-auto">
-        <!-- Title + action buttons -->
-        <div class="flex items-start justify-between gap-2">
-          <div>
-            <template v-if="missionStore.loading && !missionStore.selectedMission">
-              <p class="text-xl font-bold text-default">Loading</p>
-            </template>
-            <template v-else-if="!missionStore.loading && !missionStore.selectedMission">
-              <p class="text-xl font-bold text-default">Mission not found</p>
-              <p class="mt-1 text-sm text-muted">No mission matches.</p>
-            </template>
-            <template v-else>
-              <h1 class="text-xl font-bold text-default">
-                {{ missionStore.selectedMission?.name ?? missionId }}
-              </h1>
-              <p class="mt-1 text-xs text-muted">
-                {{ missionStore.selectedMission?.description ?? '' }}
-              </p>
-            </template>
-          </div>
-          <div class="flex items-center gap-1 shrink-0">
-            <NuxtLink :to="`/missions/${missionId}/edit`">
-              <UButton icon="lucide:edit" variant="outline" size="xs">Edit</UButton>
-            </NuxtLink>
-             <UButton
-              v-if="missionStore.selectedMission?.status === 'IDLE'"
-              icon="lucide:upload"
-              :to="`/missions/${missionId}/locations/upload`"
-              size="xs"
-            >
-              Upload
-            </UButton>
-          </div>
+        <!-- Title only (actions moved to separate card above) -->
+        <div>
+          <template v-if="missionStore.loading && !missionStore.selectedMission">
+            <p class="text-xl font-bold text-default">Loading</p>
+          </template>
+          <template v-else-if="!missionStore.loading && !missionStore.selectedMission">
+            <p class="text-xl font-bold text-default">Mission not found</p>
+            <p class="mt-1 text-sm text-muted">No mission matches.</p>
+          </template>
+          <template v-else>
+            <h1 class="text-xl font-bold text-default">
+              {{ missionStore.selectedMission?.name ?? missionId }}
+            </h1>
+            <p class="mt-1 text-xs text-muted">
+              {{ missionStore.selectedMission?.description ?? '' }}
+            </p>
+          </template>
         </div>
 
-        <!-- Status bar + actions -->
+        <!-- Status bar -->
         <template v-if="missionStore.selectedMission">
           <div class="flex flex-col gap-2 rounded border border-default/10 bg-default p-3 text-xs">
             <div class="flex items-center gap-2">
@@ -454,71 +439,78 @@ async function onPlan() {
                 <span class="font-mono">{{ missionStore.selectedMission.tty_port || '—' }}</span>
               </div>
             </div>
-
-            <div class="flex flex-wrap gap-1 pt-1">
-              <!-- Plan: IDLE only and only when locations > 0 -->
-              <UButton
-                v-if="canPlan(missionStore.selectedMission.status, missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0)"
-                size="xs"
-                variant="ghost"
-                icon="i-lucide-map"
-                :loading="isActionPending()"
-                :disabled="isActionPending()"
-                @click="onPlan()"
-              >Plan</UButton>
-              <!-- Start: IDLE, READY, STOPPED, FAILED -->
-              <UButton
-                v-if="canStart(missionStore.selectedMission.status)"
-                size="xs"
-                variant="ghost"
-                icon="i-lucide-play"
-                :loading="isActionPending()"
-                :disabled="isActionPending()"
-                @click="onStatusChange('start')"
-              >Start</UButton>
-              <!-- Pause: RUNNING only -->
-              <UButton
-                v-if="canPause(missionStore.selectedMission.status)"
-                size="xs"
-                variant="ghost"
-                icon="i-lucide-pause"
-                :loading="isActionPending()"
-                :disabled="isActionPending()"
-                @click="onStatusChange('pause')"
-              >Pause</UButton>
-              <!-- Resume: PAUSED only -->
-              <UButton
-                v-if="canResume(missionStore.selectedMission.status)"
-                size="xs"
-                variant="ghost"
-                icon="i-lucide-play"
-                :loading="isActionPending()"
-                :disabled="isActionPending()"
-                @click="onStatusChange('resume')"
-              >Resume</UButton>
-              <!-- Stop: STARTING, RUNNING, PAUSED -->
-              <UButton
-                v-if="canStop(missionStore.selectedMission.status)"
-                size="xs"
-                variant="ghost"
-                color="error"
-                icon="i-lucide-square"
-                :loading="isActionPending()"
-                :disabled="isActionPending()"
-                @click="onStatusChange('stop')"
-              >Stop</UButton>
-              <!-- Terminal: no action buttons -->
-              <span
-                v-if="isTerminal(missionStore.selectedMission.status)"
-                class="text-xs text-muted italic"
-              >Terminal</span>
-            </div>
           </div>
         </template>
       </div>
 
       <!-- Right: Tabs + Tab panels -->
       <div class="flex-1 flex flex-col gap-4 min-w-0">
+        <!-- Action buttons card -->
+        <div class="border border-default/10 bg-elevated rounded-lg p-3">
+          <div class="flex flex-wrap gap-2">
+            <NuxtLink :to="`/missions/${missionId}/edit`">
+              <UButton icon="lucide:edit" variant="outline" size="sm">Edit</UButton>
+            </NuxtLink>
+            <UButton
+              v-if="missionStore.selectedMission?.status === 'IDLE'"
+              icon="lucide:upload"
+              :to="`/missions/${missionId}/locations/upload`"
+              size="sm"
+            >
+              Upload
+            </UButton>
+            <UButton
+              v-if="canPlan(missionStore.selectedMission?.status, missionStore.selectedMission?.location_count ?? missionStore.selectedMission?.total_locations ?? 0)"
+              size="sm"
+              variant="ghost"
+              icon="i-lucide-map"
+              :loading="isActionPending()"
+              :disabled="isActionPending()"
+              @click="onPlan()"
+            >Plan</UButton>
+            <UButton
+              v-if="canStart(missionStore.selectedMission?.status)"
+              size="sm"
+              variant="ghost"
+              icon="i-lucide-play"
+              :loading="isActionPending()"
+              :disabled="isActionPending()"
+              @click="onStatusChange('start')"
+            >Start</UButton>
+            <UButton
+              v-if="canPause(missionStore.selectedMission?.status)"
+              size="sm"
+              variant="ghost"
+              icon="i-lucide-pause"
+              :loading="isActionPending()"
+              :disabled="isActionPending()"
+              @click="onStatusChange('pause')"
+            >Pause</UButton>
+            <UButton
+              v-if="canResume(missionStore.selectedMission?.status)"
+              size="sm"
+              variant="ghost"
+              icon="i-lucide-play"
+              :loading="isActionPending()"
+              :disabled="isActionPending()"
+              @click="onStatusChange('resume')"
+            >Resume</UButton>
+            <UButton
+              v-if="canStop(missionStore.selectedMission?.status)"
+              size="sm"
+              variant="ghost"
+              color="error"
+              icon="i-lucide-square"
+              :loading="isActionPending()"
+              :disabled="isActionPending()"
+              @click="onStatusChange('stop')"
+            >Stop</UButton>
+            <span
+              v-if="isTerminal(missionStore.selectedMission?.status)"
+              class="text-xs text-muted italic"
+            >Terminal</span>
+          </div>
+        </div>
         <!-- Tabs -->
         <div role="tablist" class="flex gap-1 border-b border-default/10">
           <button
