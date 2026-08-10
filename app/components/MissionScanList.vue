@@ -222,6 +222,38 @@ const columns: TableColumn<MissionScan>[] = [
     }, row.original.operator_name || 'Unknown')
   },
   {
+    id: 'cellular_tower_id',
+    accessorKey: 'cellular_tower_id',
+    header: () => h('button', {
+      class: 'flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented',
+      onClick: () => onSort('cellular_tower_id')
+    }, [
+      'Tower ID',
+      sortColumn === 'cellular_tower_id'
+        ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z', class: 'w-3 h-3' })
+        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+    ]),
+    meta: {
+      class: { th: 'w-24', td: 'font-mono text-sm' }
+    }
+  },
+  {
+    id: 'cellular_tower_name',
+    accessorKey: 'cellular_tower_name',
+    header: () => h('button', {
+      class: 'flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented',
+      onClick: () => onSort('cellular_tower_name')
+    }, [
+      'Tower Name',
+      sortColumn === 'cellular_tower_name'
+        ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z', class: 'w-3 h-3' })
+        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+    ]),
+    meta: {
+      class: { th: 'w-28', td: '' }
+    }
+  },
+  {
     id: 'mcc',
     accessorKey: 'mcc',
     header: () => h('button', {
@@ -413,6 +445,7 @@ onMounted(() => {
           </UBadge>
         </div>
         <div class="text-xs text-muted space-y-0.5">
+          <div>Tower: {{ scan.cellular_tower_id }} - {{ scan.cellular_tower_name }}</div>
           <div>MCC: {{ scan.mcc }} | MNC: {{ scan.mnc }}</div>
           <div>{{ new Date(scan.scan_time).toLocaleString() }}</div>
           <div>{{ scan.latitude.toFixed(4) }}, {{ scan.longitude.toFixed(4) }}</div>
