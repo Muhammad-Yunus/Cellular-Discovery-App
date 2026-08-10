@@ -283,10 +283,6 @@ function renderRoute(
           </svg>
           <span>${lat}, ${lng}</span>
         </div>
-        <div class="signal-popup-row">
-          <span>Created</span><span>${createdAt}</span>
-        </div>
-        ${visitedAt ? `<div class="signal-popup-row"><span>Visited</span><span>${visitedAt}</span></div>` : ''}
       </div>
     `
 
