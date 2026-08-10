@@ -367,44 +367,16 @@ onUnmounted(() => {
       data-testid="route-map"
       class="absolute inset-0"
     />
-    <!-- Toggle sidebar button (top-left) -->
+    <!-- Toggle sidebar button (top-left, only visible when collapsed) -->
     <button
+      v-if="sidebarCollapsed"
       type="button"
       @click="toggleSidebar"
       class="absolute left-4 top-4 z-[600] flex size-8 items-center justify-center rounded-lg border border-muted/40 bg-black/70 text-muted transition-colors hover:bg-black/90 hover:text-default backdrop-blur-md"
-      :title="sidebarCollapsed ? 'Show route list' : 'Hide route list'"
-      aria-label="Toggle route sidebar"
+      aria-label="Show route list"
+      title="Show route list"
     >
-      <svg
-        v-if="sidebarCollapsed"
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
-      <svg
-        v-else
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 18l6-6-6-6" />
-      </svg>
+      <UIcon name="lucide:panel-left-open" class="size-4" aria-hidden="true" />
     </button>
     <RouteSidebar
       :mission-id="missionId"
