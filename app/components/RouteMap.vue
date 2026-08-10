@@ -372,7 +372,7 @@ onUnmounted(() => {
       v-if="sidebarCollapsed"
       type="button"
       @click="toggleSidebar"
-      class="absolute left-4 top-4 z-[600] flex size-8 items-center justify-center rounded-lg border border-muted/40 bg-black/70 text-muted transition-colors hover:bg-black/90 hover:text-default backdrop-blur-md"
+      class="absolute left-4 top-4 z-[600] flex size-[35px] items-center justify-center rounded-lg border-2 border-primary-300 bg-[rgba(0,0,0,0.7)] text-[#e4e4e7] transition-all hover:bg-[#18181b] hover:border-primary-400 hover:text-primary-200 hover:shadow-[0_0_12px_var(--theme-glow-strong)] shadow-[0_0_8px_var(--theme-glow-soft)]"
       aria-label="Show route list"
       title="Show route list"
     >
