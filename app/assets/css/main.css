@@ -648,7 +648,6 @@ body {
 
 .leaflet-drone-popup .drone-popup-header {
   display: flex;
-  flex-direction: row-reverse;
   align-items: center;
   gap: 6px;
   font-size: 13px;
