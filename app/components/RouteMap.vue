@@ -341,7 +341,6 @@ let routeLayerRef: any = null
 let droneMarker: any = null
 let droneLocationInterval: any = null
 let resizeObserver: ResizeObserver | null = null
-let dronePopupInitialized: boolean = false
 
 async function locateToDevice(map: any) {
   if (isLocating.value) return
