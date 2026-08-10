@@ -206,7 +206,7 @@ const columns: TableColumn<MissionScan>[] = [
   },
   {
     id: 'operator',
-    accessorKey: 'operator',
+    accessorKey: 'operator_name',
     header: () => h('button', {
       class: 'flex items-center gap-1 text-sm font-medium text-highlighted cursor-pointer hover:text-accented',
       onClick: () => onSort('operator')
@@ -219,7 +219,7 @@ const columns: TableColumn<MissionScan>[] = [
     cell: ({ row }) => h('a', {
       href: `/?scan=${row.original.id}`,
       class: 'text-primary hover:underline font-medium'
-    }, row.original.operator || 'Unknown')
+    }, row.original.operator_name || 'Unknown')
   },
   {
     id: 'mcc',
@@ -389,9 +389,9 @@ onMounted(() => {
       >
         <template #operator-logo-cell="{ row }">
           <img
-            v-if="getOperatorLogoPath(row.original.operator)"
-            :src="getOperatorLogoPath(row.original.operator)"
-            :alt="row.original.operator || ''"
+            v-if="getOperatorLogoPath(row.original.operator_name)"
+            :src="getOperatorLogoPath(row.original.operator_name)"
+            :alt="row.original.operator_name || ''"
             class="w-5 h-5 object-contain"
           >
         </template>
@@ -407,7 +407,7 @@ onMounted(() => {
         class="block p-4 bg-elevated border border-muted rounded-lg hover:border-accented transition-colors"
       >
         <div class="flex items-center justify-between mb-1">
-          <span class="font-medium text-default">{{ scan.operator || 'Unknown' }}</span>
+          <span class="font-medium text-default">{{ scan.operator_name || 'Unknown' }}</span>
           <UBadge size="sm" variant="subtle" color="neutral">
             {{ scan.rat }}
           </UBadge>

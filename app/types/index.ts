@@ -39,7 +39,7 @@ export interface MissionScan {
   mission_id: string
   cellular_tower_id: string
   cellular_tower_name: string
-  operator: string
+  operator_name: string
   mcc: string
   mnc: string
   rat: string
