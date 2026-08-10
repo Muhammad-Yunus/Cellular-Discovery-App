@@ -375,77 +375,77 @@ async function onPlan() {
       />
     </div>
 
-    <!-- Main content: left sidebar (mission detail) + right panel (tabs) -->
+    <!-- Main content: left sidebar (mission detail + actions) + right panel (tabs) -->
     <div class="flex gap-4 items-start flex-1 min-h-0">
-      <!-- Left: Mission detail card (fixed, scrollable) -->
-      <div class="w-80 shrink-0 border border-default/10 bg-elevated rounded-lg p-4 space-y-4 overflow-y-auto">
-        <!-- Title only (actions moved to separate card above) -->
-        <div>
-          <template v-if="missionStore.loading && !missionStore.selectedMission">
-            <p class="text-xl font-bold text-default">Loading</p>
-          </template>
-          <template v-else-if="!missionStore.loading && !missionStore.selectedMission">
-            <p class="text-xl font-bold text-default">Mission not found</p>
-            <p class="mt-1 text-sm text-muted">No mission matches.</p>
-          </template>
-          <template v-else>
-            <h1 class="text-xl font-bold text-default">
-              {{ missionStore.selectedMission?.name ?? missionId }}
-            </h1>
-            <p class="mt-1 text-xs text-muted">
-              {{ missionStore.selectedMission?.description ?? '' }}
-            </p>
+      <!-- Left sidebar: stacked cards (detail + actions) -->
+      <div class="w-80 shrink-0 flex flex-col gap-4 overflow-y-auto max-h-full">
+        <!-- Card 1: Mission detail -->
+        <div class="border border-default/10 bg-elevated rounded-lg p-4 space-y-4">
+          <!-- Title -->
+          <div>
+            <template v-if="missionStore.loading && !missionStore.selectedMission">
+              <p class="text-xl font-bold text-default">Loading</p>
+            </template>
+            <template v-else-if="!missionStore.loading && !missionStore.selectedMission">
+              <p class="text-xl font-bold text-default">Mission not found</p>
+              <p class="mt-1 text-sm text-muted">No mission matches.</p>
+            </template>
+            <template v-else>
+              <h1 class="text-xl font-bold text-default">
+                {{ missionStore.selectedMission?.name ?? missionId }}
+              </h1>
+              <p class="mt-1 text-xs text-muted">
+                {{ missionStore.selectedMission?.description ?? '' }}
+              </p>
+            </template>
+          </div>
+
+          <!-- Status bar -->
+          <template v-if="missionStore.selectedMission">
+            <div class="flex flex-col gap-2 rounded border border-default/10 bg-default p-3 text-xs">
+              <div class="flex items-center gap-2">
+                <UBadge
+                  :color="getStatusBadgeProps(missionStore.selectedMission.status).color"
+                  variant="subtle"
+                  size="sm"
+                >
+                  {{ getStatusBadgeProps(missionStore.selectedMission.status).label }}
+                </UBadge>
+                <span class="text-muted">Created {{ new Date(missionStore.selectedMission.created_at).toLocaleString('en-GB', { hour12: false }) }}</span>
+              </div>
+              <div
+                class="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-2 py-1 text-xs text-default"
+                :title="`${missionStore.selectedMission.visited_locations ?? 0} of ${missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0} locations visited (${(missionStore.selectedMission.progress_percent ?? 0).toFixed(1)}%)`"
+              >
+                <Icon name="lucide:map-pin" class="size-3 text-muted" aria-hidden="true" />
+                <span class="font-mono">
+                  {{ missionStore.selectedMission.visited_locations ?? 0 }} / {{ missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0 }}
+                  <span v-if="missionStore.selectedMission.progress_percent !== undefined">({{ missionStore.selectedMission.progress_percent.toFixed(1) }}%)</span>
+                </span>
+                <span class="text-muted">locations</span>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <div
+                  class="inline-flex items-center gap-1.5 rounded-md border border-default/15 bg-elevated px-2 py-1 text-xs text-default"
+                  title="Search radius (meters)"
+                >
+                  <Icon name="lucide:radius" class="size-3 shrink-0 text-muted" aria-hidden="true" />
+                  <span class="font-mono">{{ missionStore.selectedMission.radius_meters ?? 0 }}</span>
+                  <span class="text-muted">m</span>
+                </div>
+                <div
+                  class="inline-flex items-center gap-1.5 rounded-md border border-default/15 bg-elevated px-2 py-1 text-xs text-default"
+                  title="TTY serial port"
+                >
+                  <Icon name="lucide:usb" class="size-3 shrink-0 text-muted" aria-hidden="true" />
+                  <span class="font-mono">{{ missionStore.selectedMission.tty_port || '—' }}</span>
+                </div>
+              </div>
+            </div>
           </template>
         </div>
 
-        <!-- Status bar -->
-        <template v-if="missionStore.selectedMission">
-          <div class="flex flex-col gap-2 rounded border border-default/10 bg-default p-3 text-xs">
-            <div class="flex items-center gap-2">
-              <UBadge
-                :color="getStatusBadgeProps(missionStore.selectedMission.status).color"
-                variant="subtle"
-                size="sm"
-              >
-                {{ getStatusBadgeProps(missionStore.selectedMission.status).label }}
-              </UBadge>
-              <span class="text-muted">Created {{ new Date(missionStore.selectedMission.created_at).toLocaleString('en-GB', { hour12: false }) }}</span>
-            </div>
-            <div
-              class="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-2 py-1 text-xs text-default"
-              :title="`${missionStore.selectedMission.visited_locations ?? 0} of ${missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0} locations visited (${(missionStore.selectedMission.progress_percent ?? 0).toFixed(1)}%)`"
-            >
-              <Icon name="lucide:map-pin" class="size-3 text-muted" aria-hidden="true" />
-              <span class="font-mono">
-                {{ missionStore.selectedMission.visited_locations ?? 0 }} / {{ missionStore.selectedMission.location_count ?? missionStore.selectedMission.total_locations ?? 0 }}
-                <span v-if="missionStore.selectedMission.progress_percent !== undefined">({{ missionStore.selectedMission.progress_percent.toFixed(1) }}%)</span>
-              </span>
-              <span class="text-muted">locations</span>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <div
-                class="inline-flex items-center gap-1.5 rounded-md border border-default/15 bg-elevated px-2 py-1 text-xs text-default"
-                title="Search radius (meters)"
-              >
-                <Icon name="lucide:radius" class="size-3 shrink-0 text-muted" aria-hidden="true" />
-                <span class="font-mono">{{ missionStore.selectedMission.radius_meters ?? 0 }}</span>
-                <span class="text-muted">m</span>
-              </div>
-              <div
-                class="inline-flex items-center gap-1.5 rounded-md border border-default/15 bg-elevated px-2 py-1 text-xs text-default"
-                title="TTY serial port"
-              >
-                <Icon name="lucide:usb" class="size-3 shrink-0 text-muted" aria-hidden="true" />
-                <span class="font-mono">{{ missionStore.selectedMission.tty_port || '—' }}</span>
-              </div>
-            </div>
-          </div>
-        </template>
-      </div>
-
-      <!-- Right: Tabs + Tab panels -->
-      <div class="flex-1 flex flex-col gap-4 min-w-0">
-        <!-- Action buttons card -->
+        <!-- Card 2: Action buttons -->
         <div class="border border-default/10 bg-elevated rounded-lg p-3">
           <div class="flex flex-wrap gap-2">
             <NuxtLink :to="`/missions/${missionId}/edit`">
@@ -511,6 +511,10 @@ async function onPlan() {
             >Terminal</span>
           </div>
         </div>
+      </div>
+
+      <!-- Right: Tabs + Tab panels -->
+      <div class="flex-1 flex flex-col gap-4 min-w-0">
         <!-- Tabs -->
         <div role="tablist" class="flex gap-1 border-b border-default/10">
           <button
