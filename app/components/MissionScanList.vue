@@ -35,6 +35,8 @@ const endDateTime = ref<string | null>(null)
 // Sort
 let sortColumn = 'scan_time'
 let sortDirection: 'asc' | 'desc' = 'desc'
+// Track previous sort column for transition animation
+const prevSortColumn = ref(sortColumn)
 
 // --- Helpers ---
 function getSortParam(): string {
@@ -126,12 +128,35 @@ watch(search, (val) => {
 
 watch(ratFilter, () => fetchScans())
 
-function onSort(column: string) {
+function getSortIcon(column: string, direction: 'asc' | 'desc') {
+  const isActive = sortColumn === column
+  // Return appropriate icon based on column and direction
+  if (!isActive) return 'i-lucide-arrow-up-down'
+  switch (column) {
+    case 'operator':
+    case 'cellular_tower_id':
+    case 'cellular_tower_name':
+    case 'rat':
+      return direction === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z'
+    case 'mcc':
+    case 'mnc':
+      return direction === 'asc' ? 'i-lucide-arrow-up-0-1' : 'i-lucide-arrow-down-0-1'
+    case 'scan_time':
+      return direction === 'asc' ? 'i-lucide-calendar-arrow-up' : 'i-lucide-calendar-arrow-down'
+    default:
+      return direction === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z'
+  }
+}
+  const wasSameColumn = sortColumn === column
   if (sortColumn === column) {
     sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
   } else {
     sortColumn = column
     sortDirection = 'desc'
+  }
+  // Trigger transition animation when column changes
+  if (!wasSameColumn) {
+    prevSortColumn.value = column
   }
   fetchScans()
 }
@@ -213,9 +238,10 @@ const columns: TableColumn<MissionScan>[] = [
       onClick: () => onSort('operator')
     }, [
       'Operator',
-      sortColumn === 'operator'
-        ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z', class: 'w-3 h-3' })
-        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+      h(resolveComponent('UIcon'), {
+        name: getSortIcon('operator', sortDirection),
+        class: 'w-3 h-3 transition-transform duration-200'
+      })
     ]),
     cell: ({ row }) => h('a', {
       href: `/?scan=${row.original.id}`,
@@ -230,9 +256,10 @@ const columns: TableColumn<MissionScan>[] = [
       onClick: () => onSort('cellular_tower_id')
     }, [
       'Tower ID',
-      sortColumn === 'cellular_tower_id'
-        ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z', class: 'w-3 h-3' })
-        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+      h(resolveComponent('UIcon'), {
+        name: getSortIcon('cellular_tower_id', sortDirection),
+        class: 'w-3 h-3 transition-transform duration-200'
+      })
     ]),
     meta: {
       class: { th: `w-24 ${cellBase}`, td: `font-mono text-sm ${cellBase}` }
@@ -246,9 +273,10 @@ const columns: TableColumn<MissionScan>[] = [
       onClick: () => onSort('cellular_tower_name')
     }, [
       'Tower Name',
-      sortColumn === 'cellular_tower_name'
-        ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z', class: 'w-3 h-3' })
-        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+      h(resolveComponent('UIcon'), {
+        name: getSortIcon('cellular_tower_name', sortDirection),
+        class: 'w-3 h-3 transition-transform duration-200'
+      })
     ]),
     meta: {
       class: { th: `w-28 ${cellBase}`, td: `${cellBase}` }
@@ -262,9 +290,10 @@ const columns: TableColumn<MissionScan>[] = [
       onClick: () => onSort('mcc')
     }, [
       'MCC',
-      sortColumn === 'mcc'
-        ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-0-1' : 'i-lucide-arrow-down-0-1', class: 'w-3 h-3' })
-        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+      h(resolveComponent('UIcon'), {
+        name: getSortIcon('mcc', sortDirection),
+        class: 'w-3 h-3 transition-transform duration-200'
+      })
     ]),
     meta: {
       class: { th: `w-16 ${cellBase}`, td: cellBase }
@@ -278,9 +307,10 @@ const columns: TableColumn<MissionScan>[] = [
       onClick: () => onSort('mnc')
     }, [
       'MNC',
-      sortColumn === 'mnc'
-        ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-0-1' : 'i-lucide-arrow-down-0-1', class: 'w-3 h-3' })
-        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+      h(resolveComponent('UIcon'), {
+        name: getSortIcon('mnc', sortDirection),
+        class: 'w-3 h-3 transition-transform duration-200'
+      })
     ]),
     meta: {
       class: { th: `w-16 ${cellBase}`, td: cellBase }
@@ -294,9 +324,10 @@ const columns: TableColumn<MissionScan>[] = [
       onClick: () => onSort('rat')
     }, [
       'RAT',
-      sortColumn === 'rat'
-        ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-a-z', class: 'w-3 h-3' })
-        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+      h(resolveComponent('UIcon'), {
+        name: getSortIcon('rat', sortDirection),
+        class: 'w-3 h-3 transition-transform duration-200'
+      })
     ]),
     meta: {
       class: { th: `w-16 ${cellBase}`, td: cellBase }
@@ -310,9 +341,10 @@ const columns: TableColumn<MissionScan>[] = [
       onClick: () => onSort('scan_time')
     }, [
       'Scan Time',
-      sortColumn === 'scan_time'
-        ? h(resolveComponent('UIcon'), { name: sortDirection === 'asc' ? 'i-lucide-calendar-arrow-up' : 'i-lucide-calendar-arrow-down', class: 'w-3 h-3' })
-        : h(resolveComponent('UIcon'), { name: 'i-lucide-arrow-up-down', class: 'w-3 h-3 opacity-50' })
+      h(resolveComponent('UIcon'), {
+        name: getSortIcon('scan_time', sortDirection),
+        class: 'w-3 h-3 transition-transform duration-200'
+      })
     ]),
     cell: ({ row }) => {
       const d = new Date(row.original.scan_time)
