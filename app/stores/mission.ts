@@ -579,10 +579,12 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
       this.deviceLocationError = null
       try {
         this.deviceLocation = await missionService.getDeviceLocation()
+        return this.deviceLocation
       } catch (err) {
         console.error('Failed to fetch device location', err)
         this.deviceLocationError = err instanceof Error ? err.message : String(err)
         this.deviceLocation = null
+        return null
       } finally {
         this.deviceLocationLoading = false
       }

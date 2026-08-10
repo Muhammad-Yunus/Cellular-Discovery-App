@@ -312,84 +312,74 @@ body {
 }
 
 /* Drone location marker */
+.leaflet-drone-marker,
+.leaflet-marker-icon.drone-marker-status-idle,
+.leaflet-marker-icon.drone-marker-status-moving,
+.leaflet-marker-icon.drone-marker-status-unknown {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .leaflet-drone-marker .drone-marker-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  pointer-events: none;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 2px !important;
+  pointer-events: none !important;
 }
 
 .leaflet-drone-marker .drone-marker-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--theme-glow-soft);
-  transition: all 0.3s ease;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5) !important;
+  transition: all 0.3s ease !important;
 }
 
 .leaflet-drone-marker .drone-marker-badge.status-idle {
-  background-color: #6b7280; /* gray-500 */
-  color: #ffffff;
+  background-color: #6b7280 !important;
+  color: #ffffff !important;
 }
 
 .leaflet-drone-marker .drone-marker-badge.status-moving {
-  background-color: #16a34a; /* green-600 */
-  color: #ffffff;
+  background-color: #16a34a !important;
+  color: #ffffff !important;
 }
 
 .leaflet-drone-marker .drone-marker-badge.status-unknown {
-  background-color: #dc2626; /* red-600 */
-  color: #ffffff;
-}
-
-.leaflet-drone-marker .drone-marker-badge.pulse {
-  animation: pulse-soft 1s ease-in-out infinite;
-}
-
-.leaflet-drone-marker .drone-marker-badge.status-moving.pulse {
-  animation: pulse-soft 1s ease-in-out infinite;
-}
-
-.leaflet-drone-marker .drone-marker-badge.pulse::after {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--glow-color, transparent) 0%, var(--glow-color, transparent) 30%, transparent 85%);
-  opacity: 0;
-  pointer-events: none;
-  animation: pulse-ring 1s ease-out infinite;
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
 }
 
 .leaflet-drone-marker .drone-status-label {
-  display: inline-block;
-  padding: 1px 6px;
-  border-radius: 6px;
-  background-color: #111827; /* gray-900 */
-  color: #d4d4d8;
-  font-size: 9px;
-  font-weight: 600;
-  line-height: 14px;
-  text-align: center;
-  white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.2);
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
+  display: inline-block !important;
+  padding: 1px 6px !important;
+  border-radius: 6px !important;
+  background-color: #111827 !important;
+  color: #d4d4d8 !important;
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  line-height: 14px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.025em !important;
 }
 
 /* Drone SVG icon */
 .drone-icon-svg {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  width: 16px !important;
+  height: 16px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
 }
 
 /* Info window popup styling */

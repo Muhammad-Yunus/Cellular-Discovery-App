@@ -86,12 +86,15 @@ function createDroneIcon(status: string): any {
     statusLabel = status
   }
   
+  const className = `leaflet-drone-marker drone-marker-${badgeClass}`
+  console.log('[RouteMap] Creating drone icon with className:', className)
+  
   return L.divIcon({
-    className: `leaflet-drone-marker drone-marker-${badgeClass}`,
+    className,
     html: `
       <div class="drone-marker-wrapper">
-        <div class="drone-marker-badge ${badgeClass}" style="--glow-color: ${badgeClass === 'status-moving' ? '#16a34a' : badgeClass === 'status-idle' ? '#6b7280' : '#dc2626'}">
-          <svg class="drone-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <div class="drone-marker-badge ${badgeClass}" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background-color:${badgeClass === 'status-moving' ? '#16a34a' : badgeClass === 'status-idle' ? '#6b7280' : '#dc2626'};color:#ffffff;box-shadow:0 0 8px rgba(255,255,255,0.5);">
+          <svg class="drone-icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;">
             <rect x="12" y="2" width="4" height="4" rx="1"></rect>
             <rect x="4" y="8" width="4" height="4" rx="1"></rect>
             <rect x="16" y="8" width="4" height="4" rx="1"></rect>
@@ -332,60 +335,79 @@ let droneLocationInterval: any = null
 let resizeObserver: ResizeObserver | null = null
 
 async function fetchAndDisplayDroneLocation(map: any, L: any) {
+  let deviceLocation: any
   try {
-    const deviceLocation = await missionStore.fetchDeviceLocation()
-    if (!deviceLocation?.latitude || !deviceLocation?.longitude) return
+    deviceLocation = await missionStore.fetchDeviceLocation()
+    console.log('[RouteMap] Device location fetched:', deviceLocation)
+    
+    if (!deviceLocation?.latitude || !deviceLocation?.longitude) {
+      console.warn('[RouteMap] No valid coordinates in device location')
+      return
+    }
     
     const status = deviceLocation.status || 'UNKNOWN'
+    console.log('[RouteMap] Drone status:', status)
     const icon = createDroneIcon(status)
     
     // Remove existing marker
     if (droneMarker) {
+      console.log('[RouteMap] Removing old drone marker')
       map.removeLayer(droneMarker)
+      droneMarker = null
     }
     
-    droneMarker = L.marker([deviceLocation.latitude, deviceLocation.longitude], { icon })
-      .addTo(map)
-      .bindPopup(`
-        <div class="drone-popup">
-          <div class="drone-popup-header">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="12" y="2" width="4" height="4" rx="1"></rect>
-              <rect x="4" y="8" width="4" height="4" rx="1"></rect>
-              <rect x="16" y="8" width="4" height="4" rx="1"></rect>
-              <rect x="8" y="14" width="8" height="4" rx="1"></rect>
-              <line x1="14" y1="4" x2="14" y2="8"></line>
-              <line x1="6" y1="10" x2="6" y2="14"></line>
-              <line x1="18" y1="10" x2="18" y2="14"></line>
-              <line x1="10" y1="18" x2="14" y2="18"></line>
-            </svg>
-            <strong>Drone Location</strong>
-          </div>
-          <div class="signal-popup-row"><span>Status</span><span class="drone-status-chip drone-status-${status.toLowerCase()}">${status}</span></div>
-          <div class="signal-popup-row signal-popup-row--coordinate">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <span>${deviceLocation.latitude.toFixed(6)}, ${deviceLocation.longitude.toFixed(6)}</span>
-          </div>
-          ${deviceLocation.speed != null ? `<div class="signal-popup-row"><span>Speed</span><span>${deviceLocation.speed.toFixed(2)} m/s</span></div>` : ''}
-          ${deviceLocation.altitude != null ? `<div class="signal-popup-row"><span>Altitude</span><span>${deviceLocation.altitude.toFixed(1)} m</span></div>` : ''}
-          <div class="signal-popup-row"><span>Updated</span><span>${new Date(deviceLocation.datetime).toLocaleString('en-GB', { hour12: false })}</span></div>
+    const latlng = [deviceLocation.latitude, deviceLocation.longitude]
+    console.log('[RouteMap] Creating drone marker at:', latlng)
+    
+    droneMarker = L.marker(latlng, { 
+      icon,
+      zIndexOffset: 1000 // Ensure drone marker appears above other markers
+    })
+    
+    const popupContent = `
+      <div class="drone-popup">
+        <div class="drone-popup-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="12" y="2" width="4" height="4" rx="1"></rect>
+            <rect x="4" y="8" width="4" height="4" rx="1"></rect>
+            <rect x="16" y="8" width="4" height="4" rx="1"></rect>
+            <rect x="8" y="14" width="8" height="4" rx="1"></rect>
+            <line x1="14" y1="4" x2="14" y2="8"></line>
+            <line x1="6" y1="10" x2="6" y2="14"></line>
+            <line x1="18" y1="10" x2="18" y2="14"></line>
+            <line x1="10" y1="18" x2="14" y2="18"></line>
+          </svg>
+          <strong>Drone Location</strong>
         </div>
-      `, {
-        closeButton: false,
-        autoClose: false,
-        closeOnClick: false,
-        className: 'leaflet-drone-popup'
-      })
-      
-    // Fit map to show drone if it's the only marker
-    if (map.hasLayer(routeLayerRef) && routeLayerRef.getLayers().length === 0) {
-      map.setView([deviceLocation.latitude, deviceLocation.longitude], 15)
-    }
+        <div class="signal-popup-row"><span>Status</span><span class="drone-status-chip drone-status-${status.toLowerCase()}">${status}</span></div>
+        <div class="signal-popup-row signal-popup-row--coordinate">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span>${deviceLocation.latitude.toFixed(6)}, ${deviceLocation.longitude.toFixed(6)}</span>
+        </div>
+        ${deviceLocation.speed != null ? `<div class="signal-popup-row"><span>Speed</span><span>${deviceLocation.speed.toFixed(2)} m/s</span></div>` : ''}
+        ${deviceLocation.altitude != null ? `<div class="signal-popup-row"><span>Altitude</span><span>${deviceLocation.altitude.toFixed(1)} m</span></div>` : ''}
+        <div class="signal-popup-row"><span>Updated</span><span>${new Date(deviceLocation.datetime).toLocaleString('en-GB', { hour12: false })}</span></div>
+      </div>
+    `
+    
+    droneMarker.bindPopup(popupContent, {
+      closeButton: false,
+      autoClose: false,
+      closeOnClick: false,
+      className: 'leaflet-drone-popup'
+    })
+    
+    droneMarker.addTo(map)
+    console.log('[RouteMap] Drone marker added to map, total layers:', map.hasLayer(droneMarker))
+    
+    // Fit map to show drone
+    map.setView(latlng, 15)
+    
   } catch (err) {
-    console.error('[RouteMap] Failed to fetch drone location', err)
+    console.error('[RouteMap] Failed to fetch drone location:', err)
   }
 }
 
