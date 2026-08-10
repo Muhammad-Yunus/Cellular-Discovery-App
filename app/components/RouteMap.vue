@@ -24,6 +24,9 @@
 import { useCollectorMissionStore } from '~/stores/mission'
 import type { MissionLocation } from '~/types/mission'
 import RouteSidebar from './RouteSidebar.vue'
+import { useCustomToast } from '~/composables/useCustomToast'
+
+const toast = useCustomToast()
 
 const props = defineProps<{
   missionId: string
@@ -336,6 +339,32 @@ let droneMarker: any = null
 let droneLocationInterval: any = null
 let resizeObserver: ResizeObserver | null = null
 
+async function locateToDevice(map: any) {
+  try {
+    const deviceLocation = await missionStore.fetchDeviceLocation()
+    if (!deviceLocation?.latitude || !deviceLocation?.longitude) {
+      toast.add({
+        title: 'Error',
+        description: 'Current device coordinate not available',
+        color: 'error',
+        icon: 'alert-circle'
+      })
+      return
+    }
+    const latlng = [deviceLocation.latitude, deviceLocation.longitude]
+    console.log('[RouteMap] Locating to device:', latlng)
+    map.setView(latlng, 16)
+  } catch (err) {
+    console.error('[RouteMap] Failed to locate device:', err)
+    toast.add({
+      title: 'Error',
+      description: 'Current device coordinate not available',
+      color: 'error',
+      icon: 'alert-circle'
+    })
+  }
+}
+
 async function fetchAndDisplayDroneLocation(map: any, L: any) {
   let deviceLocation: any
   try {
@@ -430,6 +459,26 @@ onMounted(async () => {
     zoomControl: false
   })
   L.control.zoom({ position: 'topright' }).addTo(mapInstance)
+  
+  // Locate button — positioned below zoom controls
+  const locateBtn = L.control({ position: 'topright' })
+  locateBtn.onAdd = () => {
+    const btn = L.DomUtil.create('button', 'leaflet-control-locate')
+    btn.title = 'Locate Device'
+    btn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="3"></circle>
+        <line x1="12" y1="2" x2="12" y2="5"></line>
+        <line x1="12" y1="19" x2="12" y2="22"></line>
+        <line x1="2" y1="12" x2="5" y2="12"></line>
+        <line x1="19" y1="12" x2="22" y2="12"></line>
+      </svg>
+    `
+    btn.addEventListener('click', () => locateToDevice(mapInstance))
+    return btn
+  }
+  locateBtn.addTo(mapInstance)
 
   // Dark tile layers (base + labels) — matches MapView theme.
   L.tileLayer(
