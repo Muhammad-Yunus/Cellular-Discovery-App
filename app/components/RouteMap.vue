@@ -237,12 +237,6 @@ function renderRoute(
     const towerName = esc(loc.cellular_tower_name)
     const lat = loc.latitude
     const lng = loc.longitude
-    const createdAt = loc.created_at
-      ? esc(new Date(loc.created_at).toLocaleString('en-GB', { hour12: false }))
-      : '—'
-    const visitedAt = loc.visited_at
-      ? esc(new Date(loc.visited_at).toLocaleString('en-GB', { hour12: false }))
-      : null
 
     // Build the status chip markup. Same palette as the sidebar list so
     // users see consistent visual semantics across the map and sidebar.
