@@ -36,6 +36,9 @@ const missionStore = useCollectorMissionStore()
 const mapContainer = ref<HTMLDivElement | null>(null)
 const mapWrapper = ref<HTMLDivElement | null>(null)
 const sidebarCollapsed = ref(false)
+const isLocating = ref(false)
+let locateBtnEl: HTMLElement | null = null
+
 function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value
 }
@@ -340,6 +343,10 @@ let droneLocationInterval: any = null
 let resizeObserver: ResizeObserver | null = null
 
 async function locateToDevice(map: any) {
+  if (isLocating.value) return
+  isLocating.value = true
+  updateLocateIcon()
+  
   try {
     const deviceLocation = await missionStore.fetchDeviceLocation()
     if (!deviceLocation?.latitude || !deviceLocation?.longitude) {
@@ -362,6 +369,31 @@ async function locateToDevice(map: any) {
       color: 'error',
       icon: 'alert-circle'
     })
+  } finally {
+    isLocating.value = false
+    updateLocateIcon()
+  }
+}
+
+function updateLocateIcon() {
+  if (!locateBtnEl) return
+  if (isLocating.value) {
+    locateBtnEl.innerHTML = `
+      <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+      </svg>
+    `
+  } else {
+    locateBtnEl.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="3"></circle>
+        <line x1="12" y1="2" x2="12" y2="5"></line>
+        <line x1="12" y1="19" x2="12" y2="22"></line>
+        <line x1="2" y1="12" x2="5" y2="12"></line>
+        <line x1="19" y1="12" x2="22" y2="12"></line>
+      </svg>
+    `
   }
 }
 
@@ -464,6 +496,7 @@ onMounted(async () => {
   locateBtn.onAdd = () => {
     const btn = L.DomUtil.create('button', 'leaflet-control-locate')
     btn.title = 'Locate Device'
+    locateBtnEl = btn
     btn.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="10"></circle>
