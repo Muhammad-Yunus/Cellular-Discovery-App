@@ -419,9 +419,31 @@ export interface DeviceLocation {
   altitude: number | null
   accuracy: number | null
   speed: number | null
+  /** Heading / bearing in degrees (0-360, 0 = North). */
+  course_deg: number | null
   status: 'UNKNOWN' | 'IDLE' | 'MOVING' | string
   datetime: string
   provider: string
+}
+
+/**
+ * Device (drone) current location from WebSocket /ws/device/location
+ * (Feature 06 — real-time telemetry push).
+ * Field names follow the backend WS schema (snake_case with _m/_ms suffixes).
+ */
+export interface DeviceLocationWS {
+  latitude: number
+  longitude: number
+  altitude_m: number | null
+  accuracy_m: number | null
+  speed_ms: number | null
+  /** Heading / bearing in degrees (0-360, 0 = North). */
+  course_deg: number | null
+  status: 'UNKNOWN' | 'IDLE' | 'MOVING'
+  datetime: string
+  provider: string
+  /** Present when the backend could not obtain a GPS fix. */
+  error?: string
 }
 
 /** Patch payload for updating an existing waypoint. */

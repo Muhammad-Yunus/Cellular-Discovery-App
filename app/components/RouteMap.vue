@@ -562,9 +562,10 @@ function updateDroneMarkerFromWS(loc: DeviceLocationWS, map: any, L: any) {
  * can be reused for both initial bind and in-place updates.
  * Accepts both HTTP (DeviceLocation) and WS (DeviceLocationWS) payloads.
  */
-function buildDronePopupHtml(status: string, deviceLocation: { latitude: number; longitude: number; speed_ms?: number | null; speed?: number | null; altitude_m?: number | null; altitude?: number | null; datetime: string; error?: string }): string {
+function buildDronePopupHtml(status: string, deviceLocation: { latitude: number; longitude: number; speed_ms?: number | null; speed?: number | null; altitude_m?: number | null; altitude?: number | null; course_deg?: number | null; datetime: string; error?: string }): string {
   const speed = deviceLocation.speed_ms ?? deviceLocation.speed ?? null
   const altitude = deviceLocation.altitude_m ?? deviceLocation.altitude ?? null
+  const courseDeg = deviceLocation.course_deg ?? null
   const isErrored = !!deviceLocation.error
 
   return `
@@ -600,6 +601,7 @@ function buildDronePopupHtml(status: string, deviceLocation: { latitude: number;
       </div>
       ${speed != null ? `<div class="signal-popup-row"><span>Speed</span><span>${speed.toFixed(2)} m/s</span></div>` : ''}
       ${altitude != null ? `<div class="signal-popup-row"><span>Altitude</span><span>${altitude.toFixed(1)} m</span></div>` : ''}
+      ${courseDeg != null ? `<div class="signal-popup-row"><span>Course</span><span>${courseDeg.toFixed(1)}°</span></div>` : ''}
       <div class="signal-popup-row"><span>Updated</span><span>${new Date(deviceLocation.datetime).toLocaleString('en-GB', { hour12: false })}</span></div>
     </div>
   `
