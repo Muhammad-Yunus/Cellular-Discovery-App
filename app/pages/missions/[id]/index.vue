@@ -508,13 +508,7 @@ async function onPlan() {
           </template>
         </div>
 
-        <!-- Card 2: Mission lifecycle timeline -->
-        <MissionTimeline
-          v-if="missionStore.selectedMission"
-          :status="missionStore.selectedMission.status"
-        />
-
-        <!-- Card 3: Action buttons -->
+        <!-- Card 2: Action buttons -->
         <div class="border border-default/10 bg-elevated rounded-lg p-3">
           <div class="flex flex-wrap gap-2">
             <NuxtLink :to="`/missions/${missionId}/edit`">
@@ -584,6 +578,12 @@ async function onPlan() {
             >Terminal</span>
           </div>
         </div>
+
+        <!-- Card 3: Mission lifecycle timeline -->
+        <MissionTimeline
+          v-if="missionStore.selectedMission"
+          :status="missionStore.selectedMission.status"
+        />
       </div>
 
       <!-- Right: Tabs + Tab panels -->
