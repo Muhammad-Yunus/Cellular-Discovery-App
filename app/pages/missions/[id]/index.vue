@@ -519,61 +519,66 @@ async function onPlan() {
         </div>
 
         <!-- Card 2: Action buttons -->
-        <div class="border border-default/10 bg-elevated rounded-lg p-3">
-          <div class="flex flex-wrap gap-2">
+        <div class="border border-default/10 bg-elevated rounded-lg p-4">
+          <div class="flex flex-wrap gap-3">
             <UButton
               v-if="canPlan(missionStore.selectedMission?.status, missionStore.selectedMission?.location_count ?? missionStore.selectedMission?.total_locations ?? 0)"
-              size="sm"
-              variant="outline"
+              size="md"
+              variant="solid"
               color="info"
               icon="i-lucide-map"
               :loading="isActionPending()"
               :disabled="isActionPending()"
               @click="onPlan()"
-            >Plan</UButton>
+              class="shadow-md hover:shadow-lg transition-all"
+            >Plan Mission</UButton>
             <UButton
               v-if="canStart(missionStore.selectedMission?.status)"
-              size="sm"
-              variant="outline"
+              size="md"
+              variant="solid"
               color="success"
               icon="i-lucide-play"
               :loading="isActionPending()"
               :disabled="isActionPending()"
               @click="onStatusChange('start')"
-            >Start</UButton>
+              class="shadow-md hover:shadow-lg transition-all"
+            >Start Mission</UButton>
             <UButton
               v-if="canPause(missionStore.selectedMission?.status)"
-              size="sm"
-              variant="outline"
+              size="md"
+              variant="solid"
               color="warning"
               icon="i-lucide-pause"
               :loading="isActionPending()"
               :disabled="isActionPending()"
               @click="onStatusChange('pause')"
-            >Pause</UButton>
+              class="shadow-md hover:shadow-lg transition-all"
+            >Pause Mission</UButton>
             <UButton
               v-if="canResume(missionStore.selectedMission?.status)"
-              size="sm"
-              variant="outline"
+              size="md"
+              variant="solid"
               color="info"
               icon="i-lucide-play"
               :loading="isActionPending()"
               :disabled="isActionPending()"
               @click="onStatusChange('resume')"
-            >Resume</UButton>
+              class="shadow-md hover:shadow-lg transition-all"
+            >Resume Mission</UButton>
             <UButton
               v-if="canStop(missionStore.selectedMission?.status)"
-              size="sm"
-              variant="outline"
+              size="md"
+              variant="solid"
               color="error"
               icon="i-lucide-square"
               :loading="isActionPending()"
               :disabled="isActionPending()"
               @click="onStatusChange('stop')"
-            >Stop</UButton>
+              class="shadow-md hover:shadow-lg transition-all"
+            >Stop Mission</UButton>
             <span
               v-if="isTerminal(missionStore.selectedMission?.status)"
-              class="text-xs text-muted italic"
+              class="text-xs text-muted italic self-center"
             >Terminal</span>
           </div>
         </div>
