@@ -602,9 +602,9 @@ function buildDronePopupHtml(status: string, deviceLocation: { latitude: number;
         </svg>
         <span style="margin-left:auto; text-align:right;">${deviceLocation.latitude.toFixed(6)}, ${deviceLocation.longitude.toFixed(6)}</span>
       </div>
-      ${speed != null ? `<div class="signal-popup-row"><span>Speed</span><span>${speed.toFixed(2)} m/s</span></div>` : ''}
-      ${altitude != null ? `<div class="signal-popup-row"><span>Altitude</span><span>${altitude.toFixed(1)} m</span></div>` : ''}
-      ${courseDeg != null ? `<div class="signal-popup-row"><span>Course</span><span>${courseDeg.toFixed(1)}°</span></div>` : ''}
+      <div class="signal-popup-row"><span>Speed</span><span>${speed != null ? `${speed.toFixed(2)} m/s` : '-'}</span></div>
+      <div class="signal-popup-row"><span>Altitude</span><span>${altitude != null ? `${altitude.toFixed(1)} m` : '-'}</span></div>
+      <div class="signal-popup-row"><span>Course</span><span>${courseDeg != null ? `${courseDeg.toFixed(1)}°` : '-'}</span></div>
       <div class="signal-popup-row"><span>Updated</span><span>${new Date(deviceLocation.datetime).toLocaleString('en-GB', { hour12: false })}</span></div>
     </div>
   `
