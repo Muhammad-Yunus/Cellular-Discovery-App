@@ -327,9 +327,6 @@ function canStop(status: string): boolean {
 function canPlan(status: string, locationCount: number): boolean {
   return status === 'IDLE' && locationCount > 0
 }
-function isTerminal(status: string): boolean {
-  return status === 'COMPLETED'
-}
 function getStatusBadgeProps(status: string) {
   const map: Record<string, { color: string; label: string }> = {
     IDLE: { color: 'neutral', label: 'IDLE' },
@@ -575,11 +572,7 @@ async function onPlan() {
               :disabled="isActionPending()"
               @click="onStatusChange('stop')"
               class="shadow-md hover:shadow-lg transition-all"
-            >Stop Mission</UButton>
-            <span
-              v-if="isTerminal(missionStore.selectedMission?.status)"
-              class="text-xs text-muted italic self-center"
-            >Terminal</span>
+            >Stop Mission            </UButton>
           </div>
         </div>
 
