@@ -454,9 +454,19 @@ async function onPlan() {
               <p class="mt-1 text-sm text-muted">No mission matches.</p>
             </template>
             <template v-else>
-              <h1 class="text-xl font-bold text-default">
-                {{ missionStore.selectedMission?.name ?? missionId }}
-              </h1>
+              <div class="flex items-center justify-between gap-2">
+                <h1 class="text-xl font-bold text-default">
+                  {{ missionStore.selectedMission?.name ?? missionId }}
+                </h1>
+                <NuxtLink :to="`/missions/${missionId}/edit`">
+                  <UButton
+                    icon="lucide:edit"
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Edit mission"
+                  />
+                </NuxtLink>
+              </div>
               <p class="mt-1 text-xs text-muted">
                 {{ missionStore.selectedMission?.description ?? '' }}
               </p>
@@ -511,9 +521,6 @@ async function onPlan() {
         <!-- Card 2: Action buttons -->
         <div class="border border-default/10 bg-elevated rounded-lg p-3">
           <div class="flex flex-wrap gap-2">
-            <NuxtLink :to="`/missions/${missionId}/edit`">
-              <UButton icon="lucide:edit" variant="outline" size="sm">Edit</UButton>
-            </NuxtLink>
             <UButton
               v-if="canPlan(missionStore.selectedMission?.status, missionStore.selectedMission?.location_count ?? missionStore.selectedMission?.total_locations ?? 0)"
               size="sm"
