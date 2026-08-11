@@ -210,40 +210,6 @@ function onDelete() {
       />
       <UButton
         size="xs"
-        variant="outline"
-        color="success"
-        icon="i-lucide-play"
-        label="Start"
-        :disabled="!canStart"
-        @click="onStart"
-      />
-      <UButton
-        size="xs"
-        variant="outline"
-        color="warning"
-        icon="i-lucide-pause"
-        label="Pause"
-        :disabled="!canPause"
-        @click="onPause"
-      />
-      <UButton
-        size="xs"
-        variant="ghost"
-        icon="i-lucide-check"
-        label="Complete"
-        :disabled="!canComplete"
-        @click="onComplete"
-      />
-      <UButton
-        size="xs"
-        variant="ghost"
-        icon="i-lucide-flag"
-        label="Cancel"
-        :disabled="!canCancel"
-        @click="onCancel"
-      />
-      <UButton
-        size="xs"
         variant="ghost"
         color="error"
         icon="i-lucide-trash-2"
