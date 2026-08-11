@@ -515,14 +515,6 @@ async function onPlan() {
               <UButton icon="lucide:edit" variant="outline" size="sm">Edit</UButton>
             </NuxtLink>
             <UButton
-              v-if="missionStore.selectedMission?.status === 'IDLE'"
-              icon="lucide:upload"
-              :to="`/missions/${missionId}/locations/upload`"
-              size="sm"
-            >
-              Upload
-            </UButton>
-            <UButton
               v-if="canPlan(missionStore.selectedMission?.status, missionStore.selectedMission?.location_count ?? missionStore.selectedMission?.total_locations ?? 0)"
               size="sm"
               variant="outline"

@@ -203,7 +203,19 @@ onMounted(fetchLocations)
             Tower GPS Coordinate to mission {{ missionId }}
           </p>
         </div>
-        <div class="flex items-end ml-auto mt-6">
+        <div class="flex items-end ml-auto mt-6 gap-2">
+          <NuxtLink
+            v-if="isIdle"
+            :to="`/missions/${missionId}/locations/upload`"
+          >
+            <UButton
+              icon="i-lucide-upload"
+              variant="outline"
+              size="sm"
+            >
+              Upload
+            </UButton>
+          </NuxtLink>
           <UButton
             icon="i-lucide-download"
             variant="outline"
