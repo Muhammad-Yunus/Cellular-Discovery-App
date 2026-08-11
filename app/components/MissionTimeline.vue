@@ -58,7 +58,13 @@ function isTerminalStatus(s: string): boolean {
   return (TERMINAL_STATUSES as readonly string[]).includes(s)
 }
 
-function getStatusState(segment: { status: MissionStatus5 }) {
+// Loading states that show spinner instead of checkmark
+const LOADING_STATUSES = ['PLANNING', 'STARTING', 'RUNNING'] as const
+
+function isCurrentLoadingSegment(segment: { status: MissionStatus5 }): boolean {
+  return getCurrentIndex() === STATUS_ORDER.indexOf(segment.status) &&
+    LOADING_STATUSES.includes(segment.status as typeof LOADING_STATUSES[number])
+}
   const currentIdx = getCurrentIndex()
   const segIdx = STATUS_ORDER.indexOf(segment.status)
   if (segIdx < currentIdx) return 'past'
@@ -144,11 +150,17 @@ const timeline = computed(() => {
               class="flex size-5 items-center justify-center rounded-full border-2 transition-all"
               :class="getDotClasses(segment)"
             >
-              <!-- Checkmark for past and current status -->
+              <!-- Checkmark for past and current status, spinner for loading states -->
               <span
-                v-if="getStatusState(segment) !== 'future'"
+                v-if="getStatusState(segment) !== 'future' && !isCurrentLoadingSegment(segment)"
                 class="text-xs font-bold text-white"
               >✓</span>
+              <span
+                v-else-if="isCurrentLoadingSegment(segment)"
+                class="size-3 animate-spin"
+              >
+                <Icon name="lucide:loader" class="text-white" />
+              </span>
             </div>
           </div>
           <!-- Chip label -->
