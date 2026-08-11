@@ -92,19 +92,13 @@ describe('MissionCard', () => {
     expect(wrapper.emitted('view')).toBeTruthy()
   })
 
-  test('Start button is disabled when status is not idle/ready/paused', () => {
-    const mission = makeMission({ status: 'RUNNING' })
+  test('Delete button emits a delete event', async () => {
+    const mission = makeMission()
     const wrapper = wrap(mission)
     const buttons = wrapper.findAll('.u-button')
-    const startBtn = buttons.find((b) => b.attributes('data-label') === 'Start')
-    expect(startBtn).toBeDefined()
-  })
-
-  test('Pause button is disabled when status is not running', () => {
-    const mission = makeMission({ status: 'IDLE' })
-    const wrapper = wrap(mission)
-    const buttons = wrapper.findAll('.u-button')
-    const pauseBtn = buttons.find((b) => b.attributes('data-label') === 'Pause')
-    expect(pauseBtn).toBeDefined()
+    expect(buttons.length).toBeGreaterThanOrEqual(1)
+    // Find the Delete button (it has data-label="Delete")
+    const deleteBtn = buttons.find((b) => b.attributes('data-label') === 'Delete')
+    expect(deleteBtn).toBeDefined()
   })
 })

@@ -20,7 +20,7 @@ vi.mock('#app/nuxt', () => ({
     }
   })),
   useNuxtApp: vi.fn(() => ({
-    vueApp: { use: vi.fn() },
+    vueApp: { use: vi.fn(), component: vi.fn() },
     $config: { public: {} },
     _route: { path: '/' }
   })),
