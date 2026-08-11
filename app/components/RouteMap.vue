@@ -25,6 +25,8 @@ import { useCollectorMissionStore } from '~/stores/mission'
 import type { MissionLocation } from '~/types/mission'
 import RouteSidebar from './RouteSidebar.vue'
 import { useCustomToast } from '~/composables/useCustomToast'
+import { useDeviceLocationWebSocket } from '~/composables/useDeviceLocationWebSocket'
+import type { DeviceLocationWS } from '~/types/mission'
 
 const toast = useCustomToast()
 
@@ -33,6 +35,7 @@ const props = defineProps<{
 }>()
 
 const missionStore = useCollectorMissionStore()
+useDeviceLocationWebSocket()
 const mapContainer = ref<HTMLDivElement | null>(null)
 const mapWrapper = ref<HTMLDivElement | null>(null)
 const sidebarCollapsed = ref(false)
@@ -102,15 +105,7 @@ function createDroneIcon(status: string): any {
       <div class="drone-marker-wrapper">
         <div class="drone-marker-badge ${badgeClass}" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background-color:${badgeClass === 'status-moving' ? '#16a34a' : badgeClass === 'status-idle' ? '#6b7280' : '#dc2626'};color:#ffffff;box-shadow:0 0 8px rgba(255,255,255,0.5);">
           <svg class="drone-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:18px;height:18px;">
-            <path d="M10 10 7 7"></path>
-            <path d="m10 14-3 3"></path>
-            <path d="m14 10 3-3"></path>
-            <path d="m14 14 3 3"></path>
-            <path d="M14.205 4.139a4 4 0 1 1 5.439 5.863"></path>
-            <path d="M19.637 14a4 4 0 1 1-5.432 5.868"></path>
-            <path d="M4.367 10a4 4 0 1 1 5.438-5.862"></path>
-            <path d="M9.795 19.862a4 4 0 1 1-5.429-5.873"></path>
-            <rect x="10" y="8" width="4" height="8" rx="1"></rect>
+            <path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/>
           </svg>
         </div>
         <span class="drone-status-label">${statusLabel}</span>
@@ -378,8 +373,9 @@ function fitToAllMarkers(map: any, L: any) {
   const allPoints: [number, number][] = orderedItems.value.map(
     (l) => [l.latitude, l.longitude] as [number, number]
   )
-  if (droneMarker && deviceLocation?.latitude && deviceLocation?.longitude) {
-    allPoints.push([deviceLocation.latitude, deviceLocation.longitude] as [number, number])
+  const wsLoc = missionStore.deviceLocationWS
+  if (droneMarker && wsLoc?.latitude && wsLoc?.longitude) {
+    allPoints.push([wsLoc.latitude, wsLoc.longitude] as [number, number])
   }
   if (allPoints.length === 0) return
   const bounds = L.latLngBounds(allPoints)
@@ -390,9 +386,7 @@ function fitToAllMarkers(map: any, L: any) {
 let mapInstance: any = null
 let routeLayerRef: any = null
 let droneMarker: any = null
-let droneLocationInterval: any = null
 let resizeObserver: ResizeObserver | null = null
-let deviceLocation: any = null
 let initialFitDone = false
 
 async function locateToDevice(map: any) {
@@ -451,12 +445,10 @@ function updateLocateIcon() {
 }
 
 async function fetchAndDisplayDroneLocation(map: any, L: any) {
-  let loc: any
+  let loc: { latitude: number; longitude: number; status: string } | null
   try {
     loc = await missionStore.fetchDeviceLocation()
-    console.log('[RouteMap] Device location fetched:', loc)
-    deviceLocation = loc
-    
+    console.log('[RouteMap] Device location fetched (HTTP):', loc)
     if (!loc?.latitude || !loc?.longitude) {
       console.warn('[RouteMap] No valid coordinates in device location')
       return
@@ -465,47 +457,30 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
     const status = loc.status || 'UNKNOWN'
     console.log('[RouteMap] Drone status:', status)
     const latlng = [loc.latitude, loc.longitude]
-    console.log('[RouteMap] Drone latlng:', latlng)
 
-    // If marker already exists, just update its position and content — DO NOT
-    // remove and recreate. Removing causes the bound popup to close mid-display
-    // when the polling interval fires every 5 seconds.
     if (droneMarker) {
       droneMarker.setLatLng(latlng)
       const newIcon = createDroneIcon(status)
       droneMarker.setIcon(newIcon)
-      // Update popup content in place if popup is bound
       const popup = droneMarker.getPopup()
       if (popup) {
         popup.setContent(buildDronePopupHtml(status, loc))
       }
-      console.log('[RouteMap] Drone marker updated in place')
+      console.log('[RouteMap] Drone marker updated in place (HTTP)')
       return
     }
 
     const icon = createDroneIcon(status)
-
-    droneMarker = L.marker(latlng, {
-      icon,
-      zIndexOffset: 1000 // Ensure drone marker appears above other markers
-    })
-
-    // Only add marker to map, don't auto-center
+    droneMarker = L.marker(latlng, { icon, zIndexOffset: 1000 })
     droneMarker.addTo(map)
-
-    // Add popup with drone info
     const popupContent = buildDronePopupHtml(status, loc)
-    
     droneMarker.bindPopup(popupContent, {
-      closeButton: false, // Custom X button inside content (Leaflet's default X is in the corner already)
+      closeButton: false,
       autoClose: false,
       closeOnClick: false,
       className: 'leaflet-drone-popup'
     })
-    
-    // Wire up the custom close button inside the popup to actually close it.
     droneMarker.on('popupopen', (e: any) => {
-      // Force layout fix for coordinate row
       const popupEl = e?.popup?.getElement?.()
       const coordRow = popupEl?.querySelector('#drone-coord-row')
       if (coordRow) {
@@ -523,19 +498,75 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
         }, { once: true })
       }
     })
-    
-    console.log('[RouteMap] Drone marker added to map, total layers:', map.hasLayer(droneMarker))
-    
+    console.log('[RouteMap] Drone marker added to map (HTTP), total layers:', map.hasLayer(droneMarker))
   } catch (err) {
     console.error('[RouteMap] Failed to fetch drone location:', err)
   }
 }
 
 /**
+ * Update the existing drone marker when a WebSocket event arrives.
+ * Called by the watcher on `deviceLocationWS`.
+ */
+function updateDroneMarkerFromWS(loc: DeviceLocationWS, map: any, L: any) {
+  if (!loc?.latitude || !loc?.longitude) return
+
+  const status = loc.status || 'UNKNOWN'
+  console.log('[RouteMap] Drone WS update:', loc)
+  const latlng = [loc.latitude, loc.longitude]
+
+  if (droneMarker) {
+    droneMarker.setLatLng(latlng)
+    const newIcon = createDroneIcon(status)
+    droneMarker.setIcon(newIcon)
+    const popup = droneMarker.getPopup()
+    if (popup) {
+      popup.setContent(buildDronePopupHtml(status, loc))
+    }
+    console.log('[RouteMap] Drone marker updated from WS')
+  } else {
+    const icon = createDroneIcon(status)
+    droneMarker = L.marker(latlng, { icon, zIndexOffset: 1000 })
+    droneMarker.addTo(map)
+    const popupContent = buildDronePopupHtml(status, loc)
+    droneMarker.bindPopup(popupContent, {
+      closeButton: false,
+      autoClose: false,
+      closeOnClick: false,
+      className: 'leaflet-drone-popup'
+    })
+    droneMarker.on('popupopen', (e: any) => {
+      const popupEl = e?.popup?.getElement?.()
+      const coordRow = popupEl?.querySelector('#drone-coord-row')
+      if (coordRow) {
+        coordRow.style.display = 'flex'
+        coordRow.style.justifyContent = 'space-between'
+        coordRow.style.alignItems = 'center'
+        coordRow.style.gap = '6px'
+      }
+      const btn = popupEl?.querySelector('.signal-popup-close-btn')
+      if (btn) {
+        btn.addEventListener('click', (ev: Event) => {
+          ev.stopPropagation()
+          ev.preventDefault()
+          droneMarker?.closePopup()
+        }, { once: true })
+      }
+    })
+    console.log('[RouteMap] Drone marker created from WS, total layers:', map.hasLayer(droneMarker))
+  }
+}
+
+/**
  * Build the HTML markup for the drone popup. Extracted so the same markup
  * can be reused for both initial bind and in-place updates.
+ * Accepts both HTTP (DeviceLocation) and WS (DeviceLocationWS) payloads.
  */
-function buildDronePopupHtml(status: string, deviceLocation: any): string {
+function buildDronePopupHtml(status: string, deviceLocation: { latitude: number; longitude: number; speed_ms?: number | null; speed?: number | null; altitude_m?: number | null; altitude?: number | null; datetime: string; error?: string }): string {
+  const speed = deviceLocation.speed_ms ?? deviceLocation.speed ?? null
+  const altitude = deviceLocation.altitude_m ?? deviceLocation.altitude ?? null
+  const isErrored = !!deviceLocation.error
+
   return `
     <div class="drone-popup">
       <button type="button" class="signal-popup-close-btn" aria-label="Close">
@@ -559,6 +590,7 @@ function buildDronePopupHtml(status: string, deviceLocation: any): string {
         <strong>Drone Location</strong>
       </div>
       <div class="signal-popup-row"><span>Status</span><span class="drone-status-chip drone-status-${status.toLowerCase()}">${status}</span></div>
+      ${isErrored ? `<div class="signal-popup-row"><span class="error-badge">⚠ ${deviceLocation.error}</span></div>` : ''}
       <div class="signal-popup-row" id="drone-coord-row" style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -566,8 +598,8 @@ function buildDronePopupHtml(status: string, deviceLocation: any): string {
         </svg>
         <span style="margin-left:auto; text-align:right;">${deviceLocation.latitude.toFixed(6)}, ${deviceLocation.longitude.toFixed(6)}</span>
       </div>
-      ${deviceLocation.speed != null ? `<div class="signal-popup-row"><span>Speed</span><span>${deviceLocation.speed.toFixed(2)} m/s</span></div>` : ''}
-      ${deviceLocation.altitude != null ? `<div class="signal-popup-row"><span>Altitude</span><span>${deviceLocation.altitude.toFixed(1)} m</span></div>` : ''}
+      ${speed != null ? `<div class="signal-popup-row"><span>Speed</span><span>${speed.toFixed(2)} m/s</span></div>` : ''}
+      ${altitude != null ? `<div class="signal-popup-row"><span>Altitude</span><span>${altitude.toFixed(1)} m</span></div>` : ''}
       <div class="signal-popup-row"><span>Updated</span><span>${new Date(deviceLocation.datetime).toLocaleString('en-GB', { hour12: false })}</span></div>
     </div>
   `
@@ -634,7 +666,7 @@ onMounted(async () => {
   // The watcher below will pick up the response and redraw.
   await missionStore.fetchRoute(props.missionId)
 
-  // Fetch and display drone location
+  // Fetch and display drone location (HTTP one-shot for initial load)
   await fetchAndDisplayDroneLocation(mapInstance, L)
 
   // Fit bounds to all markers (route towers + drone) on first load
@@ -642,16 +674,25 @@ onMounted(async () => {
     fitToAllMarkers(mapInstance, L)
     initialFitDone = true
   }
-  
-  // Poll drone location every 5 seconds
-  droneLocationInterval = setInterval(async () => {
-    await fetchAndDisplayDroneLocation(mapInstance, L)
-  }, 5000)
 
   // React to layout changes (e.g. window resize).
   resizeObserver = new ResizeObserver(() => mapInstance?.invalidateSize())
   const wrapperEl = mapWrapper.value
   if (wrapperEl) resizeObserver.observe(wrapperEl)
+
+  // Watch WebSocket device location and update marker in real time
+  watch(
+    () => missionStore.deviceLocationWS,
+    (wsLoc) => {
+      if (wsLoc && mapInstance && !droneMarker) {
+        // First WS location arrives — create marker if HTTP one didn't
+        updateDroneMarkerFromWS(wsLoc, mapInstance, L)
+      } else if (wsLoc && mapInstance && droneMarker) {
+        updateDroneMarkerFromWS(wsLoc, mapInstance, L)
+      }
+    },
+    { deep: true }
+  )
 })
 
 // Redraw whenever the route payload changes — covers initial load,
@@ -668,10 +709,6 @@ watch(
 onUnmounted(() => {
   resizeObserver?.disconnect()
   resizeObserver = null
-  if (droneLocationInterval) {
-    clearInterval(droneLocationInterval)
-    droneLocationInterval = null
-  }
   if (mapInstance) {
     if (droneMarker) {
       mapInstance.removeLayer(droneMarker)
