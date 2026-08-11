@@ -65,6 +65,8 @@ function isCurrentLoadingSegment(segment: { status: MissionStatus5 }): boolean {
   return getCurrentIndex() === STATUS_ORDER.indexOf(segment.status) &&
     LOADING_STATUSES.includes(segment.status as typeof LOADING_STATUSES[number])
 }
+
+function getStatusState(segment: { status: MissionStatus5 }) {
   const currentIdx = getCurrentIndex()
   const segIdx = STATUS_ORDER.indexOf(segment.status)
   if (segIdx < currentIdx) return 'past'
