@@ -133,6 +133,26 @@ function renderRoute(
   routeLayer: { clearLayers: () => void; addLayer: (l: unknown) => void },
   items: MissionLocation[]
 ) {
+  // Capture which tower marker (if any) currently has its popup open so we
+  // can reopen it on the freshly-created marker after the layer group is
+  // wiped. The /route endpoint poll redraws every few seconds, which would
+  // otherwise destroy the popup mid-display.
+  let openIdx: number | null = null
+  if (map) {
+    map.eachLayer((layer: any) => {
+      if (layer instanceof L.Marker) {
+        const popup = layer.getPopup?.()
+        if (popup && popup.isOpen?.()) {
+          const ll = layer.getLatLng()
+          const idx = items.findIndex(
+            (it) => Math.abs(it.latitude - ll.lat) < 1e-6 && Math.abs(it.longitude - ll.lng) < 1e-6
+          )
+          if (idx !== -1) openIdx = idx
+        }
+      }
+    })
+  }
+
   routeLayer.clearLayers()
 
   if (items.length === 0) return
@@ -289,6 +309,15 @@ function renderRoute(
         className: 'leaflet-signal-popup'
       })
       .on('popupopen', (e: any) => {
+        // When the popup closes (via close button or programmatically),
+        // invalidate openIdx so the next redraw won't reopen it.
+        const popup = e?.popup
+        if (popup) {
+          popup.once('popupclose', () => {
+            openIdx = null
+          })
+        }
+
         const popupEl = e?.popup?.getElement?.()
         const btn = popupEl?.querySelector('.signal-popup-close-btn')
         if (btn) {
@@ -296,7 +325,7 @@ function renderRoute(
             ev.stopPropagation()
             ev.preventDefault()
             map.eachLayer((layer: any) => {
-              if (layer instanceof L.Marker && layer.getPopup() === e.popup) {
+              if (layer instanceof L.Marker && layer.getPopup() === popup) {
                 layer.closePopup()
               }
             })
@@ -309,7 +338,7 @@ function renderRoute(
                 ev.stopPropagation()
                 ev.preventDefault()
                 map.eachLayer((layer: any) => {
-                  if (layer instanceof L.Marker && layer.getPopup() === e.popup) {
+                  if (layer instanceof L.Marker && layer.getPopup() === popup) {
                     layer.closePopup()
                   }
                 })
@@ -320,10 +349,42 @@ function renderRoute(
       })
   })
 
-  // Fit bounds to show every location.
-  if (routeLatlngs.length) {
+  // Re-open the popup on the newly-created marker if one was open before
+  // this redraw. This survives the clearLayers() + recreate cycle.
+  if (openIdx !== null && openIdx < items.length) {
+    routeLayer.eachLayer((layer: any) => {
+      if (layer instanceof L.Marker) {
+        const ll = layer.getLatLng()
+        const loc = items[openIdx]!
+        if (Math.abs(ll.lat - loc.latitude) < 1e-6 && Math.abs(ll.lng - loc.longitude) < 1e-6) {
+          layer.openPopup()
+        }
+      }
+    })
+  }
+
+  // Fit bounds only on initial render (when no previous items existed).
+  // Don't re-fit on every poll/update — that would jank the user's map view.
+  if (routeLatlngs.length && (!items || items.length === 0)) {
     map.fitBounds(routeLatlngs, { padding: [50, 50] })
   }
+}
+
+/**
+ * Fit the map to show all tower markers + drone marker together.
+ * Called once on initial load after both route and drone location are ready.
+ */
+function fitToAllMarkers(map: any, L: any) {
+  const allPoints: [number, number][] = orderedItems.value.map(
+    (l) => [l.latitude, l.longitude] as [number, number]
+  )
+  if (droneMarker && deviceLocation?.latitude && deviceLocation?.longitude) {
+    allPoints.push([deviceLocation.latitude, deviceLocation.longitude] as [number, number])
+  }
+  if (allPoints.length === 0) return
+  const bounds = L.latLngBounds(allPoints)
+  map.fitBounds(bounds, { padding: [50, 50] })
+  console.log('[RouteMap] fitToAllMarkers applied, points:', allPoints.length)
 }
 
 let mapInstance: any = null
@@ -331,6 +392,8 @@ let routeLayerRef: any = null
 let droneMarker: any = null
 let droneLocationInterval: any = null
 let resizeObserver: ResizeObserver | null = null
+let deviceLocation: any = null
+let initialFitDone = false
 
 async function locateToDevice(map: any) {
   if (isLocating.value) return
@@ -388,19 +451,20 @@ function updateLocateIcon() {
 }
 
 async function fetchAndDisplayDroneLocation(map: any, L: any) {
-  let deviceLocation: any
+  let loc: any
   try {
-    deviceLocation = await missionStore.fetchDeviceLocation()
-    console.log('[RouteMap] Device location fetched:', deviceLocation)
+    loc = await missionStore.fetchDeviceLocation()
+    console.log('[RouteMap] Device location fetched:', loc)
+    deviceLocation = loc
     
-    if (!deviceLocation?.latitude || !deviceLocation?.longitude) {
+    if (!loc?.latitude || !loc?.longitude) {
       console.warn('[RouteMap] No valid coordinates in device location')
       return
     }
-    
-    const status = deviceLocation.status || 'UNKNOWN'
+
+    const status = loc.status || 'UNKNOWN'
     console.log('[RouteMap] Drone status:', status)
-    const latlng = [deviceLocation.latitude, deviceLocation.longitude]
+    const latlng = [loc.latitude, loc.longitude]
     console.log('[RouteMap] Drone latlng:', latlng)
 
     // If marker already exists, just update its position and content — DO NOT
@@ -413,24 +477,24 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
       // Update popup content in place if popup is bound
       const popup = droneMarker.getPopup()
       if (popup) {
-        popup.setContent(buildDronePopupHtml(status, deviceLocation))
+        popup.setContent(buildDronePopupHtml(status, loc))
       }
       console.log('[RouteMap] Drone marker updated in place')
       return
     }
 
     const icon = createDroneIcon(status)
-    
+
     droneMarker = L.marker(latlng, {
       icon,
       zIndexOffset: 1000 // Ensure drone marker appears above other markers
     })
-    
+
     // Only add marker to map, don't auto-center
     droneMarker.addTo(map)
-    
+
     // Add popup with drone info
-    const popupContent = buildDronePopupHtml(status, deviceLocation)
+    const popupContent = buildDronePopupHtml(status, loc)
     
     droneMarker.bindPopup(popupContent, {
       closeButton: false, // Custom X button inside content (Leaflet's default X is in the corner already)
@@ -572,6 +636,12 @@ onMounted(async () => {
 
   // Fetch and display drone location
   await fetchAndDisplayDroneLocation(mapInstance, L)
+
+  // Fit bounds to all markers (route towers + drone) on first load
+  if (mapInstance && orderedItems.value.length > 0) {
+    fitToAllMarkers(mapInstance, L)
+    initialFitDone = true
+  }
   
   // Poll drone location every 5 seconds
   droneLocationInterval = setInterval(async () => {

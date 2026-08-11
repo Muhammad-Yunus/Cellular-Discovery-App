@@ -1,6 +1,7 @@
 <!-- app/pages/missions/[id]/index.vue -->
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch, ref } from 'vue'
+import MissionTimeline from '~/components/MissionTimeline.vue'
 definePageMeta({
   layout: 'default',
   title: 'Mission detail'
@@ -73,6 +74,8 @@ const POLLING_INTERVAL_MS = 5000 // 5 seconds
 let missionPollTimer: ReturnType<typeof setTimeout> | null = null
 let locationsPollTimer: ReturnType<typeof setTimeout> | null = null
 let routePollTimer: ReturnType<typeof setTimeout> | null = null
+let scansPollTimer: ReturnType<typeof setTimeout> | null = null
+let logsPollTimer: ReturnType<typeof setTimeout> | null = null
 
 /** Get current mission status from store */
 function getMissionStatus(): string {
@@ -126,6 +129,32 @@ async function pollRoute() {
 }
 
 /**
+ * Poll scans tab data. Only when tab is active AND mission is running.
+ */
+async function pollScans() {
+  if (!isRunning() || activeTab.value !== 'scans') return
+  try {
+    window.dispatchEvent(new CustomEvent('refresh-scan-list'))
+  } catch (e) {
+    console.debug('[poll] scans failed:', e)
+  }
+  scansPollTimer = setTimeout(pollScans, POLLING_INTERVAL_MS)
+}
+
+/**
+ * Poll logs tab data. Only when tab is active AND mission is running.
+ */
+async function pollLogs() {
+  if (!isRunning() || activeTab.value !== 'logs') return
+  try {
+    window.dispatchEvent(new CustomEvent('refresh-log-list'))
+  } catch (e) {
+    console.debug('[poll] logs failed:', e)
+  }
+  logsPollTimer = setTimeout(pollLogs, POLLING_INTERVAL_MS)
+}
+
+/**
  * Start polling for mission detail when status changes to RUNNING.
  * Also start polling for active tab data.
  */
@@ -134,6 +163,8 @@ function startPolling() {
   if (missionPollTimer) clearTimeout(missionPollTimer)
   if (locationsPollTimer) clearTimeout(locationsPollTimer)
   if (routePollTimer) clearTimeout(routePollTimer)
+  if (scansPollTimer) clearTimeout(scansPollTimer)
+  if (logsPollTimer) clearTimeout(logsPollTimer)
 
   // Start mission detail polling
   pollMission()
@@ -146,6 +177,12 @@ function startPolling() {
         break
       case 'route':
         pollRoute()
+        break
+      case 'scans':
+        pollScans()
+        break
+      case 'logs':
+        pollLogs()
         break
     }
   }
@@ -166,6 +203,14 @@ function stopPolling() {
   if (routePollTimer) {
     clearTimeout(routePollTimer)
     routePollTimer = null
+  }
+  if (scansPollTimer) {
+    clearTimeout(scansPollTimer)
+    scansPollTimer = null
+  }
+  if (logsPollTimer) {
+    clearTimeout(logsPollTimer)
+    logsPollTimer = null
   }
 }
 
@@ -203,6 +248,18 @@ watch(
         routePollTimer = null
       }
     }
+    if (isRunning() && oldTab === 'scans') {
+      if (scansPollTimer) {
+        clearTimeout(scansPollTimer)
+        scansPollTimer = null
+      }
+    }
+    if (isRunning() && oldTab === 'logs') {
+      if (logsPollTimer) {
+        clearTimeout(logsPollTimer)
+        logsPollTimer = null
+      }
+    }
 
     // Start polling for new tab if mission is running
     if (isRunning()) {
@@ -212,6 +269,12 @@ watch(
           break
         case 'route':
           pollRoute()
+          break
+        case 'scans':
+          pollScans()
+          break
+        case 'logs':
+          pollLogs()
           break
       }
     }
@@ -445,7 +508,13 @@ async function onPlan() {
           </template>
         </div>
 
-        <!-- Card 2: Action buttons -->
+        <!-- Card 2: Mission lifecycle timeline -->
+        <MissionTimeline
+          v-if="missionStore.selectedMission"
+          :status="missionStore.selectedMission.status"
+        />
+
+        <!-- Card 3: Action buttons -->
         <div class="border border-default/10 bg-elevated rounded-lg p-3">
           <div class="flex flex-wrap gap-2">
             <NuxtLink :to="`/missions/${missionId}/edit`">
@@ -462,7 +531,8 @@ async function onPlan() {
             <UButton
               v-if="canPlan(missionStore.selectedMission?.status, missionStore.selectedMission?.location_count ?? missionStore.selectedMission?.total_locations ?? 0)"
               size="sm"
-              variant="ghost"
+              variant="outline"
+              color="info"
               icon="i-lucide-map"
               :loading="isActionPending()"
               :disabled="isActionPending()"
@@ -471,7 +541,8 @@ async function onPlan() {
             <UButton
               v-if="canStart(missionStore.selectedMission?.status)"
               size="sm"
-              variant="ghost"
+              variant="outline"
+              color="success"
               icon="i-lucide-play"
               :loading="isActionPending()"
               :disabled="isActionPending()"
@@ -480,7 +551,8 @@ async function onPlan() {
             <UButton
               v-if="canPause(missionStore.selectedMission?.status)"
               size="sm"
-              variant="ghost"
+              variant="outline"
+              color="warning"
               icon="i-lucide-pause"
               :loading="isActionPending()"
               :disabled="isActionPending()"
@@ -489,7 +561,8 @@ async function onPlan() {
             <UButton
               v-if="canResume(missionStore.selectedMission?.status)"
               size="sm"
-              variant="ghost"
+              variant="outline"
+              color="info"
               icon="i-lucide-play"
               :loading="isActionPending()"
               :disabled="isActionPending()"
@@ -498,7 +571,7 @@ async function onPlan() {
             <UButton
               v-if="canStop(missionStore.selectedMission?.status)"
               size="sm"
-              variant="ghost"
+              variant="outline"
               color="error"
               icon="i-lucide-square"
               :loading="isActionPending()"

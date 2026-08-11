@@ -210,7 +210,8 @@ function onDelete() {
       />
       <UButton
         size="xs"
-        variant="ghost"
+        variant="outline"
+        color="success"
         icon="i-lucide-play"
         label="Start"
         :disabled="!canStart"
@@ -218,7 +219,8 @@ function onDelete() {
       />
       <UButton
         size="xs"
-        variant="ghost"
+        variant="outline"
+        color="warning"
         icon="i-lucide-pause"
         label="Pause"
         :disabled="!canPause"

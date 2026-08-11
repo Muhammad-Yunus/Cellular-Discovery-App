@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { MissionLog, MissionLogPaginated } from '~/types'
 import { getMissionLogs } from '~/services/scan.service'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps<{
   missionId: string
@@ -9,7 +9,21 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'data-loaded'): void
+  (e: 'refresh'): void
 }>()
+
+// Listen for external refresh requests (e.g., from polling)
+const handleLogRefresh = () => fetchLogs()
+const handleLogUnmount = () => {
+  window.removeEventListener('refresh-log-list', handleLogRefresh)
+}
+
+onMounted(() => {
+  fetchLogs()
+  window.addEventListener('refresh-log-list', handleLogRefresh)
+})
+
+onUnmounted(handleLogUnmount)
 
 const logs = ref<MissionLog[]>([])
 const loading = ref(false)
@@ -72,7 +86,7 @@ async function fetchLogs(resetPage = false) {
   emit('data-loaded')
 }
 
-onMounted(fetchLogs)
+onUnmounted(handleLogUnmount)
 </script>
 
 <template>

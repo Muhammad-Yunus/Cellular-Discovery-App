@@ -232,13 +232,14 @@ describe('collectorMission store', () => {
       })
 
       const store = useCollectorMissionStore()
-      await store.createMission({
+      const result = await store.createMission({
         name: 'New Mission'
       })
 
       expect(mockCreateCollectorMission).toHaveBeenCalled()
       expect(store.missions).toHaveLength(1)
       expect(store.selectedMissionId).toBe('cm-new')
+      expect(result).toBe('cm-new')
     })
 
     it('propagates error on failure', async () => {

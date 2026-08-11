@@ -665,7 +665,7 @@ function getStatusBadgeProps(status: MissionStatus5) {
           <UButton
             v-if="canStart(mission.status)"
             size="xs"
-            variant="ghost"
+            variant="outline"
             color="success"
             icon="i-lucide-play"
             label="Start"
@@ -677,7 +677,7 @@ function getStatusBadgeProps(status: MissionStatus5) {
           <UButton
             v-if="canPause(mission.status)"
             size="xs"
-            variant="ghost"
+            variant="outline"
             color="warning"
             icon="i-lucide-pause"
             label="Pause"
@@ -689,8 +689,8 @@ function getStatusBadgeProps(status: MissionStatus5) {
           <UButton
             v-if="canResume(mission.status)"
             size="xs"
-            variant="ghost"
-            color="primary"
+            variant="outline"
+            color="info"
             icon="i-lucide-play"
             label="Resume"
             :loading="missionStore.saving && pendingActionFor === mission.id + ':resume'"
@@ -701,7 +701,7 @@ function getStatusBadgeProps(status: MissionStatus5) {
           <UButton
             v-if="canStop(mission.status)"
             size="xs"
-            variant="ghost"
+            variant="outline"
             color="error"
             icon="i-lucide-square"
             label="Stop"

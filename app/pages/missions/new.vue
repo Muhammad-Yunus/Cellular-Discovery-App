@@ -37,14 +37,14 @@ async function onSubmit() {
       radius_meters: radiusMeters.value,
       tty_port: ttyPort.value.trim()
     }
-    await missionStore.createMission(input)
+    const createdId = await missionStore.createMission(input)
     toast.add({
       title: 'Mission created',
       description: `"${input.name}" has been created successfully.`,
       color: 'success',
       icon: 'i-lucide-check-circle'
     })
-    router.push('/missions')
+    router.push(`/missions/${createdId}/locations/upload`)
   } catch (e: any) {
     toast.add({
       title: 'Failed to create mission',

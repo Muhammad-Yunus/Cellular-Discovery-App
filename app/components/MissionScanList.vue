@@ -3,7 +3,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type { MissionScan } from '~/types'
 import FilterPanel from '@/components/FilterPanel.vue'
 import { getOperatorLogoPath } from '~/utils/operatorLogoMap'
-import { nextTick, watch, h, ref, computed } from 'vue'
+import { nextTick, watch, h, ref, computed, onMounted, onUnmounted } from 'vue'
 import { getMissionScans } from '~/services/scan.service'
 
 const props = defineProps<{
@@ -12,7 +12,26 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'data-loaded'): void
+  (e: 'refresh'): void
 }>()
+
+// Listen for external refresh requests (e.g., from polling)
+const handleScanRefresh = () => fetchScans()
+const handleScanUnmount = () => {
+  window.removeEventListener('refresh-scan-list', handleScanRefresh)
+}
+
+onMounted(() => {
+  const defaults = getDefaultDateRange()
+  startDateTime.value = defaults.start
+  endDateTime.value = defaults.end
+  fetchScans()
+
+  // Handle refresh event from parent
+  window.addEventListener('refresh-scan-list', handleScanRefresh)
+})
+
+onUnmounted(handleScanUnmount)
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50] as const
 
@@ -361,12 +380,7 @@ const columns: TableColumn<MissionScan>[] = [
 ]
 
 // --- Lifecycle ---
-onMounted(() => {
-  const defaults = getDefaultDateRange()
-  startDateTime.value = defaults.start
-  endDateTime.value = defaults.end
-  fetchScans()
-})
+// (Event listener already attached in the initial onMounted above)
 </script>
 
 <template>

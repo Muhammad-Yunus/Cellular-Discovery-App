@@ -192,17 +192,19 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
      * Create a new collector mission. On success, re-fetch the list so the
      * new mission appears at the top of the grid.
      */
-    async createMission(data: import('~/types/mission').MissionRecordCreate) {
+    async createMission(data: import('~/types/mission').MissionRecordCreate): Promise<string> {
       this.creating = true
       this.error = null
       try {
         await missionService.createCollectorMission(data)
         // Re-fetch to surface the new mission
         await this.fetchMissions()
-        // Auto-select the newly created mission
+        // Auto-select the newly created mission (first item = newest)
         if (this.missions.length > 0) {
           this.selectedMissionId = this.missions[0]!.id
+          return this.missions[0]!.id
         }
+        throw new Error('Mission created but could not be found in the list')
       } catch (e) {
         const { parseApiError } = await import('~/types/api')
         const appError = parseApiError(e)
