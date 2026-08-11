@@ -82,11 +82,12 @@ function esc(html: string): string {
 
 /**
  * Create a drone marker icon with pulsing animation based on status.
+ * @param courseDeg Optional heading in degrees (0-360) to rotate the icon.
  */
-function createDroneIcon(status: string): any {
+function createDroneIcon(status: string, courseDeg: number | null = null): any {
   let badgeClass = 'status-unknown'
   let statusLabel = 'UNKNOWN'
-  
+
   if (status === 'IDLE') {
     badgeClass = 'status-idle'
     statusLabel = 'IDLE'
@@ -94,17 +95,19 @@ function createDroneIcon(status: string): any {
     badgeClass = 'status-moving'
     statusLabel = status
   }
-  
+
   const className = `leaflet-drone-marker drone-marker-${badgeClass}`
   console.log('[RouteMap] Creating drone icon with className:', className)
-  
-  // Lucide "drone" icon paths (24x24 viewBox, stroke=currentColor)
+
+  // Rotate the icon by courseDeg when available (0 = North, clockwise)
+  const rotationStyle = courseDeg != null ? `transform:rotate(${courseDeg}deg);` : ''
+
   return L.divIcon({
     className,
     html: `
       <div class="drone-marker-wrapper">
         <div class="drone-marker-badge ${badgeClass}" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background-color:${badgeClass === 'status-moving' ? '#16a34a' : badgeClass === 'status-idle' ? '#6b7280' : '#dc2626'};color:#ffffff;box-shadow:0 0 8px rgba(255,255,255,0.5);">
-          <svg class="drone-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:18px;height:18px;">
+          <svg class="drone-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:18px;height:18px;${rotationStyle}">
             <path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/>
           </svg>
         </div>
@@ -460,7 +463,7 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
 
     if (droneMarker) {
       droneMarker.setLatLng(latlng)
-      const newIcon = createDroneIcon(status)
+      const newIcon = createDroneIcon(status, loc.course_deg ?? null)
       droneMarker.setIcon(newIcon)
       const popup = droneMarker.getPopup()
       if (popup) {
@@ -470,7 +473,7 @@ async function fetchAndDisplayDroneLocation(map: any, L: any) {
       return
     }
 
-    const icon = createDroneIcon(status)
+    const icon = createDroneIcon(status, loc.course_deg ?? null)
     droneMarker = L.marker(latlng, { icon, zIndexOffset: 1000 })
     droneMarker.addTo(map)
     const popupContent = buildDronePopupHtml(status, loc)
@@ -517,7 +520,7 @@ function updateDroneMarkerFromWS(loc: DeviceLocationWS, map: any, L: any) {
 
   if (droneMarker) {
     droneMarker.setLatLng(latlng)
-    const newIcon = createDroneIcon(status)
+    const newIcon = createDroneIcon(status, loc.course_deg ?? null)
     droneMarker.setIcon(newIcon)
     const popup = droneMarker.getPopup()
     if (popup) {
@@ -525,7 +528,7 @@ function updateDroneMarkerFromWS(loc: DeviceLocationWS, map: any, L: any) {
     }
     console.log('[RouteMap] Drone marker updated from WS')
   } else {
-    const icon = createDroneIcon(status)
+    const icon = createDroneIcon(status, loc.course_deg ?? null)
     droneMarker = L.marker(latlng, { icon, zIndexOffset: 1000 })
     droneMarker.addTo(map)
     const popupContent = buildDronePopupHtml(status, loc)
