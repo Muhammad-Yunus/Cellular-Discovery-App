@@ -661,61 +661,6 @@ function getStatusBadgeProps(status: MissionStatus5) {
             label="View"
             @click="onViewMission(mission.id)"
           />
-          <!-- Start: allowed from IDLE, READY, STOPPED, FAILED -->
-          <UButton
-            v-if="canStart(mission.status)"
-            size="xs"
-            variant="outline"
-            color="success"
-            icon="i-lucide-play"
-            label="Start"
-            :loading="missionStore.saving && pendingActionFor === mission.id + ':start'"
-            :disabled="isActionPending(mission.id)"
-            @click="onAction(mission.id, 'start')"
-          />
-          <!-- Pause: allowed only from RUNNING -->
-          <UButton
-            v-if="canPause(mission.status)"
-            size="xs"
-            variant="outline"
-            color="warning"
-            icon="i-lucide-pause"
-            label="Pause"
-            :loading="missionStore.saving && pendingActionFor === mission.id + ':pause'"
-            :disabled="isActionPending(mission.id)"
-            @click="onAction(mission.id, 'pause')"
-          />
-          <!-- Resume: allowed only from PAUSED -->
-          <UButton
-            v-if="canResume(mission.status)"
-            size="xs"
-            variant="outline"
-            color="info"
-            icon="i-lucide-play"
-            label="Resume"
-            :loading="missionStore.saving && pendingActionFor === mission.id + ':resume'"
-            :disabled="isActionPending(mission.id)"
-            @click="onAction(mission.id, 'resume')"
-          />
-          <!-- Stop: allowed from STARTING, RUNNING, PAUSED -->
-          <UButton
-            v-if="canStop(mission.status)"
-            size="xs"
-            variant="outline"
-            color="error"
-            icon="i-lucide-square"
-            label="Stop"
-            :loading="missionStore.saving && pendingActionFor === mission.id + ':stop'"
-            :disabled="isActionPending(mission.id)"
-            @click="onAction(mission.id, 'stop')"
-          />
-          <!-- Terminal status hint: shows nothing actionable -->
-          <span
-            v-if="isTerminal(mission.status)"
-            class="text-xs text-muted italic ml-1"
-          >
-            Terminal — no actions
-          </span>
           <div class="ml-auto flex items-center gap-1">
             <UButton
               size="xs"
