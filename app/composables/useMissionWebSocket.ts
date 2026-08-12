@@ -50,22 +50,32 @@ export function useMissionWebSocket() {
   function handleEvent(event: MissionWSEvent) {
     switch (event.action as MissionWSAction) {
       case 'mission.status_changed':
-        missionStore.fetchMissions()
+        // Detail page needs refetch; list already refreshes via fetchMissions
+        void missionStore.fetchMissionById(event.mission_id)
+        void missionStore.fetchMissions()
         notify('Mission status updated', 'success', 'i-lucide-check-circle-2')
         break
       case 'mission.location_uploaded':
-        missionStore.fetchMissions()
+        void missionStore.fetchMissionById(event.mission_id)
+        void missionStore.fetchLocations(event.mission_id)
+        void missionStore.fetchMissions()
         notify('Locations uploaded', 'success', 'i-lucide-upload')
         break
       case 'mission.scan_collected':
-        missionStore.fetchMissions()
+        // Trigger custom event so the scan list component refreshes
+        window.dispatchEvent(new CustomEvent('ws-scan-collected', {
+          detail: { mission_id: event.mission_id }
+        }))
+        void missionStore.fetchMissions()
         notify('Scan collected', 'success', 'i-lucide-radar')
         break
-      case 'mission.gps_update':
       case 'mission.log_entry':
+        // Trigger custom event so the log list component refreshes
+        window.dispatchEvent(new CustomEvent('ws-log-entry', {
+          detail: { mission_id: event.mission_id }
+        }))
+        break
       default:
-        // No grid-refresh needed; consumers can listen on the store if
-        // they want to render these telemetry streams.
         break
     }
   }

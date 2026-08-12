@@ -12,15 +12,19 @@ const emit = defineEmits<{
   (e: 'refresh'): void
 }>()
 
-// Listen for external refresh requests (e.g., from polling)
+// Listen for external refresh requests (e.g., from polling or WebSocket)
 const handleLogRefresh = () => fetchLogs()
+const handleLogWSRefresh = () => fetchLogs()
 const handleLogUnmount = () => {
   window.removeEventListener('refresh-log-list', handleLogRefresh)
+  window.removeEventListener('ws-log-entry', handleLogWSRefresh)
 }
 
 onMounted(() => {
   fetchLogs()
   window.addEventListener('refresh-log-list', handleLogRefresh)
+  // Handle WebSocket log_entry event
+  window.addEventListener('ws-log-entry', handleLogWSRefresh)
 })
 
 onUnmounted(handleLogUnmount)

@@ -15,10 +15,12 @@ const emit = defineEmits<{
   (e: 'refresh'): void
 }>()
 
-// Listen for external refresh requests (e.g., from polling)
+// Listen for external refresh requests (e.g., from WebSocket or polling)
 const handleScanRefresh = () => fetchScans()
+const handleScanWSRefresh = () => fetchScans()
 const handleScanUnmount = () => {
   window.removeEventListener('refresh-scan-list', handleScanRefresh)
+  window.removeEventListener('ws-scan-collected', handleScanWSRefresh)
 }
 
 onMounted(() => {
@@ -29,6 +31,8 @@ onMounted(() => {
 
   // Handle refresh event from parent
   window.addEventListener('refresh-scan-list', handleScanRefresh)
+  // Handle WebSocket scan_collected event
+  window.addEventListener('ws-scan-collected', handleScanWSRefresh)
 })
 
 onUnmounted(handleScanUnmount)
