@@ -459,7 +459,11 @@ function renderRadiusCircles(
           opacity: 0.8,
           weight: 2
         })
-        circle.addClass('radius-circle-active')
+        // Add pulse animation class to the underlying SVG path
+        const path = circle.getElement()
+        if (path) {
+          path.classList.add('radius-circle-active')
+        }
       }
     }
 
