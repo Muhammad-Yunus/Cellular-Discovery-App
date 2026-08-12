@@ -81,44 +81,64 @@ function esc(html: string): string {
 }
 
 /**
- * Create a drone marker icon with pulsing animation based on status.
- * @param courseDeg Optional heading in degrees (0-360) to rotate the icon.
- */
-function createDroneIcon(status: string, courseDeg: number | null = null): any {
-  let badgeClass = 'status-unknown'
-  let statusLabel = 'UNKNOWN'
+  * Create a drone marker icon with pulsing animation based on status.
+  * @param courseDeg Optional heading in degrees (0-360) to rotate the icon.
+  */
+  function createDroneIcon(status: string, courseDeg: number | null = null): any {
+    let badgeClass = 'status-unknown'
+    let statusLabel = 'UNKNOWN'
 
-  if (status === 'IDLE') {
-    badgeClass = 'status-idle'
-    statusLabel = 'IDLE'
-  } else if (status === 'MOVING' || (status !== 'UNKNOWN' && status !== 'IDLE')) {
-    badgeClass = 'status-moving'
-    statusLabel = status
-  }
+    if (status === 'IDLE') {
+      badgeClass = 'status-idle'
+      statusLabel = 'IDLE'
+    } else if (status === 'MOVING' || (status !== 'UNKNOWN' && status !== 'IDLE')) {
+      badgeClass = 'status-moving'
+      statusLabel = status
+    }
 
-  const className = `leaflet-drone-marker drone-marker-${badgeClass}`
-  console.log('[RouteMap] Creating drone icon with className:', className)
+    const className = `leaflet-drone-marker drone-marker-${badgeClass}`
+    console.log('[RouteMap] Creating drone icon with className:', className)
 
-  // Rotate the icon by courseDeg when available (0 = North, clockwise)
-  const rotationStyle = courseDeg != null ? `transform:rotate(${courseDeg}deg);` : ''
+    // Rotate the icon by courseDeg when available (0 = North, clockwise)
+    const rotationStyle = courseDeg != null ? `transform:rotate(${courseDeg}deg);` : ''
 
-  return L.divIcon({
-    className,
-    html: `
-      <div class="drone-marker-wrapper">
-        <div class="drone-marker-badge ${badgeClass}" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background-color:${badgeClass === 'status-moving' ? '#16a34a' : badgeClass === 'status-idle' ? '#6b7280' : '#dc2626'};color:#ffffff;box-shadow:0 0 8px rgba(255,255,255,0.5);">
-          <svg class="drone-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:18px;height:18px;${rotationStyle}">
-            <path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/>
-          </svg>
+    // Different icon based on status: drone for IDLE, arrow for MOVING
+    let iconSvg = ''
+    if (status === 'IDLE') {
+      // Drone/quadcopter icon
+      iconSvg = `<svg class="drone-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:18px;height:18px;">
+        <circle cx="12" cy="12" r="2"/>
+        <path d="M12 2v4"/>
+        <path d="M12 18v4"/>
+        <path d="M2 12h4"/>
+        <path d="M18 12h4"/>
+        <path d="M4.93 4.93l2.83 2.83"/>
+        <path d="M16.24 16.24l2.83 2.83"/>
+        <path d="M4.93 19.07l2.83-2.83"/>
+        <path d="M16.24 7.76l2.83-2.83"/>
+      </svg>`
+    } else {
+      // Arrow/direction icon for MOVING and other statuses
+      iconSvg = `<svg class="drone-icon-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:18px;height:18px;${rotationStyle}">
+        <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+      </svg>`
+    }
+
+    return L.divIcon({
+      className,
+      html: `
+        <div class="drone-marker-wrapper">
+          <div class="drone-marker-badge ${badgeClass}" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background-color:${badgeClass === 'status-moving' ? '#16a34a' : badgeClass === 'status-idle' ? '#6b7280' : '#dc2626'};color:#ffffff;box-shadow:0 0 8px rgba(255,255,255,0.5);">
+            ${iconSvg}
+          </div>
+          <span class="drone-status-label">${statusLabel}</span>
         </div>
-        <span class="drone-status-label">${statusLabel}</span>
-      </div>
-    `,
-    iconSize: [48, 44],
-    iconAnchor: [24, 22],
-    popupAnchor: [0, -24]
-  })
-}
+      `,
+      iconSize: [48, 44],
+      iconAnchor: [24, 22],
+      popupAnchor: [0, -24]
+    })
+  }
 
 /**
  * Draw / redraw route layers (polyline + segment labels + numbered markers)
