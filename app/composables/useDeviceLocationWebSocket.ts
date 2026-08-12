@@ -17,6 +17,7 @@
 //     composable handles all connection management; the page only
 //     observes `missionStore.deviceLocationWS`.
 
+import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { ReconnectingWebSocket, buildWsUrl } from '~/utils/websocket'
 import { useCollectorMissionStore } from '~/stores/mission'
