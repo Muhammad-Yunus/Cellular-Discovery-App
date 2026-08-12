@@ -414,8 +414,63 @@ function fitToAllMarkers(map: any, L: any) {
   console.log('[RouteMap] fitToAllMarkers applied, points:', allPoints.length)
 }
 
+/**
+ * Draw a radius circle around each tower marker, using the mission's
+ * `radius_meters` value. Circles are drawn below the route markers so they
+ * don't obscure the numbered badges.
+ * If the drone marker is inside a circle, the border turns green with a pulse animation.
+ */
+function renderRadiusCircles(
+  map: any,
+  L: any,
+  layer: any,
+  items: MissionLocation[],
+  droneLoc?: { latitude: number; longitude: number } | null
+) {
+  if (!layer) return
+  layer.clearLayers()
+  radiusCircles.value = []
+
+  const mission = missionStore.selectedMission
+  const radiusMeters = mission?.radius_meters ?? 0
+  if (!radiusMeters || items.length === 0) return
+
+  items.forEach((loc) => {
+    const circle = L.circle([loc.latitude, loc.longitude], {
+      radius: radiusMeters,
+      color: '#3b82f6',
+      fillColor: '#3b82f6',
+      fillOpacity: 0.08,
+      weight: 1.5,
+      opacity: 0.5
+    }).addTo(layer)
+
+    // Check if drone is inside this circle
+    if (droneLoc && droneLoc.latitude && droneLoc.longitude) {
+      const dist = map.distance(
+        [loc.latitude, loc.longitude],
+        [droneLoc.latitude, droneLoc.longitude]
+      )
+      if (dist <= radiusMeters) {
+        circle.setStyle({
+          color: '#16a34a',
+          fillColor: '#16a34a',
+          fillOpacity: 0.12,
+          opacity: 0.8,
+          weight: 2
+        })
+        circle.addClass('radius-circle-active')
+      }
+    }
+
+    radiusCircles.value.push(circle)
+  })
+}
+
 let mapInstance: any = null
 let routeLayerRef: any = null
+let radiusLayerRef: any = null
+const radiusCircles = ref<any[]>([])
 let droneMarker: any = null
 let resizeObserver: ResizeObserver | null = null
 let initialFitDone = false
@@ -719,6 +774,10 @@ onMounted(async () => {
   // touching base tiles.
   routeLayerRef = L.layerGroup().addTo(mapInstance)
 
+  // Separate layer group for per-tower radius circles, drawn below the
+  // route markers so they don't obscure numbered badges.
+  radiusLayerRef = L.layerGroup().addTo(mapInstance)
+
   // Trigger an initial fetch of the route endpoint so the map has the
   // authoritative ordered itinerary + per-segment metrics on first paint.
   // The watcher below will pick up the response and redraw.
@@ -745,6 +804,8 @@ onMounted(async () => {
         updateDroneMarkerFromWS(wsLoc, mapInstance, L)
       } else if (wsLoc && mapInstance && droneMarker) {
         updateDroneMarkerFromWS(wsLoc, mapInstance, L)
+        // Update radius circles to check if drone is now inside any circle
+        renderRadiusCircles(mapInstance, L, radiusLayerRef, orderedItems.value, wsLoc)
       }
     },
     { deep: true }
@@ -757,7 +818,9 @@ watch(
   orderedItems,
   (items) => {
     if (!mapInstance || !routeLayerRef) return
+    const droneLoc = missionStore.deviceLocationWS || missionStore.deviceLocation
     renderRoute(mapInstance, (window as any).L, routeLayerRef, items)
+    renderRadiusCircles(mapInstance, (window as any).L, radiusLayerRef, items, droneLoc)
   },
   { deep: true, immediate: true }
 )
@@ -769,6 +832,10 @@ onUnmounted(() => {
     if (droneMarker) {
       mapInstance.removeLayer(droneMarker)
       droneMarker = null
+    }
+    if (radiusLayerRef) {
+      mapInstance.removeLayer(radiusLayerRef)
+      radiusLayerRef = null
     }
     mapInstance.remove()
     mapInstance = null
@@ -805,3 +872,20 @@ onUnmounted(() => {
     />
   </div>
 </template>
+
+<style scoped>
+/* Pulse animation for active radius circles when drone is inside */
+@keyframes radius-pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.radius-circle-active {
+  animation: radius-pulse 1.5s ease-in-out infinite;
+}
+</style>
