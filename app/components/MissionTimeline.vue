@@ -157,12 +157,11 @@ const timeline = computed(() => {
                 v-if="getStatusState(segment) !== 'future' && !isCurrentLoadingSegment(segment)"
                 class="text-xs font-bold text-white"
               >✓</span>
-              <span
+              <Icon
                 v-else-if="isCurrentLoadingSegment(segment)"
-                class="size-3 animate-spin"
-              >
-                <Icon name="lucide:loader" class="text-white" />
-              </span>
+                name="lucide:loader"
+                class="size-3 text-white animate-spin"
+              />
             </div>
           </div>
           <!-- Chip label -->
