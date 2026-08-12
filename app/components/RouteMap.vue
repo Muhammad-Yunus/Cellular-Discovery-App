@@ -294,7 +294,7 @@ function renderRoute(
     let visitedRowHtml = ''
     if (loc.status === 'VISITED' && visitedAt) {
       const visitedLabel = new Date(visitedAt).toLocaleString('en-GB', { hour12: false })
-      visitedRowHtml = `<div class="signal-popup-row"><span>Visited Time</span><span>${visitedLabel}</span></div>`
+      visitedRowHtml = `<div class="signal-popup-row"><span>Visited</span><span>${visitedLabel}</span></div>`
     }
 
     const popupHtml = `
