@@ -696,10 +696,8 @@ onMounted(async () => {
   // The watcher below will pick up the response and redraw.
   await missionStore.fetchRoute(props.missionId)
 
-  // Fetch and display drone location (HTTP one-shot for initial load)
-  await fetchAndDisplayDroneLocation(mapInstance, L)
-
-  // Fit bounds to all markers (route towers + drone) on first load
+  // Fit bounds to all markers (route towers) on first load
+  // (drone marker is created lazily by the WS watcher below)
   if (mapInstance && orderedItems.value.length > 0) {
     fitToAllMarkers(mapInstance, L)
     initialFitDone = true
