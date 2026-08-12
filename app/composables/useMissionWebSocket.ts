@@ -37,7 +37,7 @@ export function useMissionWebSocket() {
     const config = useRuntimeConfig()
     return buildWsUrl(
       config.public.apiBase as string,
-      '/ws/missions'
+      '/ws/mission'
     )
   }
 
