@@ -287,6 +287,16 @@ function renderRoute(
       statusChipHtml = `<div class="signal-popup-row"><span>Status</span><span class="signal-popup-status ${chipClass}">${statusLabel}</span></div>`
     }
 
+    // Build the visited-time row markup (only when status is VISITED and
+    // `visited_at` is present). Mirrors the drone popup's "Updated" row so
+    // users see when a tower was actually visited.
+    const visitedAt = loc.visited_at
+    let visitedRowHtml = ''
+    if (loc.status === 'VISITED' && visitedAt) {
+      const visitedLabel = new Date(visitedAt).toLocaleString('en-GB', { hour12: false })
+      visitedRowHtml = `<div class="signal-popup-row"><span>Visited Time</span><span>${visitedLabel}</span></div>`
+    }
+
     const popupHtml = `
       <div class="signal-popup">
         <button type="button" class="signal-popup-close-btn" aria-label="Close">
@@ -305,6 +315,7 @@ function renderRoute(
         </div>
         <div class="signal-popup-row"><span>Tower Name</span><span>${towerName}</span></div>
         ${statusChipHtml ? statusChipHtml : ''}
+        ${visitedRowHtml}
         <div class="signal-popup-row signal-popup-row--coordinate">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
