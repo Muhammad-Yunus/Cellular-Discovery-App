@@ -2,7 +2,7 @@
 //
 // New collector-mission WebSocket composable (Feature 05) that lives
 // alongside the existing `useMissions` composable. It connects to the
-// collector backend's `/ws/missions` endpoint and reflects server-pushed
+// collector backend's `/ws/mission` endpoint and reflects server-pushed
 // `MissionWSEvent` payloads into the collector mission store so the
 // planner UI re-fetches its grid / detail state in real time.
 //
@@ -16,6 +16,7 @@
 //     that opt into the live feed call `useMissionWebSocket()` in their
 //     `<script setup>`, while legacy pages remain untouched.
 
+import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { ReconnectingWebSocket, buildWsUrl } from '~/utils/websocket'
 import { useCollectorMissionStore } from '~/stores/mission'
