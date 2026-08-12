@@ -396,7 +396,7 @@ async function locateToDevice(map: any) {
   if (isLocating.value) return
   isLocating.value = true
   updateLocateIcon()
-  
+
   try {
     const deviceLocation = await missionStore.fetchDeviceLocation()
     if (!deviceLocation?.latitude || !deviceLocation?.longitude) {
@@ -411,6 +411,31 @@ async function locateToDevice(map: any) {
     const latlng = [deviceLocation.latitude, deviceLocation.longitude]
     console.log('[RouteMap] Locating to device:', latlng)
     map.setView(latlng, 16)
+
+    // Update drone marker with HTTP-fetched location
+    const status = deviceLocation.status || 'UNKNOWN'
+    if (droneMarker) {
+      droneMarker.setLatLng(latlng)
+      const newIcon = createDroneIcon(status, deviceLocation.course_deg ?? null)
+      droneMarker.setIcon(newIcon)
+      const popup = droneMarker.getPopup()
+      if (popup) {
+        popup.setContent(buildDronePopupHtml(status, deviceLocation))
+      }
+      console.log('[RouteMap] Drone marker updated from locate button (HTTP)')
+    } else {
+      const icon = createDroneIcon(status, deviceLocation.course_deg ?? null)
+      droneMarker = L.marker(latlng, { icon, zIndexOffset: 1000 })
+      droneMarker.addTo(map)
+      const popupContent = buildDronePopupHtml(status, deviceLocation)
+      droneMarker.bindPopup(popupContent, {
+        closeButton: false,
+        autoClose: false,
+        closeOnClick: false,
+        className: 'leaflet-drone-popup'
+      })
+      console.log('[RouteMap] Drone marker created from locate button (HTTP)')
+    }
   } catch (err) {
     console.error('[RouteMap] Failed to locate device:', err)
     toast.add({

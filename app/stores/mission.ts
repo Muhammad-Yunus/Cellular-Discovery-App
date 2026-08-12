@@ -22,7 +22,8 @@ import type {
   MissionLocation,
   MissionLocationCreate,
   MissionRoute,
-  DeviceLocation
+  DeviceLocation,
+  DeviceLocationWS
 } from '~/types/mission'
 import type { PaginationMeta } from '~/types'
 import * as missionService from '~/services/missionService'
@@ -58,6 +59,10 @@ interface MissionState {
   // WebSocket state (Feature 05)
   wsConnected: boolean
   wsStatus: 'connected' | 'disconnected' | 'reconnecting'
+  // Device Location WebSocket state (Feature 06)
+  deviceLocationWS: DeviceLocationWS | null
+  deviceLocationWsConnected: boolean
+  deviceLocationWsStatus: 'connected' | 'disconnected' | 'reconnecting'
 }
 
 export const useCollectorMissionStore = defineStore('collectorMission', {
@@ -96,7 +101,11 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
     deviceLocationError: null,
     // WebSocket state (Feature 05)
     wsConnected: false,
-    wsStatus: 'disconnected' as const
+    wsStatus: 'disconnected' as const,
+    // Device Location WebSocket state (Feature 06)
+    deviceLocationWS: null as DeviceLocationWS | null,
+    deviceLocationWsConnected: false,
+    deviceLocationWsStatus: 'disconnected' as const
   }),
 
   getters: {
@@ -572,6 +581,20 @@ export const useCollectorMissionStore = defineStore('collectorMission', {
 
     setWsStatus(status: 'connected' | 'disconnected' | 'reconnecting') {
       this.wsStatus = status
+    },
+
+    // ── Device Location WebSocket state (Feature 06) ────────────────
+
+    setDeviceLocationWS(location: DeviceLocationWS) {
+      this.deviceLocationWS = location
+    },
+
+    setDeviceLocationWsConnected(connected: boolean) {
+      this.deviceLocationWsConnected = connected
+    },
+
+    setDeviceLocationWsStatus(status: 'connected' | 'disconnected' | 'reconnecting') {
+      this.deviceLocationWsStatus = status
     },
 
     // ── Device (drone) location ─────────────────────────────────────
