@@ -87,9 +87,14 @@ onUnmounted(stopAutoRefresh)
           color="primary"
           size="sm"
           :icon="loading ? 'i-lucide-loader-circle' : 'i-lucide-refresh-cw'"
-          :class="{ 'animate-spin': loading }"
           @click="fetchStatus"
         >
+          <template #icon="{ className }">
+            <UIcon
+              :name="loading ? 'i-lucide-loader-circle' : 'i-lucide-refresh-cw'"
+              :class="[className, { 'animate-spin': loading }]"
+            />
+          </template>
           Refresh
         </UButton>
       </div>
@@ -197,12 +202,8 @@ onUnmounted(stopAutoRefresh)
             <span class="text-default font-mono">{{ status.gps.type }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-muted">Latitude</span>
-            <span class="text-default font-mono">{{ status.gps.latitude?.toFixed(6) ?? 'N/A' }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-muted">Longitude</span>
-            <span class="text-default font-mono">{{ status.gps.longitude?.toFixed(6) ?? 'N/A' }}</span>
+            <span class="text-muted">Coordinates</span>
+            <span class="text-default font-mono text-xs">{{ status.gps.latitude?.toFixed(6) ?? 'N/A' }}, {{ status.gps.longitude?.toFixed(6) ?? 'N/A' }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-muted">Satellites</span>
