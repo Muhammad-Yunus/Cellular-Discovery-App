@@ -158,73 +158,7 @@ onUnmounted(stopAutoRefresh)
 
     <!-- 2x2 Card Grid -->
     <div v-else-if="status" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <!-- SDR Card -->
-      <UCard class="w-full">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h2 class="text-sm font-medium text-default">
-              SDR (Software Defined Radio)
-            </h2>
-            <StatusBadge
-              :status="statusColor(status.sdr.status)"
-              :label="status.sdr.status.charAt(0).toUpperCase() + status.sdr.status.slice(1)"
-            />
-          </div>
-        </template>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-muted">Device</span>
-            <span class="text-default font-mono">{{ status.sdr.type }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-muted">Status</span>
-            <span class="text-default">{{ status.sdr.message }}</span>
-          </div>
-        </div>
-      </UCard>
-
-      <!-- GPS Card -->
-      <UCard class="w-full">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h2 class="text-sm font-medium text-default">
-              GPS Module
-            </h2>
-            <StatusBadge
-              :status="statusColor(status.gps.status)"
-              :label="status.gps.status.charAt(0).toUpperCase() + status.gps.status.slice(1)"
-            />
-          </div>
-        </template>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-muted">Device</span>
-            <span class="text-default font-mono">{{ status.gps.type }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-muted">Coordinates</span>
-            <span class="text-default font-mono text-xs">{{ status.gps.latitude?.toFixed(6) ?? 'N/A' }}, {{ status.gps.longitude?.toFixed(6) ?? 'N/A' }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-muted">Satellites</span>
-            <span class="text-default font-mono">{{ status.gps.satellites ?? 'N/A' }}</span>
-          </div>
-          <!-- Mini Map Preview -->
-          <div
-            v-if="status.gps.latitude && status.gps.longitude"
-            class="mt-3 h-32 rounded-md overflow-hidden bg-neutral-800"
-          >
-            <ClientOnly>
-              <MiniMap
-                :lat="status.gps.latitude"
-                :lon="status.gps.longitude"
-              />
-            </ClientOnly>
-          </div>
-        </div>
-      </UCard>
-
-      <!-- Machine Card -->
+      <!-- Machine Card (top-left) -->
       <UCard class="w-full">
         <template #header>
           <div class="flex items-center justify-between">
@@ -305,6 +239,72 @@ onUnmounted(stopAutoRefresh)
               <span class="text-muted text-xs">Version</span>
               <p class="text-default font-mono">{{ status.metadata.collector_version }}</p>
             </div>
+          </div>
+        </div>
+      </UCard>
+
+      <!-- GPS Card -->
+      <UCard class="w-full">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-medium text-default">
+              GPS Module
+            </h2>
+            <StatusBadge
+              :status="statusColor(status.gps.status)"
+              :label="status.gps.status.charAt(0).toUpperCase() + status.gps.status.slice(1)"
+            />
+          </div>
+        </template>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-muted">Device</span>
+            <span class="text-default font-mono">{{ status.gps.type }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-muted">Coordinates</span>
+            <span class="text-default font-mono text-xs">{{ status.gps.latitude?.toFixed(6) ?? 'N/A' }}, {{ status.gps.longitude?.toFixed(6) ?? 'N/A' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-muted">Satellites</span>
+            <span class="text-default font-mono">{{ status.gps.satellites ?? 'N/A' }}</span>
+          </div>
+          <!-- Mini Map Preview -->
+          <div
+            v-if="status.gps.latitude && status.gps.longitude"
+            class="mt-3 h-32 rounded-md overflow-hidden bg-neutral-800"
+          >
+            <ClientOnly>
+              <MiniMap
+                :lat="status.gps.latitude"
+                :lon="status.gps.longitude"
+              />
+            </ClientOnly>
+          </div>
+        </div>
+      </UCard>
+
+      <!-- SDR Card (bottom-left) -->
+      <UCard class="w-full">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-medium text-default">
+              SDR (Software Defined Radio)
+            </h2>
+            <StatusBadge
+              :status="statusColor(status.sdr.status)"
+              :label="status.sdr.status.charAt(0).toUpperCase() + status.sdr.status.slice(1)"
+            />
+          </div>
+        </template>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-muted">Device</span>
+            <span class="text-default font-mono">{{ status.sdr.type }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-muted">Status</span>
+            <span class="text-default">{{ status.sdr.message }}</span>
           </div>
         </div>
       </UCard>
