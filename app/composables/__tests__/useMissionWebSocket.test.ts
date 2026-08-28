@@ -43,6 +43,8 @@ describe('useMissionWebSocket', () => {
       wsConnected: ref(false),
       wsStatus: ref('disconnected' as const),
       fetchMissions: vi.fn().mockResolvedValue(undefined),
+      fetchMissionById: vi.fn().mockResolvedValue(undefined),
+      fetchLocations: vi.fn().mockResolvedValue(undefined),
       setWsConnected: vi.fn(),
       setWsStatus: vi.fn()
     }
