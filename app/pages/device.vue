@@ -335,9 +335,9 @@ onUnmounted(stopAutoRefresh)
             <span class="text-muted">Gateway</span>
             <span class="text-default font-mono">{{ status.network.gateway }}</span>
           </div>
-          <div>
-            <span class="text-muted text-xs">DNS Servers</span>
-            <div class="flex flex-wrap gap-1 mt-1">
+          <div class="flex items-center gap-2">
+            <span class="text-muted text-xs whitespace-nowrap">DNS Servers</span>
+            <div class="flex flex-wrap gap-1">
               <UBadge
                 v-for="(dns, i) in status.network.dns"
                 :key="i"
