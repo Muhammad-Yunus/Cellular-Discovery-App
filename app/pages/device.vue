@@ -233,7 +233,7 @@ onUnmounted(stopAutoRefresh)
             </h2>
             <StatusBadge
               status="info"
-              label="Collector v" + status.metadata.collector_version
+              label="Passif RF Service"
             />
           </div>
         </template>
