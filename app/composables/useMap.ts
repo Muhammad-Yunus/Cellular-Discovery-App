@@ -169,10 +169,9 @@ function addMarker(
     // Determine the colour for the marker based on RAT technology.
     const markerColor = getRatColorHex(scan.rat)
 
-    // Custom divIcon using the Lucide "radio-tower" SVG path data
-    // (identical to the navbar app-logo icon "lucide:radio-tower"). The
-    // badge gets its colour from the inline style we set; the SVG is forced
-    // to white so the tower icon stays legible on the coloured badge.
+    // Custom divIcon using the Lucide "signal" SVG path data.
+    // The badge gets its colour from the inline style we set; the SVG is forced
+    // to white so the signal icon stays legible on the coloured badge.
     const signalIcon = L.divIcon({
       className: 'leaflet-signal-marker',
       html: `
@@ -182,9 +181,7 @@ function addMarker(
           --glow-color: ${markerColor};
         ">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9m2.9 2.8a6.14 6.14 0 0 0 -.8 7.5"></path>
-            <circle cx="12" cy="9" r="2"></circle>
-            <path d="M16.2 4.8c2 2 2.26 5.11.8 7.47M19.1 1.9a9.96 9.96 0 0 1 0 14.1m-9.6 2h5 M8 22l4-11l4 11"></path>
+            <path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/>
           </svg>
         </div>
       `,
