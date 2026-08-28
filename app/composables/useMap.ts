@@ -75,15 +75,11 @@ export interface MapActions {
   clearPolylines: () => void
 }
 
-// Tile themes. Dark uses CartoDB base + label overlay so street names, roads,
-// POIs remain legible. Light uses standard OpenStreetMap tiles.
+// Tile themes. Dark uses OSM tiles with an CSS invert filter (see main.css)
+// to produce a dark appearance. Light uses standard OpenStreetMap tiles.
 const TILE_DARK_BASE = {
-  url: 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
-  subdomains: 'abcd'
-}
-const TILE_DARK_LABELS = {
-  url: 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
-  subdomains: 'abcd'
+  url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}{r}.png',
+  subdomains: 'abc'
 }
 const TILE_LIGHT = {
   url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -91,7 +87,7 @@ const TILE_LIGHT = {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }
 const ATTRIBUTION_DARK =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 const ATTRIBUTION_LIGHT =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 
@@ -140,9 +136,8 @@ export function useMap(): MapActions {
     // Place zoom controls in the top-right corner
     L.control.zoom({ position: 'topright' }).addTo(map)
 
-    // Default to dark tiles on init (base + labels)
+    // Default to dark tiles on init (single OSM layer, dark style applied via CSS)
     baseTileLayer = addBaseTile(TILE_DARK_BASE.url, TILE_DARK_BASE.subdomains, ATTRIBUTION_DARK)
-    labelTileLayer = addBaseTile(TILE_DARK_LABELS.url, TILE_DARK_LABELS.subdomains, '')
   }
 
   function setDarkMode(enabled: boolean) {
@@ -152,7 +147,6 @@ export function useMap(): MapActions {
     clearTileLayers()
     if (enabled) {
       baseTileLayer = addBaseTile(TILE_DARK_BASE.url, TILE_DARK_BASE.subdomains, ATTRIBUTION_DARK)
-      labelTileLayer = addBaseTile(TILE_DARK_LABELS.url, TILE_DARK_LABELS.subdomains, '')
     } else {
       baseTileLayer = addBaseTile(TILE_LIGHT.url, TILE_LIGHT.subdomains, ATTRIBUTION_LIGHT)
     }

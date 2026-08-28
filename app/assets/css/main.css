@@ -67,17 +67,18 @@ body {
   margin-right: 12px;
 }
 
-/* Force CartoDB dark labels to render with light text. The default label
-   tiles include a white outline baked in, so we rely on the tile alpha
-   and just ensure good contrast on the surrounding pane. */
+/* OSM tiles are bright; apply an invert filter to create the dark base layer.
+   hue-rotate(180deg) keeps colours perceptually closer to the original
+   CartoDB dark palette (roads stay readable, water stays dark). */
 .leaflet-tile-pane {
-  filter: none;
+  filter: invert(1) hue-rotate(180deg);
 }
 
-/* The label tile layer has transparent background; ensure tiles don't
-   inherit any inverted filter from other panes. */
-.leaflet-layer:nth-child(2) .leaflet-tile {
-  filter: brightness(1.05) contrast(1.1);
+/* Leaflet markers and popups sit above the tile pane and must not be inverted. */
+.leaflet-marker-icon,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  filter: none !important;
 }
 
 .leaflet-control-attribution {

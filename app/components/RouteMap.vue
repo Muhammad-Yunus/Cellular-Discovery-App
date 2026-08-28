@@ -760,18 +760,14 @@ onMounted(async () => {
   }
   locateBtn.addTo(mapInstance)
 
-  // Dark tile layers (base + labels) — matches MapView theme.
+  // Dark tile layer — OSM tiles inverted via CSS in main.css.
   L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}{r}.png',
     {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      subdomains: 'abc',
       maxZoom: 19
     }
-  ).addTo(mapInstance)
-  L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
-    { subdomains: 'abcd', maxZoom: 19 }
   ).addTo(mapInstance)
 
   // Single layer group so we can clear/redraw route geometry without
