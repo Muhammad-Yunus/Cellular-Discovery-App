@@ -74,13 +74,14 @@ function getRatColor(rat: string | null | undefined): 'success' | 'warning' | 'i
       </div>
       <div>
         <span class="text-muted text-xs mb-0.5">RAT</span>
-        <UBadge
-          :label="fmt(selectedScan.rat) === '\u2011' ? 'N/A' : fmt(selectedScan.rat)"
-          size="xs"
-          :color="getRatColor(selectedScan.rat)"
-          variant="subtle"
-          class="mt-0.5"
-        />
+        <div class="mt-0.5">
+          <UBadge
+            :label="fmt(selectedScan.rat) === '\u2011' ? 'N/A' : fmt(selectedScan.rat)"
+            size="xs"
+            :color="getRatColor(selectedScan.rat)"
+            variant="subtle"
+          />
+        </div>
       </div>
     </div>
 
