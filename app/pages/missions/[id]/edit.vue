@@ -15,7 +15,7 @@ const missionStore = useCollectorMissionStore()
 const toast = useCustomToast()
 const missionId = route.params.id as string
 
-// Editable form fields. radius_meters and tty_port are intentionally read-only
+// Editable form fields. radius_meters is intentionally read-only
 // (they are set when the mission is created and are not part of PATCH payload).
 const name = ref('')
 const description = ref('')
@@ -128,7 +128,7 @@ function onCancel() {
           />
         </div>
 
-        <!-- Read-only metadata chips. radius_meters and tty_port are not
+        <!-- Read-only metadata chips. radius_meters is not editable
              editable here; they are set at mission creation. -->
         <div class="grid grid-cols-2 gap-4">
           <div>
@@ -142,19 +142,6 @@ function onCancel() {
               <Icon name="lucide:radius" class="text-base shrink-0 text-muted" aria-hidden="true" />
               <span class="font-mono">{{ missionStore.selectedMission.radius_meters ?? 0 }}</span>
               <span class="text-muted">m</span>
-            </div>
-            <div v-else class="h-10" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-muted mb-1">
-              TTY Port
-            </label>
-            <div
-              v-if="missionStore.selectedMission"
-              class="inline-flex items-center gap-2 rounded-md border border-default/15 bg-default px-3 py-2 text-sm text-default"
-            >
-              <Icon name="lucide:usb" class="text-base shrink-0 text-muted" aria-hidden="true" />
-              <span class="font-mono">{{ missionStore.selectedMission.tty_port || '—' }}</span>
             </div>
             <div v-else class="h-10" />
           </div>

@@ -336,13 +336,6 @@ async function onPlan() {
                   <span class="font-mono">{{ missionStore.selectedMission.radius_meters ?? 0 }}</span>
                   <span class="text-muted">m</span>
                 </div>
-                <div
-                  class="inline-flex items-center gap-1.5 rounded-md border border-default/15 bg-elevated px-2 py-1 text-xs text-default"
-                  title="TTY serial port"
-                >
-                  <Icon name="lucide:usb" class="size-3 shrink-0 text-muted" aria-hidden="true" />
-                  <span class="font-mono">{{ missionStore.selectedMission.tty_port || '—' }}</span>
-                </div>
               </div>
             </div>
           </template>

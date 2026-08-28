@@ -74,6 +74,44 @@ function getRatColor(rat: string | null | undefined): 'success' | 'warning' | 'i
       <p class="text-default font-medium">{{ fmt(selectedScan.mnc) }}</p>
     </div>
 
+    <!-- EARFCN -->
+    <div>
+      <span class="text-muted">EARFCN</span>
+      <p class="text-default font-medium">{{ fmt(selectedScan.earfcn) }}</p>
+    </div>
+
+    <!-- PCI -->
+    <div>
+      <span class="text-muted">PCI</span>
+      <p class="text-default font-medium">{{ fmt(selectedScan.pci) }}</p>
+    </div>
+
+    <!-- Frequency (spans both columns) -->
+    <div class="col-span-2">
+      <span class="text-muted">Frequency</span>
+      <p class="text-default font-medium">
+        {{ selectedScan.frequency_mhz ? `${selectedScan.frequency_mhz} MHz` : '\u2011' }}
+      </p>
+    </div>
+
+    <!-- RSRP -->
+    <div>
+      <span class="text-muted">RSRP</span>
+      <p class="text-default font-medium">{{ fmt(selectedScan.rsrp) }}</p>
+    </div>
+
+    <!-- RSRQ -->
+    <div>
+      <span class="text-muted">RSRQ</span>
+      <p class="text-default font-medium">{{ fmt(selectedScan.rsrq) }}</p>
+    </div>
+
+    <!-- SNR -->
+    <div>
+      <span class="text-muted">SNR</span>
+      <p class="text-default font-medium">{{ fmt(selectedScan.snr) }}</p>
+    </div>
+
     <!-- Scan Time (spans both columns) -->
     <div class="col-span-2">
       <span class="text-muted">Scan Time</span>

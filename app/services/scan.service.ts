@@ -78,11 +78,27 @@ export async function getMissionLogs(
   missionId: string,
   params?: { page?: number; page_size?: number }
 ): Promise<MissionLogPaginated> {
-  return apiRequest<MissionLogPaginated>(`/missions/${missionId}/logs`, {
+  const page = params?.page ?? 1
+  const pageSize = params?.page_size ?? 10
+
+  // API returns a raw array, not a paginated wrapper
+  const rawLogs = await apiRequest<MissionLog[]>(`/missions/${missionId}/logs`, {
     method: 'GET',
     params: {
-      page: params?.page ?? 1,
-      page_size: params?.page_size ?? 10
+      page: page,
+      page_size: pageSize
     }
   })
+
+  // Ensure we always return an array (in case API returns null)
+  const logs = Array.isArray(rawLogs) ? rawLogs : []
+
+  const total = logs.length
+  return {
+    items: logs,
+    total,
+    page,
+    page_size: pageSize,
+    total_pages: Math.ceil(total / pageSize)
+  }
 }

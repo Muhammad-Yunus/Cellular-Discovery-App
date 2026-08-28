@@ -10,6 +10,14 @@ export const operatorAliasMap: Record<string, OperatorKey> = {
   Ooredo: 'Indosat' as OperatorKey,
   Ooredoo: 'Indosat' as OperatorKey,
   'IM3 Ooredoo': 'Indosat' as OperatorKey,
+  'Indosat Ooredoo': 'Indosat' as OperatorKey,
+  'Indosat Ooredoo Mentari': 'Indosat' as OperatorKey,
+  // Hutchison 3 / Tri variations
+  'Hutchison 3': 'Tri' as OperatorKey,
+  'Hutchison 3 Oseania': 'Tri' as OperatorKey,
+  '3': 'Tri' as OperatorKey,
+  Tri: 'Tri' as OperatorKey,
+  'Tri Indonesia': 'Tri' as OperatorKey,
   // XL Axiata variations
   'XL Axiata': 'XL' as OperatorKey,
   'XLAxiata': 'XL' as OperatorKey,

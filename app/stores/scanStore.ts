@@ -79,6 +79,12 @@ export const useScanStore = defineStore('scan', {
           latitude: item.latitude,
           longitude: item.longitude,
           scan_time: item.scan_time,
+          frequency_mhz: item.frequency_mhz ?? null,
+          earfcn: item.earfcn ?? null,
+          pci: item.pci ?? null,
+          rsrp: item.rsrp ?? null,
+          rsrq: item.rsrq ?? null,
+          snr: item.snr ?? null,
         }))
         this.pagination.totalItems = result.total
         this.pagination.totalPages = Math.ceil(result.total / this.pagination.limit)
@@ -240,6 +246,12 @@ export const useScanStore = defineStore('scan', {
           latitude: item.latitude,
           longitude: item.longitude,
           scan_time: item.scan_time,
+          frequency_mhz: item.frequency_mhz ?? null,
+          earfcn: item.earfcn ?? null,
+          pci: item.pci ?? null,
+          rsrp: item.rsrp ?? null,
+          rsrq: item.rsrq ?? null,
+          snr: item.snr ?? null,
         }))
 
         this.scans = [...this.scans, ...newItems]

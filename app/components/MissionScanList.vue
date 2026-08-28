@@ -380,6 +380,38 @@ const columns: TableColumn<MissionScan>[] = [
     header: 'GPS',
     cell: ({ row }) => h('span', { class: 'whitespace-nowrap font-mono text-xs' },
       `${row.original.latitude.toFixed(4)}, ${row.original.longitude.toFixed(4)}`)
+  },
+  {
+    id: 'frequency_mhz',
+    accessorKey: 'frequency_mhz',
+    header: 'Frequency (MHz)',
+    meta: {
+      class: { th: `w-28 ${cellBase}`, td: `${cellBase} font-mono text-xs` }
+    }
+  },
+  {
+    id: 'earfcn',
+    accessorKey: 'earfcn',
+    header: 'EARFCN',
+    meta: {
+      class: { th: `w-20 ${cellBase}`, td: `${cellBase} font-mono text-xs` }
+    }
+  },
+  {
+    id: 'pci',
+    accessorKey: 'pci',
+    header: 'PCI',
+    meta: {
+      class: { th: `w-16 ${cellBase}`, td: `${cellBase} font-mono text-xs` }
+    }
+  },
+  {
+    id: 'rsrp',
+    accessorKey: 'rsrp',
+    header: 'RSRP (dBm)',
+    meta: {
+      class: { th: `w-24 ${cellBase}`, td: `${cellBase} font-mono text-xs` }
+    }
   }
 ]
 
@@ -505,6 +537,12 @@ const columns: TableColumn<MissionScan>[] = [
         <div class="text-xs text-muted space-y-0.5">
           <div>Tower: {{ scan.cellular_tower_id }} - {{ scan.cellular_tower_name }}</div>
           <div>MCC: {{ scan.mcc }} | MNC: {{ scan.mnc }}</div>
+          <div v-if="scan.frequency_mhz != null || scan.earfcn != null || scan.pci != null">
+            {{ scan.frequency_mhz != null ? `${scan.frequency_mhz} MHz` : '-' }}
+            | EARFCN: {{ scan.earfcn ?? '-' }}
+            | PCI: {{ scan.pci ?? '-' }}
+          </div>
+          <div v-if="scan.rsrp != null || scan.rsrq != null || scan.snr != null">RSRP: {{ scan.rsrp ?? '-' }} dBm | RSRQ: {{ scan.rsrq ?? '-' }} | SNR: {{ scan.snr ?? '-' }}</div>
           <div>{{ new Date(scan.scan_time).toLocaleString() }}</div>
           <div>{{ scan.latitude.toFixed(4) }}, {{ scan.longitude.toFixed(4) }}</div>
         </div>

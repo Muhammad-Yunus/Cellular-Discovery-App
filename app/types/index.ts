@@ -18,6 +18,18 @@ export interface ScanSummary {
   longitude: number
   scan_time: string
   signal_strength?: number
+  /** Frequency in MHz */
+  frequency_mhz?: number | null
+  /** E-UTRA Absolute Radio Frequency Channel Number */
+  earfcn?: number | null
+  /** Physical Cell ID */
+  pci?: number | null
+  /** Reference Signal Received Power in dBm */
+  rsrp?: number | null
+  /** Reference Signal Received Quality */
+  rsrq?: number | null
+  /** Signal-to-Noise Ratio */
+  snr?: number | null
 }
 
 export type ScanResponse = ScanSummary
@@ -45,6 +57,18 @@ export interface MissionScan {
   rat: string
   /** Signal strength in dBm (nullable for older records). */
   signal_strength?: number | null
+  /** Frequency in MHz (nullable for older records). */
+  frequency_mhz?: number | null
+  /** E-UTRA Absolute Radio Frequency Channel Number (nullable). */
+  earfcn?: number | null
+  /** Physical Cell ID (nullable). */
+  pci?: number | null
+  /** Reference Signal Received Power in dBm (nullable). */
+  rsrp?: number | null
+  /** Reference Signal Received Quality (nullable). */
+  rsrq?: number | null
+  /** Signal to Noise Ratio (nullable). */
+  snr?: number | null
   latitude: number
   longitude: number
   /** ISO-8601 timestamp recorded by the collector. */
