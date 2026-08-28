@@ -34,10 +34,6 @@ vi.mock('~/composables/useSystem', () => ({
   useSystem: vi.fn()
 }))
 
-vi.mock('~/composables/useSettings', () => ({
-  useSettings: vi.fn()
-}))
-
 const mockScans = [
   { id: '1', operator: 'Telkomsel', mcc: '510', mnc: '10', rat: 'LTE', latitude: -6.15, longitude: 106.89, scan_time: '2024-01-01T00:00:00Z' },
   { id: '2', operator: 'Indosat', mcc: '510', mnc: '21', rat: 'NR', latitude: -6.16, longitude: 106.88, scan_time: '2024-01-02T00:00:00Z' }
@@ -151,7 +147,6 @@ describe('HomePage', () => {
     const { useScan } = await import('~/composables/useScan')
     const { useGPS } = await import('~/composables/useGPS')
     const { useSystem } = await import('~/composables/useSystem')
-    const { useSettings } = await import('~/composables/useSettings')
 
     vi.mocked(useScan).mockReturnValue(createMockUseScan() as never)
 
@@ -161,6 +156,5 @@ describe('HomePage', () => {
     expect(useScan).toHaveBeenCalled()
     expect(useGPS).toHaveBeenCalled()
     expect(useSystem).toHaveBeenCalled()
-    expect(useSettings).toHaveBeenCalled()
   })
 })

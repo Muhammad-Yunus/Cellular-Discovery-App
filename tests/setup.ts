@@ -118,18 +118,6 @@ vi.stubGlobal('useGpsStore', () => ({
   setConnected: vi.fn()
 }))
 
-vi.stubGlobal('useSettingsStore', () => ({
-  settings: [],
-  loading: false,
-  saving: false,
-  dirty: false,
-  error: null,
-  fetchSettings: vi.fn(),
-  updateField: vi.fn(),
-  saveSettings: vi.fn(),
-  reset: vi.fn()
-}))
-
 vi.stubGlobal('useSystemStore', () => ({
   backendStatus: 'unavailable',
   cliStatus: 'unknown',

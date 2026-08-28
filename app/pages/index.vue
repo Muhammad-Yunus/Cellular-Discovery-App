@@ -10,7 +10,6 @@ definePageMeta({
 const { scans, loading, creating, selectedScanId, selectScan } = useScan()
 useGPS()
 useSystem()
-useSettings()
 
 const mapViewRef = ref<{ mapActions: MapActions } | null>(null)
 
