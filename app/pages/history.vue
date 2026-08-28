@@ -269,6 +269,36 @@ const columns: TableColumn<ScanSummary>[] = [
     ]),
   },
   {
+    accessorKey: 'frequency_mhz',
+    header: 'Frequency',
+    cell: ({ row }) => row.original.frequency_mhz != null ? `${row.original.frequency_mhz} MHz` : '‑'
+  },
+  {
+    accessorKey: 'earfcn',
+    header: 'EARFCN',
+    cell: ({ row }) => row.original.earfcn ?? '‑'
+  },
+  {
+    accessorKey: 'pci',
+    header: 'PCI',
+    cell: ({ row }) => row.original.pci ?? '‑'
+  },
+  {
+    accessorKey: 'rsrp',
+    header: 'RSRP',
+    cell: ({ row }) => row.original.rsrp ?? '‑'
+  },
+  {
+    accessorKey: 'rsrq',
+    header: 'RSRQ',
+    cell: ({ row }) => row.original.rsrq ?? '‑'
+  },
+  {
+    accessorKey: 'snr',
+    header: 'SNR',
+    cell: ({ row }) => row.original.snr ?? '‑'
+  },
+  {
     id: 'scan_time',
     accessorKey: 'scan_time',
     header: () => h('button', {
