@@ -762,7 +762,7 @@ onMounted(async () => {
 
   // Dark tile layer — OSM tiles inverted via CSS in main.css.
   L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}{r}.png',
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       subdomains: 'abc',

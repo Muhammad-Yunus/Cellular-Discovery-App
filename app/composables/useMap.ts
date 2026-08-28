@@ -78,7 +78,7 @@ export interface MapActions {
 // Tile themes. Dark uses OSM tiles with an CSS invert filter (see main.css)
 // to produce a dark appearance. Light uses standard OpenStreetMap tiles.
 const TILE_DARK_BASE = {
-  url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}{r}.png',
+  url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   subdomains: 'abc'
 }
 const TILE_LIGHT = {
