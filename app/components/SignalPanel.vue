@@ -43,92 +43,86 @@ function getRatColor(rat: string | null | undefined): 'success' | 'warning' | 'i
 
 <template>
 <div class="p-3 text-sm relative">
-  <div v-if="selectedScan" class="grid grid-cols-2 gap-x-6 gap-y-2">
-    <!-- Operator -->
-    <div>
-      <span class="text-muted">Operator</span>
-      <p class="text-default font-medium">{{ fmt(selectedScan.operator) }}</p>
+  <div v-if="selectedScan" class="grid grid-cols-5 gap-x-4 gap-y-2 items-start">
+    <!-- Column 1: Operator, MCC, MNC -->
+    <div class="flex flex-col gap-2">
+      <div>
+        <span class="text-muted text-xs">Operator</span>
+        <p class="text-default font-medium">{{ fmt(selectedScan.operator) }}</p>
+      </div>
+      <div>
+        <span class="text-muted text-xs">MCC</span>
+        <p class="text-default font-medium">{{ fmt(selectedScan.mcc) }}</p>
+      </div>
+      <div>
+        <span class="text-muted text-xs">MNC</span>
+        <p class="text-default font-medium">{{ fmt(selectedScan.mnc) }}</p>
+      </div>
     </div>
 
-    <!-- RAT -->
-    <div class="flex flex-col items-start">
-      <span class="text-muted text-xs mb-0.5">RAT</span>
-      <UBadge
-        :label="fmt(selectedScan.rat) === '\u2011' ? 'N/A' : fmt(selectedScan.rat)"
-        size="xs"
-        :color="getRatColor(selectedScan.rat)"
-        variant="subtle"
-        class="mt-0.5"
-      />
+    <!-- Column 2: EARFCN, Frequency, RAT -->
+    <div class="flex flex-col gap-2">
+      <div>
+        <span class="text-muted text-xs">EARFCN</span>
+        <p class="text-default font-medium">{{ fmt(selectedScan.earfcn) }}</p>
+      </div>
+      <div>
+        <span class="text-muted text-xs">Frequency</span>
+        <p class="text-default font-medium">
+          {{ selectedScan.frequency_mhz ? `${selectedScan.frequency_mhz} MHz` : '\u2011' }}
+        </p>
+      </div>
+      <div>
+        <span class="text-muted text-xs mb-0.5">RAT</span>
+        <UBadge
+          :label="fmt(selectedScan.rat) === '\u2011' ? 'N/A' : fmt(selectedScan.rat)"
+          size="xs"
+          :color="getRatColor(selectedScan.rat)"
+          variant="subtle"
+          class="mt-0.5"
+        />
+      </div>
     </div>
 
-    <!-- MCC -->
-    <div>
-      <span class="text-muted">MCC</span>
-      <p class="text-default font-medium">{{ fmt(selectedScan.mcc) }}</p>
+    <!-- Column 3: RSRP, RSRQ, SNR -->
+    <div class="flex flex-col gap-2">
+      <div>
+        <span class="text-muted text-xs">RSRP</span>
+        <p class="text-default font-medium">{{ fmt(selectedScan.rsrp) }}</p>
+      </div>
+      <div>
+        <span class="text-muted text-xs">RSRQ</span>
+        <p class="text-default font-medium">{{ fmt(selectedScan.rsrq) }}</p>
+      </div>
+      <div>
+        <span class="text-muted text-xs">SNR</span>
+        <p class="text-default font-medium">{{ fmt(selectedScan.snr) }}</p>
+      </div>
     </div>
 
-    <!-- MNC -->
-    <div>
-      <span class="text-muted">MNC</span>
-      <p class="text-default font-medium">{{ fmt(selectedScan.mnc) }}</p>
+    <!-- Column 4: PCI, Scan Time -->
+    <div class="flex flex-col gap-2">
+      <div>
+        <span class="text-muted text-xs">PCI</span>
+        <p class="text-default font-medium">{{ fmt(selectedScan.pci) }}</p>
+      </div>
+      <div>
+        <span class="text-muted text-xs">Scan Time</span>
+        <p class="text-default font-medium text-xs">{{ formatDateTime(selectedScan.scan_time) }}</p>
+      </div>
     </div>
 
-    <!-- EARFCN -->
-    <div>
-      <span class="text-muted">EARFCN</span>
-      <p class="text-default font-medium">{{ fmt(selectedScan.earfcn) }}</p>
+    <!-- Column 5: Logo -->
+    <div class="flex items-start justify-end">
+      <div v-if="getOperatorLogoPath(selectedScan.operator)" class="flex-shrink-0">
+        <img
+          :src="getOperatorLogoPath(selectedScan.operator)"
+          alt="Operator logo"
+          class="w-12 h-12 object-contain opacity-80"
+        >
+      </div>
+      <div v-else class="i-lucide-radio size-5 text-muted" />
     </div>
-
-    <!-- PCI -->
-    <div>
-      <span class="text-muted">PCI</span>
-      <p class="text-default font-medium">{{ fmt(selectedScan.pci) }}</p>
-    </div>
-
-    <!-- Frequency (spans both columns) -->
-    <div class="col-span-2">
-      <span class="text-muted">Frequency</span>
-      <p class="text-default font-medium">
-        {{ selectedScan.frequency_mhz ? `${selectedScan.frequency_mhz} MHz` : '\u2011' }}
-      </p>
-    </div>
-
-    <!-- RSRP -->
-    <div>
-      <span class="text-muted">RSRP</span>
-      <p class="text-default font-medium">{{ fmt(selectedScan.rsrp) }}</p>
-    </div>
-
-    <!-- RSRQ -->
-    <div>
-      <span class="text-muted">RSRQ</span>
-      <p class="text-default font-medium">{{ fmt(selectedScan.rsrq) }}</p>
-    </div>
-
-    <!-- SNR -->
-    <div>
-      <span class="text-muted">SNR</span>
-      <p class="text-default font-medium">{{ fmt(selectedScan.snr) }}</p>
-    </div>
-
-    <!-- Scan Time (spans both columns) -->
-    <div class="col-span-2">
-      <span class="text-muted">Scan Time</span>
-      <p class="text-default font-medium">{{ formatDateTime(selectedScan.scan_time) }}</p>
-    </div>
-  </div>
-
-  <!-- Operator logo positioned absolutely so it doesn't affect row heights -->
-  <div
-    v-if="selectedScan && getOperatorLogoPath(selectedScan.operator)"
-    class="absolute right-3 top-4 flex"
-  >
-    <img
-      :src="getOperatorLogoPath(selectedScan.operator)"
-      alt="Operator logo"
-      class="w-15 h-15 object-contain"
-    >
   </div>
 
   <div v-else class="flex flex-col items-center justify-center py-6 text-center">
