@@ -22,6 +22,8 @@ export interface ScanSummary {
   frequency_mhz?: number | null
   /** E-UTRA Absolute Radio Frequency Channel Number */
   earfcn?: number | null
+  /** Band (e.g., B28, B20, B5) */
+  band?: string | null
   /** Physical Cell ID */
   pci?: number | null
   /** Reference Signal Received Power in dBm */
@@ -61,6 +63,8 @@ export interface MissionScan {
   frequency_mhz?: number | null
   /** E-UTRA Absolute Radio Frequency Channel Number (nullable). */
   earfcn?: number | null
+  /** Band (e.g., B28, B20, B5) (nullable for older records). */
+  band?: string | null
   /** Physical Cell ID (nullable). */
   pci?: number | null
   /** Reference Signal Received Power in dBm (nullable). */
