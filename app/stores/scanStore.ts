@@ -81,6 +81,7 @@ export const useScanStore = defineStore('scan', {
           scan_time: item.scan_time,
           frequency_mhz: item.frequency_mhz ?? null,
           earfcn: item.earfcn ?? null,
+          band: item.band ?? null,
           pci: item.pci ?? null,
           rsrp: item.rsrp ?? null,
           rsrq: item.rsrq ?? null,
