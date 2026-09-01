@@ -108,7 +108,6 @@ function getBandFromFrequency(mhz: number | null): string {
   if (mhz >= 2300 && mhz <= 2400) return 'B40 (2300MHz)'
   return `~${Math.round(mhz)}MHz`
 }
-}
 
 async function fetchScans(resetPage = false) {
   if (resetPage) currentPage.value = 1
