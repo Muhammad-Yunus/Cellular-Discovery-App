@@ -94,6 +94,22 @@ function formatLocalIsoOffset(val: string): string | null {
   return `${y}-${m}-${day}T${hh}:${mm}:${ss}${offsetSign}${offsetH}:${offsetM}`
 }
 
+function getBandFromFrequency(mhz: number | null): string {
+  if (mhz == null) return '‑'
+  // Approximate band mapping based on common cellular bands
+  if (mhz >= 698 && mhz <= 790) return 'B28 (700MHz)'
+  if (mhz >= 791 && mhz <= 862) return 'B20 (800MHz)'
+  if (mhz >= 824 && mhz <= 894) return 'B5 (850MHz)'
+  if (mhz >= 880 && mhz <= 960) return 'B8 (900MHz)'
+  if (mhz >= 1710 && mhz <= 1880) return 'B3 (1800MHz)'
+  if (mhz >= 1850 && mhz <= 1990) return 'B2 (1900MHz)'
+  if (mhz >= 2110 && mhz <= 2200) return 'B1 (2100MHz)'
+  if (mhz >= 2500 && mhz <= 2700) return 'B7 (2600MHz)'
+  if (mhz >= 2300 && mhz <= 2400) return 'B40 (2300MHz)'
+  return `~${Math.round(mhz)}MHz`
+}
+}
+
 async function fetchScans(resetPage = false) {
   if (resetPage) currentPage.value = 1
   loading.value = true
@@ -387,6 +403,14 @@ const columns: TableColumn<MissionScan>[] = [
     header: 'Frequency (MHz)',
     meta: {
       class: { th: `w-28 ${cellBase}`, td: `${cellBase} font-mono text-xs` }
+    }
+  },
+  {
+    id: 'band',
+    header: 'Band',
+    cell: ({ row }) => h('span', { class: `whitespace-nowrap ${cellBase}` }, getBandFromFrequency(row.original.frequency_mhz)),
+    meta: {
+      class: { th: `w-32 ${cellBase}`, td: cellBase }
     }
   },
   {
