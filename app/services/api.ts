@@ -30,6 +30,21 @@ function resolveBaseURL(): string {
 }
 
 /**
+ * Build an absolute URL from a base path and endpoint.
+ * Supports both absolute URLs (e.g. http://host/api/v1) and relative paths
+ * (e.g. /backend/api/v1) for nginx reverse-proxy deployments.
+ * Always returns a URL object so callers can safely use .searchParams.
+ */
+function buildFullUrl(base: string, endpoint: string): URL {
+  if (base.startsWith('http://') || base.startsWith('https://')) {
+    return new URL(`${base}${endpoint}`)
+  }
+  // Relative base — use current page origin (or localhost in SSR)
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+  return new URL(`${base}${endpoint}`, origin)
+}
+
+/**
  * Resolve the base URL for the health endpoint. Health is intentionally
  * separate from the main apiBase: the main API lives under a versioned
  * prefix (e.g. /api/v1) configured via NUXT_PUBLIC_API_BASE, while the
@@ -53,7 +68,7 @@ export async function healthRequest<T>(
   options?: RequestInit & { params?: Record<string, string | number | undefined> }
 ): Promise<T> {
   const baseURL = resolveHealthBaseURL()
-  const url = new URL(`${baseURL}${endpoint}`)
+  const url = buildFullUrl(baseURL, endpoint)
 
   if (options?.params) {
     Object.entries(options.params).forEach(([key, value]) => {
@@ -69,7 +84,7 @@ export async function healthRequest<T>(
   }
 
   const { params: _, ...fetchOptions } = options ?? {}
-  const response = await $fetch(url.toString(), {
+  const response = await $fetch(url, {
     ...fetchOptions,
     headers,
     retry: false
@@ -83,7 +98,7 @@ export async function apiRequest<T>(
   options?: RequestInit & { params?: Record<string, string | number | undefined> }
 ): Promise<T> {
   const baseURL = resolveBaseURL()
-  const url = new URL(`${baseURL}${endpoint}`)
+  const url = buildFullUrl(baseURL, endpoint)
 
   if (options?.params) {
     Object.entries(options.params).forEach(([key, value]) => {
@@ -99,7 +114,7 @@ export async function apiRequest<T>(
   }
 
   const { params: _, ...fetchOptions } = options ?? {}
-  const response = await $fetch(url.toString(), {
+  const response = await $fetch(url, {
     ...fetchOptions,
     headers,
     retry: false

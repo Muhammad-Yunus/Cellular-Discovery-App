@@ -198,12 +198,10 @@ async function exportScans() {
 
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase as string || ''
-    const url = `${apiBase}/missions/${props.missionId}/scans/export?${params.toString()}`
+    const url = new URL(`${apiBase}/missions/${props.missionId}/scans/export`, window.location.origin)
+    url.search = params.toString()
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { accept: 'application/json' }
-    })
+    const response = await fetch(url.toString(), { accept: 'application/json' } as RequestInit)
 
     if (!response.ok) {
       throw new Error(`Export failed with status ${response.status}`)

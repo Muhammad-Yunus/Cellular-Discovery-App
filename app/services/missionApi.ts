@@ -52,7 +52,13 @@ export class MissionApiError extends AppError {
 
 function buildUrl(endpoint: string, params?: Params): string {
   const base = getMissionApiBaseURL()
-  const url = new URL(`${base}${endpoint}`)
+  let url: URL
+  if (base.startsWith('http://') || base.startsWith('https://')) {
+    url = new URL(`${base}${endpoint}`)
+  } else {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
+    url = new URL(`${base}${endpoint}`, origin)
+  }
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       if (value === undefined || value === null || value === '') continue

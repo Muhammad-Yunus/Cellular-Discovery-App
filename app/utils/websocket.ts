@@ -98,15 +98,16 @@ export function buildWsUrl(apiBase: string, path: string): string {
     const base = apiBase.replace(/^http/, 'ws').replace(/\/api\/v1\/?$/, '')
     return `${base}${path}`
   } else {
-    // Relative API base (e.g., '/api/v1') – combine with current page location.
-    // This works for development where the frontend and backend are on different origins
-    // and we rely on a proxy to forward WebSocket requests.
-    const cleanApiBase = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+    // Relative API base (e.g. '/backend/api/v1') – resolve against the
+    // current page origin so the browser connects to the same host.
+    // WebSocket endpoints live at /backend/ws/*, not /backend/api/v1/ws/*,
+    // so strip the /api/v1 suffix just like we do for absolute bases.
+    const cleanApiBase = apiBase.replace(/\/api\/v1\/?$/, '')
     if (typeof window !== 'undefined') {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      return `${protocol}//${window.location.host}${cleanApiBase}${path}`;
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      return `${protocol}//${window.location.host}${cleanApiBase}${path}`
     }
     // Fallback for SSR/testing – just concatenate.
-    return `${apiBase}${path}`;
+    return `${cleanApiBase}${path}`
   }
 }

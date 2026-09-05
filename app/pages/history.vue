@@ -147,9 +147,10 @@ async function exportScans() {
 
     const config = useRuntimeConfig()
     const apiBase = config.public.apiBase as string || ''
-    const url = `${apiBase}/scans/export?${params.toString()}`
+    const url = new URL(`${apiBase}/scans/export`, window.location.origin)
+    url.search = params.toString()
 
-    const response = await fetch(url, {
+    const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
         accept: 'application/json'
