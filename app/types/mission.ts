@@ -156,8 +156,6 @@ export interface MissionRecord {
   scan_count?: number
   /** Search radius in meters (whole number). */
   radius_meters: number
-  /** TTY serial port identifier (e.g. "/dev/ttyUSB0"). */
-  tty_port: string
   /** Bounding box / center hint (nullable — derived from locations) */
   center_lat?: number | null
   center_lon?: number | null
@@ -169,8 +167,6 @@ export interface MissionRecordCreate {
   description?: string | null
   /** Search radius in meters (whole number). */
   radius_meters: number
-  /** TTY serial port identifier (e.g. "/dev/ttyUSB0"). */
-  tty_port: string
   /** Start at known lat/lon — optional; if omitted mission is draft */
   center_lat?: number | null
   center_lon?: number | null

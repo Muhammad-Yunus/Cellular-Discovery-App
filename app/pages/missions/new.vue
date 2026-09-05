@@ -9,11 +9,10 @@ const toast = useCustomToast()
 const missionStore = useCollectorMissionStore()
 const router = useRouter()
 
-// Form fields — only the 4 required by POST /api/v1/missions
+// Form fields — only the 3 required by POST /api/v1/missions
 const name = ref('')
 const description = ref('')
 const radiusMeters = ref(20)
-const ttyPort = ref('/dev/ttyUSB0')
 
 const isSubmitting = ref(false)
 const errors = computed(() => {
@@ -22,7 +21,6 @@ const errors = computed(() => {
   if (radiusMeters.value < 10 || radiusMeters.value > 100) {
     errs.radius_meters = 'Radius must be between 10 and 100 meters'
   }
-  if (!ttyPort.value.trim()) errs.tty_port = 'TTY port is required'
   return errs
 })
 const isFormValid = computed(() => Object.keys(errors.value).length === 0)
@@ -34,8 +32,7 @@ async function onSubmit() {
     const input: MissionRecordCreate = {
       name: name.value.trim(),
       description: description.value.trim() || null,
-      radius_meters: radiusMeters.value,
-      tty_port: ttyPort.value.trim()
+      radius_meters: radiusMeters.value
     }
     const createdId = await missionStore.createMission(input)
     toast.add({
@@ -101,32 +98,19 @@ function onCancel() {
           />
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-muted mb-1">
-              Radius (meters) <span class="text-error">*</span>
-            </label>
-            <UInput
-              v-model.number="radiusMeters"
-              type="number"
-              min="10"
-              max="100"
-              placeholder="20"
-              :class="{ 'border-error': errors.radius_meters }"
-            />
-            <p v-if="errors.radius_meters" class="text-xs text-error mt-1">{{ errors.radius_meters }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-muted mb-1">
-              TTY Port <span class="text-error">*</span>
-            </label>
-            <UInput
-              v-model="ttyPort"
-              placeholder="/dev/ttyUSB0"
-              :class="{ 'border-error': errors.tty_port }"
-            />
-            <p v-if="errors.tty_port" class="text-xs text-error mt-1">{{ errors.tty_port }}</p>
-          </div>
+        <div>
+          <label class="block text-sm font-medium text-muted mb-1">
+            Radius (meters) <span class="text-error">*</span>
+          </label>
+          <UInput
+            v-model.number="radiusMeters"
+            type="number"
+            min="10"
+            max="100"
+            placeholder="20"
+            :class="{ 'border-error': errors.radius_meters }"
+          />
+          <p v-if="errors.radius_meters" class="text-xs text-error mt-1">{{ errors.radius_meters }}</p>
         </div>
       </div>
 
