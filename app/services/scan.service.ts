@@ -83,35 +83,22 @@ export async function getMissionLogs(
 
   // API returns { value: [...], Count: N } format
   // Note: Count is the number of items in this page, not the total count
-  // We need to fetch page 1 with max page_size to get the total count
+  // We fetch with page_size=100 to get the actual total count from the API
   const result = await apiRequest<{ value: MissionLog[]; Count: number }>(`/missions/${missionId}/logs`, {
     method: 'GET',
     params: {
-      page: page,
-      page_size: pageSize
+      page: 1,
+      page_size: 100
     }
   })
 
-  const logs = result.value ?? []
+  const allLogs = result.value ?? []
+  const total = result.Count ?? allLogs.length
 
-  // If this is page 1 and we got a full page, we need to check if there are more pages
-  // by fetching with a larger page_size to get the total count
-  let total = logs.length
-  if (page === 1 && logs.length === pageSize) {
-    try {
-      const totalResult = await apiRequest<{ value: MissionLog[]; Count: number }>(`/missions/${missionId}/logs`, {
-        method: 'GET',
-        params: {
-          page: 1,
-          page_size: 100
-        }
-      })
-      total = totalResult.Count ?? totalResult.value?.length ?? logs.length
-    } catch {
-      // Fallback to page length if total count request fails
-      total = logs.length
-    }
-  }
+  // Client-side pagination
+  const startIndex = (page - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const logs = allLogs.slice(startIndex, endIndex)
 
   return {
     items: logs,
