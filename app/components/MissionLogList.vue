@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { MissionLog } from '~/types'
 import { getMissionLogs } from '~/services/scan.service'
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps<{
   missionId: string
@@ -20,7 +20,6 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const hasMore = ref(true)
 const scrollContainerRef = ref<HTMLElement | null>(null)
-let observer: IntersectionObserver | null = null
 
 // Event handlers for external refresh
 const handleLogRefresh = () => resetAndLoad()
@@ -47,7 +46,7 @@ async function loadPage(page: number, append = false): Promise<void> {
       logs.value = newLogs
     }
 
-    // Update page number
+    // Update page number (next page to load)
     currentPage.value = page + 1
 
     // Check if we got fewer items than requested (end of data)
@@ -78,64 +77,39 @@ function loadMore(): void {
   }
 }
 
-function setupObserver(): void {
-  // Cleanup existing observer
-  if (observer) {
-    observer.disconnect()
-    observer = null
-  }
+function onScroll(): void {
+  const container = scrollContainerRef.value
+  if (!container) return
 
-  // Wait for DOM to be ready
-  nextTick(() => {
-    const container = scrollContainerRef.value
-    const sentinel = document.getElementById('log-scroll-sentinel')
+  // Check if user scrolled to bottom (with 10px threshold)
+  const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 10
 
-    if (!container || !sentinel) {
-      console.warn('[MissionLogList] Container or sentinel not found')
-      return
-    }
-
-    observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries
-        if (entry.isIntersecting && hasMore.value && !loading.value) {
-          console.log('[MissionLogList] Intersection detected, loading more...')
-          loadMore()
-        }
-      },
-      {
-        root: container,
-        threshold: 0.1
-      }
-    )
-
-    observer.observe(sentinel)
-    console.log('[MissionLogList] Observer setup complete')
-  })
-}
-
-function cleanupObserver(): void {
-  if (observer) {
-    observer.disconnect()
-    observer = null
+  if (isAtBottom && hasMore.value && !loading.value) {
+    loadMore()
   }
 }
 
 // Lifecycle
-onMounted(async () => {
-  console.log('[MissionLogList] Component mounted')
+onMounted(() => {
   resetAndLoad()
 
-  // Setup observer after initial load
-  await nextTick()
-  setupObserver()
+  // Add scroll listener after mount
+  const container = scrollContainerRef.value
+  if (container) {
+    container.addEventListener('scroll', onScroll)
+  }
 
   window.addEventListener('refresh-log-list', handleLogRefresh)
   window.addEventListener('ws-log-entry', handleLogWSRefresh)
 })
 
 onUnmounted(() => {
-  cleanupObserver()
+  // Cleanup scroll listener
+  const container = scrollContainerRef.value
+  if (container) {
+    container.removeEventListener('scroll', onScroll)
+  }
+
   window.removeEventListener('refresh-log-list', handleLogRefresh)
   window.removeEventListener('ws-log-entry', handleLogWSRefresh)
 })
@@ -249,9 +223,6 @@ onUnmounted(() => {
           </span>
         </div>
       </div>
-
-      <!-- Sentinel for IntersectionObserver -->
-      <div id="log-scroll-sentinel" class="h-1"></div>
 
       <!-- Loading more indicator -->
       <div v-if="loading && logs.length > 0" class="py-3 text-center text-muted text-sm border-t border-muted/30">
