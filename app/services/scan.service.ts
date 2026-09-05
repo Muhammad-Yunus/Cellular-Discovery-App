@@ -77,45 +77,14 @@ export async function getMissionScans(
 export async function getMissionLogs(
   missionId: string,
   params?: { page?: number; page_size?: number }
-): Promise<MissionLogPaginated> {
-  const page = params?.page ?? 1
-  const pageSize = params?.page_size ?? 10
-
-  // API returns { value: [...], Count: N } format
-  // Note: Count is the number of items in this page, not the total count
-  const result = await apiRequest<{ value: MissionLog[]; Count: number }>(`/missions/${missionId}/logs`, {
+): Promise<MissionLog[]> {
+  const rawLogs = await apiRequest<MissionLog[]>(`/missions/${missionId}/logs`, {
     method: 'GET',
     params: {
-      page: page,
-      page_size: pageSize
+      page: params?.page ?? 1,
+      page_size: params?.page_size ?? 10
     }
   })
 
-  const logs = result.value ?? []
-  let total = result.Count ?? logs.length
-
-  // Only fetch total count on page 1 when we get a full page
-  if (page === 1 && logs.length === pageSize && pageSize < 100) {
-    try {
-      const totalResult = await apiRequest<{ value: MissionLog[]; Count: number }>(`/missions/${missionId}/logs`, {
-        method: 'GET',
-        params: {
-          page: 1,
-          page_size: 100
-        }
-      })
-      total = totalResult.Count ?? totalResult.value?.length ?? total
-    } catch {
-      // Fallback to page length if total count request fails
-      total = logs.length
-    }
-  }
-
-  return {
-    items: logs,
-    total,
-    page,
-    page_size: pageSize,
-    total_pages: Math.ceil(total / pageSize)
-  }
+  return Array.isArray(rawLogs) ? rawLogs : []
 }

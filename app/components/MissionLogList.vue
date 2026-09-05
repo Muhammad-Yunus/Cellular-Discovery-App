@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MissionLog, MissionLogPaginated } from '~/types'
+import type { MissionLog } from '~/types'
 import { getMissionLogs } from '~/services/scan.service'
 import { ref, onMounted, onUnmounted } from 'vue'
 
@@ -13,15 +13,16 @@ const emit = defineEmits<{
 }>()
 
 // Listen for external refresh requests (e.g., from polling or WebSocket)
-const handleLogRefresh = () => fetchLogs()
-const handleLogWSRefresh = () => fetchLogs()
+const handleLogRefresh = () => resetAndLoad()
+const handleLogWSRefresh = () => loadMore()
 const handleLogUnmount = () => {
   window.removeEventListener('refresh-log-list', handleLogRefresh)
   window.removeEventListener('ws-log-entry', handleLogWSRefresh)
+  cleanupObserver()
 }
 
 onMounted(() => {
-  fetchLogs()
+  resetAndLoad()
   window.addEventListener('refresh-log-list', handleLogRefresh)
   // Handle WebSocket log_entry event
   window.addEventListener('ws-log-entry', handleLogWSRefresh)
@@ -34,8 +35,9 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const currentPage = ref(1)
 const pageSize = ref(10)
-const totalItems = ref(0)
-const totalPages = ref(0)
+const hasMore = ref(true)
+const scrollContainer = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
 
 function getEventTypeColor(eventType: string): string {
   const lower = eventType.toLowerCase()
@@ -67,30 +69,81 @@ function getEventTypeIcon(eventType: string): string {
   return 'lucide:file-text'
 }
 
-async function fetchLogs(resetPage = false) {
-  if (resetPage) currentPage.value = 1
+async function loadPage(page: number, append = false): Promise<void> {
+  if (loading.value) return
   loading.value = true
-  error.value = null
+
   try {
-    const result = await getMissionLogs(props.missionId, {
-      page: currentPage.value,
+    const newLogs = await getMissionLogs(props.missionId, {
+      page,
       page_size: pageSize.value
     })
-    logs.value = result.items
-    totalItems.value = result.total
-    totalPages.value = result.total_pages
+
+    if (append) {
+      logs.value = [...logs.value, ...newLogs]
+      currentPage.value++
+    } else {
+      logs.value = newLogs
+      currentPage.value = 1
+    }
+
+    // Jika dapat lebih sedikit dari pageSize, berarti tidak ada lagi
+    hasMore.value = newLogs.length === pageSize.value
   } catch (e: any) {
     error.value = e?.message ?? 'Failed to load logs'
-    logs.value = []
-    totalItems.value = 0
-    totalPages.value = 0
   } finally {
     loading.value = false
   }
   emit('data-loaded')
 }
 
-onUnmounted(handleLogUnmount)
+function resetAndLoad(): void {
+  logs.value = []
+  currentPage.value = 1
+  hasMore.value = true
+  error.value = null
+  loadPage(1, false)
+}
+
+function loadMore(): void {
+  if (hasMore.value && !loading.value) {
+    loadPage(currentPage.value, true)
+  }
+}
+
+function setupScrollObserver(): void {
+  cleanupObserver()
+  
+  observer = new IntersectionObserver((entries) => {
+    const [entry] = entries
+    if (entry.isIntersecting && hasMore.value && !loading.value) {
+      loadMore()
+    }
+  }, {
+    root: scrollContainer.value,
+    threshold: 0.1
+  })
+
+  const sentinel = document.getElementById('log-scroll-sentinel')
+  if (sentinel && observer) {
+    observer.observe(sentinel)
+  }
+}
+
+function cleanupObserver(): void {
+  if (observer) {
+    observer.disconnect()
+    observer = null
+  }
+}
+
+// Watch for container ref changes
+import { watch } from 'vue'
+watch(scrollContainer, (newVal) => {
+  if (newVal) {
+    setupScrollObserver()
+  }
+})
 </script>
 
 <template>
@@ -130,9 +183,10 @@ onUnmounted(handleLogUnmount)
     <!-- Log list -->
     <div
       v-else
+      ref="scrollContainer"
       class="border border-muted rounded-md bg-primary/5 overflow-hidden"
     >
-      <div class="divide-y divide-muted/30">
+      <div class="divide-y divide-muted/30 max-h-[500px] overflow-y-auto">
         <div
           v-for="(log, index) in logs"
           :key="index"
@@ -182,20 +236,24 @@ onUnmounted(handleLogUnmount)
 
           <!-- Line number (desktop) -->
           <span class="hidden sm:block text-xs text-muted font-mono shrink-0">
-            #{{ ((currentPage - 1) * pageSize) + index + 1 }}
+            #{{ index + 1 }}
           </span>
         </div>
       </div>
-    </div>
 
-    <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex justify-center mt-4">
-      <UPagination
-        :page="currentPage"
-        :total="totalItems"
-        :items-per-page="pageSize"
-        @update:page="currentPage = $event; fetchLogs()"
-      />
+      <!-- Sentinel element for IntersectionObserver -->
+      <div id="log-scroll-sentinel" class="h-1"></div>
+
+      <!-- Loading more indicator -->
+      <div v-if="loading && logs.length > 0" class="py-3 text-center text-muted text-sm border-t border-muted/30">
+        <span class="i-lucide-loader text-sm animate-spin inline-block mr-2" />
+        Loading more logs...
+      </div>
+
+      <!-- End message -->
+      <div v-if="!hasMore && logs.length > 0" class="py-3 text-center text-muted text-sm border-t border-muted/30">
+        No more logs
+      </div>
     </div>
   </div>
 </template>
