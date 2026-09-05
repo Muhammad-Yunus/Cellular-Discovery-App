@@ -26,7 +26,13 @@ const handleLogRefresh = () => resetAndLoad()
 const handleLogWSRefresh = () => loadMore()
 
 async function loadPage(page: number, append = false): Promise<void> {
-  if (loading.value) return
+  console.log(`[MissionLogList] loadPage called: page=${page}, append=${append}`)
+  
+  if (loading.value) {
+    console.log('[MissionLogList] Already loading, skipping')
+    return
+  }
+  
   loading.value = true
   error.value = null
 
@@ -40,6 +46,8 @@ async function loadPage(page: number, append = false): Promise<void> {
       throw new Error('Invalid response format')
     }
 
+    console.log(`[MissionLogList] Loaded ${newLogs.length} logs for page ${page}`)
+
     if (append) {
       logs.value = [...logs.value, ...newLogs]
     } else {
@@ -51,10 +59,12 @@ async function loadPage(page: number, append = false): Promise<void> {
 
     // Check if we got fewer items than requested (end of data)
     hasMore.value = newLogs.length >= pageSize.value
+    console.log(`[MissionLogList] hasMore=${hasMore.value}, currentPage=${currentPage.value}`)
 
     emit('data-loaded')
   } catch (e: any) {
     error.value = e?.message ?? 'Failed to load logs'
+    console.error('[MissionLogList] Error loading logs:', e)
     if (!append) {
       logs.value = []
     }
@@ -64,6 +74,7 @@ async function loadPage(page: number, append = false): Promise<void> {
 }
 
 function resetAndLoad(): void {
+  console.log('[MissionLogList] resetAndLoad called')
   logs.value = []
   currentPage.value = 1
   hasMore.value = true
@@ -72,6 +83,7 @@ function resetAndLoad(): void {
 }
 
 function loadMore(): void {
+  console.log(`[MissionLogList] loadMore called: hasMore=${hasMore.value}, loading=${loading.value}, currentPage=${currentPage.value}`)
   if (hasMore.value && !loading.value) {
     loadPage(currentPage.value, true)
   }
@@ -81,30 +93,46 @@ function onScroll(): void {
   const container = scrollContainerRef.value
   if (!container) return
 
-  // Check if user scrolled to bottom (with 10px threshold)
-  const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 10
+  const { scrollHeight, scrollTop, clientHeight } = container
+  const isAtBottom = scrollHeight - scrollTop - clientHeight < 10
+
+  console.log(`[MissionLogList] Scroll event: scrollTop=${scrollTop}, scrollHeight=${scrollHeight}, clientHeight=${clientHeight}, isAtBottom=${isAtBottom}`)
 
   if (isAtBottom && hasMore.value && !loading.value) {
+    console.log('[MissionLogList] At bottom, calling loadMore')
     loadMore()
   }
 }
 
 // Lifecycle
 onMounted(() => {
+  console.log('[MissionLogList] Component mounted')
   resetAndLoad()
 
-  // Add scroll listener after mount
-  const container = scrollContainerRef.value
-  if (container) {
-    container.addEventListener('scroll', onScroll)
-  }
+  // Setup scroll listener after DOM is ready
+  setTimeout(() => {
+    const container = scrollContainerRef.value
+    console.log('[MissionLogList] Container ref:', container)
+    
+    if (container) {
+      container.addEventListener('scroll', onScroll)
+      console.log('[MissionLogList] Scroll listener added')
+      
+      // Debug: log container properties
+      console.log('[MissionLogList] Container info:', {
+        scrollHeight: container.scrollHeight,
+        clientHeight: container.clientHeight,
+        scrollTop: container.scrollTop,
+        maxHeight: window.getComputedStyle(container).maxHeight
+      })
+    }
+  }, 100)
 
   window.addEventListener('refresh-log-list', handleLogRefresh)
   window.addEventListener('ws-log-entry', handleLogWSRefresh)
 })
 
 onUnmounted(() => {
-  // Cleanup scroll listener
   const container = scrollContainerRef.value
   if (container) {
     container.removeEventListener('scroll', onScroll)
@@ -153,9 +181,10 @@ onUnmounted(() => {
     <div
       v-else
       ref="scrollContainerRef"
-      class="border border-muted rounded-md bg-primary/5 overflow-hidden"
+      class="border border-muted rounded-md bg-primary/5"
+      style="max-height: 500px; overflow-y: auto;"
     >
-      <div class="divide-y divide-muted/30 max-h-[500px] overflow-y-auto">
+      <div class="divide-y divide-muted/30">
         <div
           v-for="(log, index) in logs"
           :key="index"
