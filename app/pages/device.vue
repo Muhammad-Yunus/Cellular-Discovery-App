@@ -325,7 +325,13 @@ onUnmounted(stopAutoRefresh)
         <div class="space-y-2 text-sm">
           <div class="flex justify-between">
             <span class="text-muted">Status</span>
-            <span class="text-default">{{ status.network.status === 'online' ? 'Connected' : 'Disconnected' }}</span>
+            <UBadge
+              :color="status.network.status === 'online' ? 'success' : 'neutral'"
+              variant="subtle"
+              size="sm"
+            >
+              {{ status.network.status === 'online' ? 'Connected' : 'Disconnected' }}
+            </UBadge>
           </div>
           <div class="flex justify-between">
             <span class="text-muted">IP Address</span>
