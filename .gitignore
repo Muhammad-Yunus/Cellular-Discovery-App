@@ -42,4 +42,23 @@ tests/e2e/debug-icons.spec.ts
 tests/e2e/debug-icons-deep.spec.ts
 tests/e2e/debug-tabs.spec.ts
 
+# Internal documentation & epics (local only)
+AGENT.md
+CHANGES_SUMMARY.md
+FINAL_CHANGE_SUMMARY.md
+HANDOFFER.md
+FE_IMPROVEMENT_SPEC.md
+FE_SPEC.md
+SORTING_IMPLEMENTATION_SUMMARY.md
+SORT_ICON_SUMMARY.md
+SUMMARY.md
+Epic/
+NewEpic/
+
+# Debug/automation scripts (local only)
+debug-scan.ps1
+run-debug-e2e.ps1
+run-e2e-test.ps1
+run-history-e2e.ps1
+
 
