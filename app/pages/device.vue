@@ -341,18 +341,7 @@ onUnmounted(stopAutoRefresh)
           </div>
           <div class="flex items-center gap-2">
             <span class="text-muted text-xs whitespace-nowrap">DNS Servers</span>
-            <div class="flex flex-wrap gap-1">
-              <UBadge
-                v-for="(dns, i) in status.network.dns"
-                :key="i"
-                color="neutral"
-                variant="subtle"
-                size="sm"
-                class="font-mono"
-              >
-                {{ dns }}
-              </UBadge>
-            </div>
+            <span class="text-default font-mono text-xs">{{ status.network.dns.join(', ') }}</span>
           </div>
         </div>
       </UCard>
