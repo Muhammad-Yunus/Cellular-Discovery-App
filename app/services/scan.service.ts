@@ -94,7 +94,7 @@ export async function getMissionLogs(
   const logs = result.value ?? []
   let total = result.Count ?? logs.length
 
-  // If we got a full page on page 1, fetch with max page_size to get actual total
+  // Only fetch total count on page 1 when we get a full page
   if (page === 1 && logs.length === pageSize && pageSize < 100) {
     try {
       const totalResult = await apiRequest<{ value: MissionLog[]; Count: number }>(`/missions/${missionId}/logs`, {
