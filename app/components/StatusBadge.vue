@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = withDefaults(defineProps<{
-  status: 'ok' | 'warning' | 'error' | 'info' | 'loading'
+  status: 'ok' | 'success' | 'warning' | 'error' | 'info' | 'loading' | 'neutral'
   label?: string
   pulse?: boolean
 }>(), {
@@ -10,18 +10,22 @@ const props = withDefaults(defineProps<{
 
 const colorMap: Record<string, 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
   ok: 'success',
+  success: 'success',
   warning: 'warning',
   error: 'error',
   info: 'info',
-  loading: 'neutral'
+  loading: 'neutral',
+  neutral: 'neutral'
 }
 
 const defaultLabels: Record<string, string> = {
   ok: 'OK',
+  success: 'Success',
   warning: 'Warning',
   error: 'Error',
   info: 'Info',
-  loading: 'Loading...'
+  loading: 'Loading...',
+  neutral: 'Neutral'
 }
 
 const badgeColor = computed(() => colorMap[props.status] ?? 'neutral')
