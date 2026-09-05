@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { MissionLog } from '~/types'
 import { getMissionLogs } from '~/services/scan.service'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
 const props = defineProps<{
   missionId: string
@@ -12,66 +12,24 @@ const emit = defineEmits<{
   (e: 'refresh'): void
 }>()
 
-// Listen for external refresh requests (e.g., from polling or WebSocket)
-const handleLogRefresh = () => resetAndLoad()
-const handleLogWSRefresh = () => loadMore()
-const handleLogUnmount = () => {
-  window.removeEventListener('refresh-log-list', handleLogRefresh)
-  window.removeEventListener('ws-log-entry', handleLogWSRefresh)
-  cleanupObserver()
-}
-
-onMounted(() => {
-  resetAndLoad()
-  window.addEventListener('refresh-log-list', handleLogRefresh)
-  // Handle WebSocket log_entry event
-  window.addEventListener('ws-log-entry', handleLogWSRefresh)
-})
-
-onUnmounted(handleLogUnmount)
-
+// State
 const logs = ref<MissionLog[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const hasMore = ref(true)
-const scrollContainer = ref<HTMLElement | null>(null)
+const scrollContainerRef = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
 
-function getEventTypeColor(eventType: string): string {
-  const lower = eventType.toLowerCase()
-  if (lower === 'started' || lower === 'start' || lower === 'starting') return 'success'
-  if (lower === 'completed' || lower === 'complete' || lower === 'finished') return 'info'
-  if (lower === 'failed' || lower === 'error' || lower === 'failure') return 'error'
-  if (lower === 'paused' || lower === 'pause') return 'warning'
-  if (lower === 'resumed' || lower === 'resume') return 'primary'
-  if (lower === 'info' || lower === 'information') return 'info'
-  if (lower === 'warn' || lower === 'warning') return 'warning'
-  if (lower === 'debug') return 'neutral'
-  if (lower === 'visited') return 'success'
-  if (lower === 'stopped' || lower === 'stop') return 'error'
-  return 'neutral'
-}
-
-function getEventTypeIcon(eventType: string): string {
-  const lower = eventType.toLowerCase()
-  if (lower === 'started' || lower === 'start' || lower === 'starting') return 'lucide:play'
-  if (lower === 'completed' || lower === 'complete' || lower === 'finished') return 'lucide:check-circle'
-  if (lower === 'failed' || lower === 'error' || lower === 'failure') return 'lucide:x-circle'
-  if (lower === 'paused' || lower === 'pause') return 'lucide:pause'
-  if (lower === 'resumed' || lower === 'resume') return 'lucide:play'
-  if (lower === 'info' || lower === 'information') return 'lucide:info'
-  if (lower === 'warn' || lower === 'warning') return 'lucide:alert-triangle'
-  if (lower === 'debug') return 'lucide:bug'
-  if (lower === 'visited') return 'lucide:map-pin-check'
-  if (lower === 'stopped' || lower === 'stop') return 'lucide:square'
-  return 'lucide:file-text'
-}
+// Event handlers for external refresh
+const handleLogRefresh = () => resetAndLoad()
+const handleLogWSRefresh = () => loadMore()
 
 async function loadPage(page: number, append = false): Promise<void> {
   if (loading.value) return
   loading.value = true
+  error.value = null
 
   try {
     const newLogs = await getMissionLogs(props.missionId, {
@@ -79,22 +37,31 @@ async function loadPage(page: number, append = false): Promise<void> {
       page_size: pageSize.value
     })
 
-    if (append) {
-      logs.value = [...logs.value, ...newLogs]
-      currentPage.value++
-    } else {
-      logs.value = newLogs
-      currentPage.value = 1
+    if (!Array.isArray(newLogs)) {
+      throw new Error('Invalid response format')
     }
 
-    // Jika dapat lebih sedikit dari pageSize, berarti tidak ada lagi
-    hasMore.value = newLogs.length === pageSize.value
+    if (append) {
+      logs.value = [...logs.value, ...newLogs]
+    } else {
+      logs.value = newLogs
+    }
+
+    // Update page number
+    currentPage.value = page + 1
+
+    // Check if we got fewer items than requested (end of data)
+    hasMore.value = newLogs.length >= pageSize.value
+
+    emit('data-loaded')
   } catch (e: any) {
     error.value = e?.message ?? 'Failed to load logs'
+    if (!append) {
+      logs.value = []
+    }
   } finally {
     loading.value = false
   }
-  emit('data-loaded')
 }
 
 function resetAndLoad(): void {
@@ -111,23 +78,40 @@ function loadMore(): void {
   }
 }
 
-function setupScrollObserver(): void {
-  cleanupObserver()
-  
-  observer = new IntersectionObserver((entries) => {
-    const [entry] = entries
-    if (entry.isIntersecting && hasMore.value && !loading.value) {
-      loadMore()
-    }
-  }, {
-    root: scrollContainer.value,
-    threshold: 0.1
-  })
-
-  const sentinel = document.getElementById('log-scroll-sentinel')
-  if (sentinel && observer) {
-    observer.observe(sentinel)
+function setupObserver(): void {
+  // Cleanup existing observer
+  if (observer) {
+    observer.disconnect()
+    observer = null
   }
+
+  // Wait for DOM to be ready
+  nextTick(() => {
+    const container = scrollContainerRef.value
+    const sentinel = document.getElementById('log-scroll-sentinel')
+
+    if (!container || !sentinel) {
+      console.warn('[MissionLogList] Container or sentinel not found')
+      return
+    }
+
+    observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries
+        if (entry.isIntersecting && hasMore.value && !loading.value) {
+          console.log('[MissionLogList] Intersection detected, loading more...')
+          loadMore()
+        }
+      },
+      {
+        root: container,
+        threshold: 0.1
+      }
+    )
+
+    observer.observe(sentinel)
+    console.log('[MissionLogList] Observer setup complete')
+  })
 }
 
 function cleanupObserver(): void {
@@ -137,18 +121,29 @@ function cleanupObserver(): void {
   }
 }
 
-// Watch for container ref changes
-import { watch } from 'vue'
-watch(scrollContainer, (newVal) => {
-  if (newVal) {
-    setupScrollObserver()
-  }
+// Lifecycle
+onMounted(async () => {
+  console.log('[MissionLogList] Component mounted')
+  resetAndLoad()
+
+  // Setup observer after initial load
+  await nextTick()
+  setupObserver()
+
+  window.addEventListener('refresh-log-list', handleLogRefresh)
+  window.addEventListener('ws-log-entry', handleLogWSRefresh)
+})
+
+onUnmounted(() => {
+  cleanupObserver()
+  window.removeEventListener('refresh-log-list', handleLogRefresh)
+  window.removeEventListener('ws-log-entry', handleLogWSRefresh)
 })
 </script>
 
 <template>
   <div class="space-y-4">
-    <!-- Filters -->
+    <!-- Header -->
     <div class="px-4 py-3 border border-muted rounded-md bg-primary/5">
       <div class="flex items-center gap-4 flex-wrap">
         <div class="flex-1 min-w-[200px]">
@@ -165,7 +160,7 @@ watch(scrollContainer, (newVal) => {
       {{ error }}
     </div>
 
-    <!-- Loading state -->
+    <!-- Loading state (initial) -->
     <div v-if="loading && logs.length === 0" class="py-12 text-center text-muted">
       <span class="i-lucide-loader text-2xl animate-spin inline-block mb-2" />
       <p>Loading logs…</p>
@@ -180,10 +175,10 @@ watch(scrollContainer, (newVal) => {
       <p>No logs available for this mission.</p>
     </div>
 
-    <!-- Log list -->
+    <!-- Log list (scrollable) -->
     <div
       v-else
-      ref="scrollContainer"
+      ref="scrollContainerRef"
       class="border border-muted rounded-md bg-primary/5 overflow-hidden"
     >
       <div class="divide-y divide-muted/30 max-h-[500px] overflow-y-auto">
@@ -196,30 +191,45 @@ watch(scrollContainer, (newVal) => {
           <div
             class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
             :class="{
-              'bg-success/10 text-success': getEventTypeColor(log.event_type) === 'success',
-              'bg-error/10 text-error': getEventTypeColor(log.event_type) === 'error',
-              'bg-warning/10 text-warning': getEventTypeColor(log.event_type) === 'warning',
-              'bg-info/10 text-info': getEventTypeColor(log.event_type) === 'info',
-              'bg-primary/10 text-primary': getEventTypeColor(log.event_type) === 'primary',
-              'bg-neutral/10 text-muted': getEventTypeColor(log.event_type) === 'neutral'
+              'bg-success/10 text-success': ['started', 'start', 'starting', 'visited'].includes(log.event_type.toLowerCase()),
+              'bg-error/10 text-error': ['failed', 'error', 'failure', 'stopped', 'stop'].includes(log.event_type.toLowerCase()),
+              'bg-warning/10 text-warning': ['paused', 'pause', 'warn', 'warning'].includes(log.event_type.toLowerCase()),
+              'bg-info/10 text-info': ['completed', 'complete', 'finished', 'info', 'information', 'resumed', 'resume'].includes(log.event_type.toLowerCase()),
+              'bg-primary/10 text-primary': ['debug'].includes(log.event_type.toLowerCase()),
+              'bg-neutral/10 text-muted': true
             }"
           >
-            <Icon :name="getEventTypeIcon(log.event_type)" class="size-4" aria-hidden="true" />
+            <Icon
+              :name="[
+                'started', 'start', 'starting'
+              ].includes(log.event_type.toLowerCase()) ? 'lucide:play' :
+              ['completed', 'complete', 'finished'].includes(log.event_type.toLowerCase()) ? 'lucide:check-circle' :
+              ['failed', 'error', 'failure'].includes(log.event_type.toLowerCase()) ? 'lucide:x-circle' :
+              ['paused', 'pause'].includes(log.event_type.toLowerCase()) ? 'lucide:pause' :
+              ['resumed', 'resume'].includes(log.event_type.toLowerCase()) ? 'lucide:play' :
+              ['info', 'information'].includes(log.event_type.toLowerCase()) ? 'lucide:info' :
+              ['warn', 'warning'].includes(log.event_type.toLowerCase()) ? 'lucide:alert-triangle' :
+              ['debug'].includes(log.event_type.toLowerCase()) ? 'lucide:bug' :
+              ['visited'].includes(log.event_type.toLowerCase()) ? 'lucide:map-pin-check' :
+              ['stopped', 'stop'].includes(log.event_type.toLowerCase()) ? 'lucide:square' :
+              'lucide:file-text'"
+              class="size-4"
+              aria-hidden="true"
+            />
           </div>
 
           <!-- Content -->
           <div class="flex-1 min-w-0">
-            <!-- Header: type + timestamp -->
             <div class="flex items-center gap-2 flex-wrap">
               <span
                 class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide"
                 :class="{
-                  'bg-success/10 text-success': getEventTypeColor(log.event_type) === 'success',
-                  'bg-error/10 text-error': getEventTypeColor(log.event_type) === 'error',
-                  'bg-warning/10 text-warning': getEventTypeColor(log.event_type) === 'warning',
-                  'bg-info/10 text-info': getEventTypeColor(log.event_type) === 'info',
-                  'bg-primary/10 text-primary': getEventTypeColor(log.event_type) === 'primary',
-                  'bg-neutral/10 text-muted': getEventTypeColor(log.event_type) === 'neutral'
+                  'bg-success/10 text-success': ['started', 'start', 'starting', 'visited'].includes(log.event_type.toLowerCase()),
+                  'bg-error/10 text-error': ['failed', 'error', 'failure', 'stopped', 'stop'].includes(log.event_type.toLowerCase()),
+                  'bg-warning/10 text-warning': ['paused', 'pause', 'warn', 'warning'].includes(log.event_type.toLowerCase()),
+                  'bg-info/10 text-info': ['completed', 'complete', 'finished', 'info', 'information', 'resumed', 'resume'].includes(log.event_type.toLowerCase()),
+                  'bg-primary/10 text-primary': ['debug'].includes(log.event_type.toLowerCase()),
+                  'bg-neutral/10 text-muted': true
                 }"
               >
                 {{ log.event_type }}
@@ -228,20 +238,19 @@ watch(scrollContainer, (newVal) => {
                 {{ new Date(log.timestamp).toLocaleString() }}
               </span>
             </div>
-            <!-- Message -->
             <p class="mt-1 text-sm text-default">
               {{ log.message }}
             </p>
           </div>
 
-          <!-- Line number (desktop) -->
+          <!-- Line number -->
           <span class="hidden sm:block text-xs text-muted font-mono shrink-0">
             #{{ index + 1 }}
           </span>
         </div>
       </div>
 
-      <!-- Sentinel element for IntersectionObserver -->
+      <!-- Sentinel for IntersectionObserver -->
       <div id="log-scroll-sentinel" class="h-1"></div>
 
       <!-- Loading more indicator -->
