@@ -32,6 +32,7 @@ export interface NetworkStatus {
   ip_address: string
   gateway: string
   dns: string[]
+  hostname: string
 }
 
 export interface HealthSummary {
